@@ -63,8 +63,8 @@ After installation make sure to start Docker desktop.
 2. Run the built docker image by executing below supplying your Twilio credentials from above
    (replace `ACxxxxxxxx` and `yyyyyyyy` for `ACCOUNT_SID` and `AUTH_TOKEN`, respectively).
     ```shell
-    docker run --name hls-installer -it hls-installer -p 3000:3000 --rm \
-   -e ACCOUNT_SID=ACxxxxxxxx -e AUTH_TOKEN=yyyyyyyy
+    docker run --name hls-installer --rm -p 3000:3000 \
+   -e ACCOUNT_SID=ACxxxxxxxx -e AUTH_TOKEN=yyyyyyyy -it hls-installer
     ```
 
 3. Open http://localhost:3000/installer.html using a broswer.
