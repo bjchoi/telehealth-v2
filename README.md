@@ -58,7 +58,7 @@ After installation make sure to start Docker desktop.
 
 1. Build docker image of installer by executing
     ```shell
-    docker build --tag hls-installer https://github.com/bochi-twlo/telehealth-2.git#main
+    docker build --tag hls-installer https://github.com/bochoi-twlo/telehealth-2.git#main
     ```
 2. Run the built docker image by executing
     ```shell
