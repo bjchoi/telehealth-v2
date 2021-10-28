@@ -17,7 +17,7 @@ RUN twilio plugins:install @twilio-labs/plugin-serverless
 WORKDIR /hls-installer
 
 # copy github files needed for running locally
-COPY Dockerfile package.json .env assets functions /hls-installer
+COPY Dockerfile package.json .env /hls-installer
 COPY assets /hls-installer/assets
 COPY functions /hls-installer/functions
 
