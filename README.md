@@ -14,7 +14,7 @@ The following prerequisites must be satisfied prior to installing the applicatio
 
 - Create a Twilio account by signing up [here](https://www.twilio.com/try-twilio)
 - Once the Twilio account is created,
-  please note the “ACCOUNT SID” and “AUTH TOKEN”
+  please note the `ACCOUNT SID` and `AUTH TOKEN`
   from the [Twilio console](https://console.twilio.com/) for use below
 - If you have multiple Twilio Projects under your account, make sure that you are logged into the Project that you want the application to be deployed to
 
@@ -60,9 +60,11 @@ After installation make sure to start Docker desktop.
     ```shell
     docker build --tag hls-installer https://github.com/twilio/hls-telehealth.git#main
     ```
-2. Run the built docker image by executing
+2. Run the built docker image by executing below supplying your Twilio credentials from above
+   (replace `ACxxxxxxxx` and `yyyyyyyy` for `ACCOUNT_SID` and `AUTH_TOKEN`, respectively).
     ```shell
-    docker run -p 3000:3000 -it hls-installer
+    docker run --name hls-installer -it hls-installer -p 3000:3000 --rm \
+   -e ACCOUNT_SID=ACxxxxxxxx -e AUTH_TOKEN=yyyyyyyy
     ```
 
 3. Open http://localhost:3000/installer.html using a broswer.
