@@ -10,9 +10,16 @@
 #
 # --------------------------------------------------------------------------------
 FROM twilio/twilio-cli:latest
+ARG TWILIO_ACCOUNT_SID=sid
+ARG TWILIO_AUTH_TOKEN=token
 
 RUN twilio plugins:install @twilio-labs/plugin-serverless
 
+COPY app /app
+WORKDIR /app
+RUN npm install
+RUN npm run build
+RUN npm run export
 # directory to copy/run application
 WORKDIR /hls-installer
 
@@ -20,9 +27,13 @@ WORKDIR /hls-installer
 COPY Dockerfile package.json .env /hls-installer
 COPY assets /hls-installer/assets
 COPY functions /hls-installer/functions
+RUN mkdir assets/app
+RUN cp -r /app/out/* /hls-installer/assets
 
 # install node dependencies in package.json
 RUN npm install
+
+# RUN twilio serverless:deploy --override-existing-project
 
 # expose default port for running locally
 EXPOSE 3000
