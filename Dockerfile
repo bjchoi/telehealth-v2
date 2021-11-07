@@ -38,4 +38,4 @@ RUN npm install
 # expose default port for running locally
 EXPOSE 3000
 
-CMD ["twilio", "serverless:start"]
+CMD ["twilio", "serverless:start", "--load-local-env"]
