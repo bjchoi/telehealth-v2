@@ -2,6 +2,8 @@
 exports.handler = function(context, event, callback) {
     const {path} = Runtime.getFunctions()["helpers"];
     const {setParam, getParam} = require(path);
+    // FIXME this line is for testing purpose only, needs to be removed
+    context.TWILIO_SERVICE_SID = event.TWILIO_SERVICE_SID;
 
     async function setConfigParams(context, event){
         console.log(context);
