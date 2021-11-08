@@ -130,7 +130,7 @@ async function getParam(context, key) {
       }
       case 'TWILIO_VERIFY_SID': {
         const services = await client.verify.services.list();
-        const service = services.find(s => s.friendlyName === context.CUSTOMER_CODE);
+        const service = services.find(s => s.friendlyName === context.CUSTOMER_NAME);
         if (service) return service.sid;
 
         console.log('Verify service not found so creating a new verify service...');
