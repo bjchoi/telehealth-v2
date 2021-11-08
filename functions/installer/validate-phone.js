@@ -1,5 +1,4 @@
 exports.handler = async function(context, event, callback) {
-    console.log("IN Twilio func validate phone");
     const client = context.getTwilioClient();
 
     const response = new Twilio.Response();
