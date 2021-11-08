@@ -1,80 +1,74 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-  <title>Twilio Outreach Solution Blueprint</title>
-  <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Roboto:300,300italic,700,700italic">
-  <link rel="stylesheet" href="https://unpkg.com/normalize.css/normalize.css">
-  <link rel="stylesheet" href="https://unpkg.com/milligram/dist/milligram.min.css">
-  <link rel="stylesheet" href="./style.css" />
-  <link rel="stylesheet" href="./authentication.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Appointment Management with EHR Integration Application</title>
+    <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Roboto:300,300italic,700,700italic">
+    <link rel="stylesheet" href="https://unpkg.com/normalize.css/normalize.css">
+    <link rel="stylesheet" href="https://unpkg.com/milligram/dist/milligram.min.css">
+    <link rel="stylesheet" href="installer.css">
 </head>
-
 <body>
-  <header>
-    <h1>Installer</h1>
-  </header>
-
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-  <script type="application/javascript" src="/authentication-controller.js"></script>
-  <script type="application/javascript" src="/controller.js"></script>
-  <div class="authentication">
-    <div id="password-form">
-      <p id="login-error" style="color:red"></p>
-      <form>
-        <div>
-          <label for="password-input">Password:
-            <input id="password-input" type="password" name="password" style="width: 400px">
-          </label>
+<div id="configure-form">
+    <form>
+        <h4><strong>Step 1: </strong>Your Twilio Account</h4>
+        <div class="form-group twilio-account-info">
+            <div class="configure-label">Account Name: <span class="configure-error-login" style="display:none"></span></div>
+            <div class="configure-input">
+                <input  id="account_name" type="text" name="account_name" placeholder="Twilio Account" readonly>
+            </div>
         </div>
-        <button id="btn-authenticate" class="button" onclick="login(event)">Authenticate</button>
-      </form>
-    </div>
-    <div id="mfa-form" style="display: none;">
-      <p>
-        Your password was accepted. For additional security, please enter the security code we sent to your phone.
-      </p>
-      <p id="mfa-error" style="color:red"></p>
-      <form>
-        <div>
-          <label for="mfa-input">
-            <input id="mfa-input" type="text" name="mfacode" style="width: 400px">
-          </label>
+        <h4><strong>Step 2: </strong>Set up your application</h4>
+        <div class="form-group twilio-phone-numbers">
+            <div class="configure-label-long">This application requires Twilio-Supplied phone number to work properly.</div>
+            <div class="configure-error-twilio-phone-number configure-label-long">
+                <div class="configure-label-long">You do not have any Twilio phone numbers.</div>
+                <div class="configure-label-long">Click button below to get a number, then refresh this page.</div>
+                <button class="button get-twilio-phone">Get Twilio Phone Number</button>
+            </div>
+            <div class="ht info-circle">i
+                <span class="tooltip">Twilio phone number to send SMS from. Your patient will see this number.</span>
+            </div>
+            <div class="configure-label"> Twilio phone number <span class="star">*</span></div>
+
+            <div class="configure-input">
+                <select name="twilio_phone_number" id="twilio_phone_number" onchange="selectPhone(null)"></select>
+            </div>
+
         </div>
-        <button class="button" onclick="mfa(event)">Verify Security Code</button>
-      </form>
-    </div>
-    <p id="auth-successful"  style="display:none">Authenticated successfully</p>
-  </div>
-  <main style="display: none">
-    <section>
-      <h4>Enter Twilio Credentials:</h4>
-    </section>
 
-    <section>
-      <h4>Select Twilio Phone</h4>
-    </section>
+        <div id="input-error" style="color: red;display: none"></div>
+        <! --- To clone ---->
+        <div class="form-group clone-original" style="display: none">
+            <div class="ht info-circle">i
+                <span class="tooltip">This is the tooltip.</span>
+            </div>
+            <div class="configure-label">Field Label</div> <span class="star">* </span>
+            <div class="configure-error"></div>
+            <div class="configure-input">
+                <input id="field-name" type="text" name="field-name">
+            </div>
 
-    <section>
-      <h4>Configure Variables:</h4>
-    </section>
+        </div>
 
-    <section>
-      <h4>Deploy Service: (Create/Update/Delete)</h4>
-    </section>
-    <button class="button" onclick="deploy(event)">Deploy</button>
+        <!----End of clone  ---->
+        <div class="form-section">
+            <div class="form-group">
+                <h4><strong>Step 2: </strong>Deploy your application and try it out!</h4>
+                <div>
+                    <button class="button" onclick="formSubmit(event)">Deploy this application</button>
 
-  </main>
+                </div>
+            </div>
+        </div>
+    </form>
 
-  <footer>
-    <p>
-      Made with 💖 by your friends at
-      <a href="https://www.twilio.com">Twilio</a>
-    </p>
-  </footer>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"
+        integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0="
+        crossorigin="anonymous"></script>
+<script type="application/javascript" src="/installer-controller.js"></script>
+
 </body>
-
-</html>
