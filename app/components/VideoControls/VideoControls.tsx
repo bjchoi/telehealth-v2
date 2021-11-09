@@ -3,6 +3,8 @@ import { Button, ButtonVariant } from '../Button';
 
 export interface VideoControlsProps {
   containerClass?: string;
+  addParticipant: () => void;
+  flipCamera: () => void;
   toggleAudio: () => void;
   toggleChat: () => void;
   toggleVideo: () => void;
@@ -10,6 +12,8 @@ export interface VideoControlsProps {
 
 export const VideoControls = ({
   containerClass,
+  addParticipant,
+  flipCamera,
   toggleAudio,
   toggleChat,
   toggleVideo,
@@ -21,7 +25,11 @@ export const VideoControls = ({
         containerClass
       )}
     >
-      <Button icon="person_add" variant={ButtonVariant.tertiary} />
+      <Button
+        icon="person_add"
+        variant={ButtonVariant.tertiary}
+        onClick={addParticipant}
+      />
       <Button
         icon="chat_bubble_outline"
         variant={ButtonVariant.tertiary}
@@ -37,7 +45,11 @@ export const VideoControls = ({
         variant={ButtonVariant.tertiary}
         onClick={toggleAudio}
       />
-      <Button icon="flip_camera_ios" variant={ButtonVariant.tertiary} />
+      <Button
+        icon="flip_camera_ios"
+        variant={ButtonVariant.tertiary}
+        onClick={flipCamera}
+      />
       <Button as="a" href="/patient/video/disconnected" icon="call_end" />
     </div>
   );

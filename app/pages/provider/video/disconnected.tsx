@@ -1,11 +1,14 @@
 import React from 'react';
+import { Card } from '../../../components/Card';
 import { DisconnectedAlert } from '../../../components/DisconnectedAlert';
-import { Layout } from '../../../components/Patient';
+import { Layout } from '../../../components/Provider';
 
 const DisconnectedPage = () => {
   return (
     <Layout>
-      <DisconnectedAlert />
+      <Card className="py-10">
+        <DisconnectedAlert />
+      </Card>
     </Layout>
   );
 };

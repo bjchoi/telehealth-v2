@@ -1,19 +1,19 @@
 import { joinClasses } from '../../utils';
 
-export interface InputProps
+export interface TextareaProps
   extends React.DetailedHTMLProps<
-    React.InputHTMLAttributes<HTMLInputElement>,
-    HTMLInputElement
+    React.TextareaHTMLAttributes<HTMLTextAreaElement>,
+    HTMLTextAreaElement
   > {}
 
-export const Input = ({ className, ...props }: InputProps) => {
+export const Textarea = ({ className, ...props }: TextareaProps) => {
   return (
-    <input
+    <textarea
       className={joinClasses(
         'px-3 py-2 border border-light rounded-md',
         className
       )}
       {...props}
-    />
+    ></textarea>
   );
 };

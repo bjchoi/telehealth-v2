@@ -13,11 +13,11 @@ export const ChatMessage = ({
 }: ChatMessageProps) => {
   return (
     <div className={joinClasses('mb-5', !isProvider && 'text-right')}>
-      <div className="text-sm text-twilio-blue mb-3">{name}</div>
+      <div className="text-sm text-secondary mb-3">{name}</div>
       <span
         className={joinClasses(
           'p-2 rounded-md',
-          !isProvider ? 'bg-twilio-light-gray' : 'bg-twilio-red text-white'
+          !isProvider ? 'bg-light' : 'bg-primary text-white'
         )}
       >
         {content}
