@@ -1,8 +1,8 @@
 import React from 'react';
-import { PatientVideoConsultation } from '../../../components/PatientVideoConsultation';
+import { VideoConsultation } from '../../../components/Patient';
 
 const VideoPage = () => {
-  return <PatientVideoConsultation />;
+  return <VideoConsultation />;
 };
 
 export default VideoPage;

@@ -4,7 +4,7 @@ export interface HeadingProps {
 
 export const Heading = ({ children }: HeadingProps) => {
   return (
-    <h1 className="my-3 text-2xl text-center text-primary whitespace-pre-wrap	">
+    <h1 className="my-3 text-2xl text-center text-primary whitespace-pre-wrap">
       {children}
     </h1>
   );

@@ -1,7 +1,6 @@
 import React from 'react';
 import { Heading } from '../../../components/Heading';
-import { PatientLayout } from '../../../components/PatientLayout';
-import { PatientInfoForm } from '../../../components/PatientInfoForm';
+import { InfoForm, Layout } from '../../../components/Patient';
 
 enum FormStep {
   INFO,
@@ -13,10 +12,10 @@ enum FormStep {
 
 const OnDemandPage = () => {
   return (
-    <PatientLayout>
+    <Layout>
       <Heading>Please Share Your Info</Heading>
-      <PatientInfoForm />
-    </PatientLayout>
+      <InfoForm />
+    </Layout>
   );
 };
 

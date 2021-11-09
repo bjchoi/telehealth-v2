@@ -2,10 +2,17 @@ import Head from 'next/head';
 import Link from 'next/link';
 
 const patientCoreVideoLinks = [
-  { name: 'Waiting Room', href: '/patient/video/waiting-room' },
+  { name: 'Waiting Room', href: '/patient/waiting-room' },
   { name: 'Video Consultation', href: '/patient/video' },
   { name: 'Disconnected', href: '/patient/video/disconnected' },
   { name: 'No Mic/Video Permissions', href: '/patient/video/no-av-permission' },
+];
+
+const providerCoreVideoLinks = [
+  { name: 'Dashboard', href: '/provider/dashboard' },
+  { name: 'Disconnected', href: '/provider/video/disconnected' },
+  { name: 'Survey - Form', href: '/provider/visit-survey' },
+  { name: 'Survey - Thank You', href: '/provider/visit-survey/thank-you' },
 ];
 
 export default function Home() {
@@ -20,11 +27,36 @@ export default function Home() {
       <div className="p-4">
         <h1 className="mb-4 text-2xl">Sitemap</h1>
 
-        <h2 className="mb-2 text-xl">Patient Core Video</h2>
+        <h2 className="mb-2 text-xl">Patient Flow - Core Video</h2>
         <ul className="pl-4">
           {patientCoreVideoLinks.map((link, i) => (
             <li key={i}>
-              <Link href={link.href} passHref>
+              <Link href={link.href}>
+                <a className="text-blue-500">{link.name}</a>
+              </Link>
+            </li>
+          ))}
+        </ul>
+
+        <h2 className="mt-6 mb-2 text-xl">Patient Flow - Post Visit Surveys</h2>
+        <ul className="pl-4">
+          <li>
+            <Link href="/patient/visit-survey">
+              <a className="text-blue-500">Survey Form</a>
+            </Link>
+          </li>
+          <li>
+            <Link href="/patient/visit-survey/thank-you/">
+              <a className="text-blue-500">Thank You</a>
+            </Link>
+          </li>
+        </ul>
+
+        <h2 className="mt-6 mb-2 text-xl">Provider Flow - Core Video</h2>
+        <ul className="pl-4">
+          {providerCoreVideoLinks.map((link, i) => (
+            <li key={i}>
+              <Link href={link.href}>
                 <a className="text-blue-500">{link.name}</a>
               </Link>
             </li>

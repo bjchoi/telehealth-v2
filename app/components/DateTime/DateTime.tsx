@@ -10,8 +10,8 @@ const DateTimeIcon = ({ name }) => {
 
 export const DateTime = ({ date }: DateTimeProps) => {
   return (
-    <div className="flex border border-twilio-light-gray rounded-lg text-secondary">
-      <div className="flex flex-grow p-2 border-r border-twilio-light-gray">
+    <div className="flex border border-light rounded-lg text-secondary">
+      <div className="flex flex-grow p-2 border-r border-light">
         <DateTimeIcon name="calendar_today" />{' '}
         {date.toLocaleString('default', {
           month: 'short',

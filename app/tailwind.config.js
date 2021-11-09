@@ -4,6 +4,8 @@ const theme = {
   primary: '#F12E45',
   secondary: '#0D122B',
   tertiary: '#676767',
+  dark: '#676767',
+  light: '#C2C2C2',
 };
 
 module.exports = {
@@ -18,12 +20,15 @@ module.exports = {
         button: {
           ...theme,
         },
-        twilio: {
-          red: '#F12E45',
-          blue: '#0D122B',
-          gray: '#676767',
-          'light-gray': '#C2C2C2',
-        },
+        backgroundColors: (theme) => ({
+          ...theme('colors'),
+        }),
+        borderColor: (theme) => ({
+          ...theme('colors'),
+        }),
+        textColor: (theme) => ({
+          ...theme('colors'),
+        }),
       },
       boxShadow: {
         card: '0px 4px 4px rgba(0, 0, 0, 0.25)',

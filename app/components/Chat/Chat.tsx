@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
 import { Button } from '../Button';
-import { ChatMessage, ChatMessageProps } from './ChatMessage/ChatMessage';
+import { ChatMessage } from './ChatMessage/ChatMessage';
 
 export interface ChatProps {
   inputPlaceholder?: string;
@@ -49,7 +49,7 @@ export const Chat = ({ inputPlaceholder }: ChatProps) => {
           <div className="pr-5">
             <Button
               type="button"
-              className="bg-white text-twilio-red border-0"
+              className="bg-white text-primary border-0"
               icon="file_upload"
               iconType="outline"
               onClick={() => fileInputRef?.current?.click()}

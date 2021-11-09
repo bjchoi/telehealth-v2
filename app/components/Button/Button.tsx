@@ -11,6 +11,7 @@ export enum ButtonVariant {
 export type ButtonProps = (AnchorElementProps | ButtonElementProps) & {
   disabled?: boolean;
   icon?: string;
+  iconClassName?: string;
   iconType?: 'outline';
   loading?: boolean;
   outline?: boolean;
@@ -37,6 +38,7 @@ export const Button = ({
   as = 'button',
   children,
   icon,
+  iconClassName,
   iconType,
   variant = ButtonVariant.primary,
   loading,
@@ -57,7 +59,11 @@ export const Button = ({
     props.className
   );
   const child = icon ? (
-    <Icon name={icon} outline={iconType === 'outline'} />
+    <Icon
+      name={icon}
+      outline={iconType === 'outline'}
+      className={iconClassName}
+    />
   ) : (
     children
   );

@@ -7,6 +7,7 @@ export interface VideoParticipantProps {
   hasVideo?: boolean;
   isProvider?: boolean;
   isOverlap?: boolean;
+  isSelf?: boolean;
   name: string;
 }
 
@@ -16,8 +17,10 @@ export const VideoParticipant = ({
   hasVideo,
   isProvider,
   isOverlap,
+  isSelf,
 }: VideoParticipantProps) => {
   const [showMutedBanner, setShowMutedBanner] = useState(null);
+  const [isPinned, setIsPinned] = useState(false);
 
   // TODO - move to tailwind config
   const widthClass = isOverlap
@@ -42,10 +45,30 @@ export const VideoParticipant = ({
       setShowMutedBanner(false);
     }, 3000);
     return () => clearTimeout(timer);
-  }, [hasAudio]);
+  }, [hasAudio, showMutedBanner]);
 
   return (
-    <div className="mx-auto relative w-max">
+    <div className="mx-auto relative w-max group">
+      {!isSelf && (
+        <div className="absolute inset-0 text-right w-full flex justify-end group-hover:bg-gradient-to-b from-gray-700 via-transparent to-transparent">
+          <div
+            className={joinClasses(
+              'p-1',
+              !isPinned && 'hidden group-hover:block'
+            )}
+          >
+            <button
+              className={joinClasses(
+                'border-0 bg-transparent rotate-45 p-2',
+                isPinned ? 'text-primary' : 'text-white'
+              )}
+              onClick={() => setIsPinned(!isPinned)}
+            >
+              <Icon name="push_pin" outline={!isPinned} />
+            </button>
+          </div>
+        </div>
+      )}
       {showMutedBanner && (
         <div className="absolute top-0 bottom-0 left--2 right--2 flex items-center justify-center w-full">
           <div className="bg-[#000000BF] text-white h-min text-center flex-grow py-4">
@@ -54,7 +77,7 @@ export const VideoParticipant = ({
         </div>
       )}
       <div
-        className={`flex items-center justify-center bg-twilio-gray text-white text-2xl ${heightClass} ${widthClass}`}
+        className={`flex items-center justify-center bg-dark text-white text-2xl overflow-hidden ${heightClass} ${widthClass}`}
       >
         {!hasVideo && name}
         {isProvider
@@ -63,13 +86,13 @@ export const VideoParticipant = ({
       </div>
       <div className="absolute bottom-0 right-0 text-white bg-[#00000082] px-2 py-1 flex items-center">
         <Icon
-          className={joinClasses('text-md', !hasAudio && 'text-twilio-red')}
+          className={joinClasses('text-md', !hasAudio && 'text-primary')}
           name="mic"
         />
         {hasVideo ? (
           !isOverlap && name
         ) : (
-          <Icon className="text-md text-twilio-red" name="videocam_off" />
+          <Icon className="text-md text-primary" name="videocam_off" />
         )}
       </div>
     </div>
