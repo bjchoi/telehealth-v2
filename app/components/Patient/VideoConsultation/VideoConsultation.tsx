@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import useParticipants from '../../Base/VideoProvider/useParticipants/useParticipants';
+import useRoomState from '../../Base/VideoProvider/useRoomState/useRoomState';
 import { Button, ButtonVariant } from '../../Button';
 import { Chat } from '../../Chat';
 import { ConnectionIssueModal } from '../../ConnectionIssueModal';
@@ -16,9 +18,8 @@ export const VideoConsultation = ({}: VideoConsultationProps) => {
   const [hasAudio, setHasAudio] = useState(true);
   const [hasVideo, setHasVideo] = useState(true);
   const [inviteModalVisible, setInviteModalVisible] = useState(false);
-  const [connectionIssueModalVisible, setConnectionIssueModalVisible] =
-    useState(false);
-
+  const [connectionIssueModalVisible, setConnectionIssueModalVisible] = useState(false);
+  const roomState = useRoomState();
   function toggleInviteModal() {
     setInviteModalVisible(!inviteModalVisible);
   }
@@ -28,8 +29,10 @@ export const VideoConsultation = ({}: VideoConsultationProps) => {
       <div className="bg-secondary flex flex-col h-full items-center">
         <div className="py-5">
           <PoweredByTwilio inverted />
-        </div>
-        {showChat ? (
+        </div>        
+        { 
+          roomState == 'connected' ? (
+          showChat ? (
           <>
             <div className="flex">
               <div className="relative">
@@ -68,13 +71,15 @@ export const VideoConsultation = ({}: VideoConsultationProps) => {
                   name="Sarah Cooper"
                   hasAudio={hasAudio}
                   hasVideo={hasVideo}
-                  isSelf
+                  isSelf={false}
+                  isProvider={true}
                 />
                 <VideoParticipant
                   name={providerName}
                   hasAudio
                   hasVideo
-                  isProvider
+                  isProvider={false}
+                  isSelf={true}
                 />
               </div>
               {showChat && (
@@ -93,7 +98,7 @@ export const VideoConsultation = ({}: VideoConsultationProps) => {
               toggleVideo={() => setHasVideo(!hasVideo)}
             />
           </>
-        )}
+        )):(<></>)}
       </div>
       <ConnectionIssueModal
         close={() => setConnectionIssueModalVisible(false)}
