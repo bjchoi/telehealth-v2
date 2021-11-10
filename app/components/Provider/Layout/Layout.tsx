@@ -13,9 +13,9 @@ export const Layout = ({ children, title }: LayoutProps) => {
       <div>
         <Header />
       </div>
-      <div className="max-w-sm w-full mx-auto flex flex-grow justify-center items-center">
+      <div className="max-w-screen-2xl mx-auto flex-grow">
         {title && <Heading>{title}</Heading>}
-        <div>{children}</div>
+        {children}
       </div>
       <footer className="pt-2 pb-5">
         <PoweredByTwilio className="mx-auto" />

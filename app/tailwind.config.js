@@ -6,6 +6,7 @@ const theme = {
   tertiary: '#676767',
   dark: '#676767',
   light: '#C2C2C2',
+  link: '#008CFF',
 };
 
 module.exports = {
@@ -39,5 +40,5 @@ module.exports = {
   variants: {
     extend: {},
   },
-  plugins: [],
+  plugins: [require('@tailwindcss/line-clamp')],
 };
