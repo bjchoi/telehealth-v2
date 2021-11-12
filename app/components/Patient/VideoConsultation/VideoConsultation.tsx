@@ -5,7 +5,7 @@ import { ConnectionIssueModal } from '../../ConnectionIssueModal';
 import { InviteParticipantModal } from '../../InviteParticipantModal';
 import { PoweredByTwilio } from '../../PoweredByTwilio';
 import { VideoControls } from '../../VideoControls';
-import { VideoParticipant } from '../../VideoParticipant';
+import { VideoParticipant } from './VideoParticipant';
 
 export interface VideoConsultationProps {}
 

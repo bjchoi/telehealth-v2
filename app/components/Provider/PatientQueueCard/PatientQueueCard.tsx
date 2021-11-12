@@ -2,7 +2,9 @@ import { joinClasses } from '../../../utils';
 import { Card } from '../../Card';
 import { CardHeading } from '../CardHeading';
 
-export interface PatientQueueCardProps {}
+export interface PatientQueueCardProps {
+  className?: string;
+}
 
 const patients = [
   {
@@ -56,9 +58,9 @@ const patients = [
   },
 ];
 
-export const PatientQueueCard = ({}: PatientQueueCardProps) => {
+export const PatientQueueCard = ({ className }: PatientQueueCardProps) => {
   return (
-    <Card>
+    <Card className={className}>
       <CardHeading>Patient Queue</CardHeading>
       <div className="px-1 py-2 grid grid-cols-2 gap-4 font-bold text-xs">
         <div>Patient</div>

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { joinClasses } from '../../utils';
-import { Icon } from '../Icon';
+import { joinClasses } from '../../../../utils';
+import { Icon } from '../../../Icon';
 
 export interface VideoParticipantProps {
   hasAudio?: boolean;
