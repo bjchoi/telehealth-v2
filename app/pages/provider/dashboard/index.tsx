@@ -1,5 +1,10 @@
 import React from 'react';
-import { Layout, PatientQueueCard } from '../../../components/Provider';
+import {
+  AudioVideoCard,
+  ContentManagementCard,
+  Layout,
+  PatientQueueCard,
+} from '../../../components/Provider';
 import { NextPatientCard } from '../../../components/Provider/NextPatientCard';
 
 const DashboardPage = () => {
@@ -7,10 +12,14 @@ const DashboardPage = () => {
     <Layout>
       <div className="grid grid-cols-3 gap-4">
         <div>
-          <NextPatientCard />
+          <NextPatientCard className="my-2" />
         </div>
         <div>
-          <PatientQueueCard />
+          <PatientQueueCard className="my-2" />
+          <ContentManagementCard className="my-2" />
+        </div>
+        <div>
+          <AudioVideoCard />
         </div>
       </div>
     </Layout>

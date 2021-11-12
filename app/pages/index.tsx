@@ -3,6 +3,7 @@ import Link from 'next/link';
 
 const patientCoreVideoLinks = [
   { name: 'Waiting Room', href: '/patient/waiting-room' },
+  { name: 'Left Waiting Room', href: '/patient/waiting-room/left' },
   { name: 'Video Consultation', href: '/patient/video' },
   { name: 'Disconnected', href: '/patient/video/disconnected' },
   { name: 'No Mic/Video Permissions', href: '/patient/video/no-av-permission' },
@@ -10,9 +11,15 @@ const patientCoreVideoLinks = [
 
 const providerCoreVideoLinks = [
   { name: 'Dashboard', href: '/provider/dashboard' },
+  { name: 'Video Consultation', href: '/provider/video' },
   { name: 'Disconnected', href: '/provider/video/disconnected' },
   { name: 'Survey - Form', href: '/provider/visit-survey' },
   { name: 'Survey - Thank You', href: '/provider/visit-survey/thank-you' },
+];
+
+const invitedAttendeeVideoLinks = [
+  { name: 'Invited Attendee', href: '/invited-attendee' },
+  { name: 'Technical Check', href: '/invited-attendee/technical-check' },
 ];
 
 export default function Home() {
@@ -55,6 +62,17 @@ export default function Home() {
         <h2 className="mt-6 mb-2 text-xl">Provider Flow - Core Video</h2>
         <ul className="pl-4">
           {providerCoreVideoLinks.map((link, i) => (
+            <li key={i}>
+              <Link href={link.href}>
+                <a className="text-blue-500">{link.name}</a>
+              </Link>
+            </li>
+          ))}
+        </ul>
+
+        <h2 className="mt-6 mb-2 text-xl">Invited Attendee</h2>
+        <ul className="pl-4">
+          {invitedAttendeeVideoLinks.map((link, i) => (
             <li key={i}>
               <Link href={link.href}>
                 <a className="text-blue-500">{link.name}</a>

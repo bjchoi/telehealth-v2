@@ -6,6 +6,7 @@ export enum ButtonVariant {
   primary = 'primary',
   secondary = 'secondary',
   tertiary = 'tertiary',
+  link = 'link',
 }
 
 export type ButtonProps = (AnchorElementProps | ButtonElementProps) & {
@@ -90,6 +91,7 @@ function primaryClasses(variant: ButtonVariant) {
     primary: 'bg-button-primary border-button-primary',
     secondary: 'bg-button-secondary border-button-secondary',
     tertiary: 'bg-button-tertiary border-button-tertiary',
+    link: 'bg-button-link border-button-link',
   };
   return ['text-white', variantClasses[variant]].join(' ');
 }
@@ -101,6 +103,7 @@ function primaryHoverClasses(variant: ButtonVariant) {
     primary: 'hover:text-button-primary',
     secondary: 'hover:text-button-secondary',
     tertiary: 'hover:text-button-tertiary',
+    link: 'hover:text-button-link',
   };
   return ['hover:bg-white', variantClasses[variant]].join(' ');
 }
@@ -112,6 +115,7 @@ function outlineClasses(variant: ButtonVariant) {
     primary: 'text-button-primary border-button-primary',
     secondary: 'text-button-secondary border-button-secondary',
     tertiary: 'text-button-tertiary border-button-tertiary',
+    link: 'text-button-link border-button-link',
   };
   return ['bg-white', variantClasses[variant]].join(' ');
 }
@@ -123,6 +127,7 @@ function outlineHoverClasses(variant: ButtonVariant) {
     primary: 'hover:bg-button-primary',
     secondary: 'hover:bg-button-secondary',
     tertiary: 'hover:bg-button-tertiary',
+    link: 'hover:bg-button-link',
   };
   return ['hover:text-white', variantClasses[variant]].join(' ');
 }
