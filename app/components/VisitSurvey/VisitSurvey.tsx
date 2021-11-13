@@ -62,6 +62,19 @@ export const VisitSurvey = ({ isProvider }: VisitSurveyProps) => {
     event?.preventDefault();
     // TODO - Submit form to back-end
     console.log(selectedThumb, selectedIssues, otherIssue);
+    fetch('/feedback-survey', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        selectedThumb,
+        selectedIssues,
+        otherIssue,
+      })
+    }).then(res => {
+      console.log(res)
+    }).catch(err => {
+      console.log("Error: ", err)
+    });
     resetForm();
     router.push(
       `/${isProvider ? 'provider' : 'patient'}/visit-survey/thank-you`
