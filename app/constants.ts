@@ -1,3 +1,5 @@
+import { Settings } from "./types";
+
 export const DEFAULT_VIDEO_CONSTRAINTS: MediaStreamConstraints['video'] = {
   width: 1280,
   height: 720,
@@ -11,3 +13,16 @@ export const SELECTED_VIDEO_INPUT_KEY = 'TwilioVideoApp-selectedVideoInput';
 
 // This is used to store the current background settings in localStorage
 export const SELECTED_BACKGROUND_SETTINGS_KEY = 'TwilioVideoApp-selectedBackgroundSettings';
+
+export const STORAGE_USER_KEY = 'TelehealthUser';
+export const STORAGE_VISIT_KEY = 'TelehealthVisit';
+
+export const initialSettings: Settings = {
+  trackSwitchOffMode: undefined,
+  dominantSpeakerPriority: 'standard',
+  bandwidthProfileMode: 'collaboration',
+  maxAudioBitrate: '16000',
+  contentPreferencesMode: 'auto',
+  clientTrackSwitchOffControl: 'auto',
+  roomType: 'group'
+};
