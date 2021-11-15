@@ -1,11 +1,13 @@
 import React from 'react';
 import { Alert } from '../../components/Alert';
+import VideoContextLayout from '../../components/Base/VideoProvider';
 import { Button } from '../../components/Button';
 import { Input } from '../../components/Input';
 import { Layout } from '../../components/Patient';
 import { Select } from '../../components/Select';
+import { TwilioPage } from '../../types';
 
-const InvitedAttendeePage = () => {
+const InvitedAttendeePage : TwilioPage = () => {
   return (
     <Layout>
       <Alert
@@ -50,5 +52,5 @@ const InvitedAttendeePage = () => {
     </Layout>
   );
 };
-
+InvitedAttendeePage.Layout = VideoContextLayout;
 export default InvitedAttendeePage;

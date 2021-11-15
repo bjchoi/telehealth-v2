@@ -1,25 +1,38 @@
-import React, { useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { Button, ButtonVariant } from '../../../components/Button';
 import { DateTime } from '../../../components/DateTime';
 import { Heading } from '../../../components/Heading';
 import { Layout } from '../../../components/Patient';
 import { Modal } from '../../../components/Modal';
 import { TechnicalCheck } from '../../../components/TechnicalCheck';
+import { TwilioPage } from '../../../types';
+import { useVisitContext, VisitContextLayout } from '../../../state/VisitContext';
+import useVideoContext from '../../../components/Base/VideoProvider/useVideoContext/useVideoContext';
+import VideoContextLayout from '../../../components/Base/VideoProvider';
 
-const data = {
-  date: new Date(),
-  doctorName: 'Dr. Josefina Santos',
-};
-
-const WaitingRoomPage = () => {
+const WaitingRoomPage: TwilioPage = () => {
   const [showLeaveConfirmation, setShowLeaveConfirmation] = useState(false);
+  const { visit } = useVisitContext();
+  const { getAudioAndVideoTracks, localTracks } = useVideoContext();
+  const [mediaError, setMediaError] = useState<Error>();
 
+  useEffect(() => {
+    if (!mediaError) {
+      getAudioAndVideoTracks().catch(error => {
+        console.log('Error acquiring local media:');
+        console.dir(error);
+        setMediaError(error);
+      });
+    }
+  }, [getAudioAndVideoTracks, mediaError]);
   return (
     <Layout>
+      { visit ? (
       <div className="my-4 flex flex-col items-center justify-center">
         <Heading>Your Appointment</Heading>
-        <div className="mb-2 text-secondary">{data.doctorName}</div>
-        <DateTime date={data.date} />
+        <div className="mb-2 text-secondary">{visit.providerName}</div>
+        <DateTime date={visit.visitDateTime} />
+
         <TechnicalCheck videoImage="/patient.jpg" />
         <div className="text-tertiary">
           Your visit will start when the provider joins
@@ -35,7 +48,8 @@ const WaitingRoomPage = () => {
         >
           Leave Waiting Room
         </Button>
-      </div>
+      </div>) : (<></>)
+      }
       <Modal isVisible={showLeaveConfirmation}>
         <div className="flex flex-col text-center p-4">
           <p className="mb-4 text-primary">
@@ -64,4 +78,5 @@ const WaitingRoomPage = () => {
   );
 };
 
+WaitingRoomPage.Layout = VideoContextLayout;
 export default WaitingRoomPage;

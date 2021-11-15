@@ -11,8 +11,8 @@ import useLocalTracks from './useLocalTracks/useLocalTracks';
 import useRestartAudioTrackOnDeviceChange from './useRestartAudioTrackOnDeviceChange/useRestartAudioTrackOnDeviceChange';
 import useRoom from './useRoom/useRoom';
 import useScreenShareToggle from './useScreenShareToggle/useScreenShareToggle';
-import { useAppState } from '../../../state';
-import useConnectionOptions from '../../../utils/useConnectionOptions/useConnectionOptions';
+import useConnectionOptions from './useConnectionOptions/useConnectionOptions';
+import { VisitStateProvider } from '../../../state/VisitContext';
 
 /*
  *  The hooks used by the VideoProvider component are different than the hooks found in the 'hooks/' directory. The hooks
@@ -117,28 +117,15 @@ function VideoProvider({ options, children, onError = () => {} }: VideoProviderP
   );
 }
 
-function VideoProviderWrapper({ children }) {
-  const { error, setError } = useAppState();
+export function VideoContextLayout(props: React.PropsWithChildren<{}>) {
   const connectionOptions = useConnectionOptions();
   return (
-    <VideoProvider options={connectionOptions} onError={setError}>
-      {children}
-    </VideoProvider>
-  );
-};
-
-/*const withVideoProvider = Component => {
-  const VideoProviderWrapper = (props) => {
-    const { error, setError } = useAppState();
-    const connectionOptions = useConnectionOptions();
-    return (
-      <VideoProvider options={connectionOptions} onError={setError}>
-        <Component {...props} />
+    <VisitStateProvider>
+      <VideoProvider options={connectionOptions} onError={(error) => console.log(error)}>
+        { props.children }
       </VideoProvider>
-    );
-  };
+    </VisitStateProvider>
+  );
+}
 
-  return VideoProviderWrapper;
-};*/
-
-export default VideoProviderWrapper;
+export default VideoContextLayout;

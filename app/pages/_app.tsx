@@ -1,17 +1,19 @@
+import { NextPage } from 'next';
 import type { AppProps } from 'next/app';
-import VideoProviderWrapper from '../components/Base/VideoProvider';
-import withVideoProvider from '../components/Base/VideoProvider';
+import React from 'react';
 import '../css/global.css';
-import AppStateProvider, { useAppState } from '../state';
+import { TwilioPage } from '../types'
 
+function hasLayout(Component: NextPage | TwilioPage): Component is TwilioPage {
+  return (Component as TwilioPage).Layout !== null && (Component as TwilioPage).Layout !== undefined;
+}
 
 function MyApp({ Component, pageProps }: AppProps) {
+  const Layout = hasLayout(Component) ? (Component as TwilioPage).Layout : React.Fragment
   return (
-    <AppStateProvider>
-      <VideoProviderWrapper>
-        <Component {...pageProps} />
-      </VideoProviderWrapper>
-    </AppStateProvider>
+    <Layout>
+      <Component {...pageProps} />
+    </Layout>
   );
 }
 

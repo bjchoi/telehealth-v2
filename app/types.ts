@@ -1,4 +1,32 @@
-import { LocalVideoTrack, RemoteVideoTrack, TwilioError } from 'twilio-video';
+import { LocalVideoTrack, RemoteVideoTrack, Track, TwilioError, VideoBandwidthProfileOptions } from 'twilio-video';
+import { NextPage } from 'next';
+import React from 'react';
+
+export type TwilioPage = NextPage & { Layout?: React.FC }
+
+export type TelehealthRole = 'guest' | 'patient' | 'visitor' | 'provider';
+
+export interface TelehealthUser {
+  name: string
+  isAuthenticated: Boolean
+  role: TelehealthRole,
+  token: string
+}
+
+export const GuestUser = {
+  name: "Guest",
+  isAuthenticated: false,
+  role: "guest",
+  token: null
+} as TelehealthUser;
+
+export interface TelehealthVisit {
+  id: string,
+  visitDateTime: Date,
+  providerName: string,
+  roomName: string,
+  patientName: string
+}
 
 declare module 'twilio-video' {
   // These help to create union types between Local and Remote VideoTracks
@@ -37,11 +65,19 @@ export type IVideoTrack = LocalVideoTrack | RemoteVideoTrack;
 
 export type RoomType = 'group' | 'group-small' | 'peer-to-peer' | 'go';
 
-export type RecordingRule = {
-  type: 'include' | 'exclude';
-  all?: boolean;
-  kind?: 'audio' | 'video';
-  publisher?: string;
-};
+export interface Settings {
+  trackSwitchOffMode: VideoBandwidthProfileOptions['trackSwitchOffMode'];
+  dominantSpeakerPriority?: Track.Priority;
+  bandwidthProfileMode: VideoBandwidthProfileOptions['mode'];
+  maxAudioBitrate: string;
+  contentPreferencesMode?: 'auto' | 'manual';
+  clientTrackSwitchOffControl?: 'auto' | 'manual';
+  roomType: RoomType
+}
 
-export type RecordingRules = RecordingRule[];
+type SettingsKeys = keyof Settings;
+
+export interface SettingsAction {
+  name: SettingsKeys;
+  value: string;
+}

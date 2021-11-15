@@ -1,9 +1,10 @@
+import { useState } from 'react';
 import { ConnectOptions } from 'twilio-video';
-import { isMobile, removeUndefineds } from '..';
-import { useAppState } from '../../state';
+import { isMobile, removeUndefineds } from '../../../../utils';
+import { initialSettings } from '../../../../constants';
 
 export default function useConnectionOptions() {
-  const { roomType, settings } = useAppState();
+  const [settings, setSettings] = useState(initialSettings);
 
   // See: https://sdk.twilio.com/js/video/releases/2.0.0/docs/global.html#ConnectOptions
   // for available connection options.
@@ -31,7 +32,7 @@ export default function useConnectionOptions() {
     // to adapt your encoded video quality for each RemoteParticipant based on
     // their individual bandwidth constraints. Simulcast should be disabled if
     // you are using Peer-to-Peer or 'Go' Rooms.
-    preferredVideoCodecs: [{ codec: 'VP8', simulcast: roomType !== 'peer-to-peer' && roomType !== 'go' }],
+    preferredVideoCodecs: [{ codec: 'VP8', simulcast: settings.roomType !== 'peer-to-peer' && settings.roomType !== 'go' }],
 
     //@ts-ignore - Internal use only. This property is not exposed in type definitions.
     environment: process.env.REACT_APP_TWILIO_ENVIRONMENT,

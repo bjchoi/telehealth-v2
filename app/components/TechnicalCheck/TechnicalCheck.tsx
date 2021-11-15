@@ -1,4 +1,7 @@
 import React from 'react';
+import { LocalVideoTrack } from 'twilio-video';
+import VideoTrack from '../Base/ParticipantTracks/Publication/VideoTrack/VideoTrack';
+import useVideoContext from '../Base/VideoProvider/useVideoContext/useVideoContext';
 import { Button, ButtonVariant } from '../Button';
 
 export interface TechnicalCheckProps {
@@ -7,6 +10,9 @@ export interface TechnicalCheckProps {
 }
 
 export const TechnicalCheck = ({ videoImage }: TechnicalCheckProps) => {
+  const { localTracks } = useVideoContext();
+
+  const videoTrack = localTracks.find(track => track.name.includes('camera')) as LocalVideoTrack;
   return (
     <div className="flex mt-4 mb-1">
       <div className="flex flex-col justify-center px-1">
@@ -30,7 +36,11 @@ export const TechnicalCheck = ({ videoImage }: TechnicalCheckProps) => {
         />
       </div>
       <div className="flex-grow px-1">
-        <img src={videoImage} alt="Video" width={187} height={250} />
+      {videoTrack ? (
+          <VideoTrack track={videoTrack} isLocal />
+        ) : (
+            <img src={videoImage} alt="Video" width={187} height={250} />
+        )}
       </div>
     </div>
   );
