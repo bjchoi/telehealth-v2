@@ -1,4 +1,3 @@
-// import { useEffect } from 'react';
 import React from 'react';
 import { LocalVideoTrack } from 'twilio-video';
 import VideoTrack from '../Base/ParticipantTracks/Publication/VideoTrack/VideoTrack';
@@ -11,17 +10,8 @@ export interface TechnicalCheckProps {
 }
 
 export const TechnicalCheck = ({ videoImage }: TechnicalCheckProps) => {
-  /*useEffect(() => {
-    // Temporary implementation to ask for user audio and video permission
-    navigator.mediaDevices
-      .getUserMedia({ video: true, audio: true })
-      .then((stream) => {})
-      .catch((error) => {
-        console.log(error);
-      });
-  });*/
-
   const { localTracks } = useVideoContext();
+
   const videoTrack = localTracks.find(track => track.name.includes('camera')) as LocalVideoTrack;
   return (
     <div className="flex mt-4 mb-1">
