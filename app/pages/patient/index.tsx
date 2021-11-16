@@ -21,7 +21,6 @@ const PatientLanding = () => {
           router.push('/patient/waiting-room');
         }
       });
-      // TODO: Maybe it is a good idea to combine calls for user and visit. As we need both anyway.
       // TODO: Implement CATCH
     }
   }, [router]);

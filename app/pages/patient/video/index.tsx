@@ -1,22 +1,28 @@
 import React, { useEffect } from 'react';
-import withVideoProvider, { VideoContextLayout } from '../../../components/Base/VideoProvider';
 import useVideoContext from '../../../components/Base/VideoProvider/useVideoContext/useVideoContext';
 import { VideoConsultation } from '../../../components/Patient';
+import { useVisitContext } from '../../../state/VisitContext';
+import { PatientUser } from '../../../types';
+import { roomService } from '../../../services/roomService';
+import VideoContextLayout from '../../../components/Base/VideoProvider';
+import { useRouter } from 'next/router';
 
 
 const VideoPage = () => {
-  /*const { getToken } = useAppState();
+  const { user, visit } = useVisitContext();
   const { connect: videoConnect, room } = useVideoContext();
-  const userName = "P" + Math.floor(Math.random()*100);
-  const roomName = "TestRoom";
+  const router = useRouter();
   useEffect(() => {
     if(!room) {
-      getToken(userName, roomName).then(({ token }) => {
-        videoConnect(token);
-        // process.env.REACT_APP_DISABLE_TWILIO_CONVERSATIONS !== 'true' && chatConnect(token);
+      roomService.checkRoom(user as PatientUser, visit.roomName)
+      .then(roomTokenResp => {
+        if(!roomTokenResp.roomAvailable) {
+          router.push('/patient/waiting-room');
+        }
+        videoConnect(roomTokenResp.token);
       });
     }
-  },[room]);*/
+  },[router, room]);
 
   return <VideoConsultation />;
 };

@@ -9,40 +9,25 @@ const MAX_ALLOWED_SESSION_DURATION = 14400;
 module.exports.handler = async (context, event, callback) => {
   const { ACCOUNT_SID, TWILIO_API_KEY_SID, TWILIO_API_KEY_SECRET, ROOM_TYPE, CONVERSATIONS_SERVICE_SID } = context;
 
-  const authHandler = require(Runtime.getAssets()['/auth-handler.js'].path);
-  authHandler(context, event, callback);
+  // TODO: Add Patient Auth Handler
+  const authHandler = require(Runtime.getFunctions()['auth/jwt-auth-handler'].path);
+  const authResult = await authHandler(context, event, callback);
+  if(authResult.response) {
+      return callback(null, response);
+  }
 
-  const { user_identity, room_name, create_room = true, create_conversation = false } = event;
+  console.log("Auth result");
+  console.log(authResult);
 
+  const { room_name } = event;
+  const { identity } = authResult.decoded.grants;
   let response = new Twilio.Response();
   response.appendHeader('Content-Type', 'application/json');
   response.appendHeader('Access-Control-Allow-Origin', '*');
   response.appendHeader('Access-Control-Allow-Methods', 'OPTIONS, POST, GET');
   response.appendHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-  if (typeof create_room !== 'boolean') {
-    response.setStatusCode(400);
-    response.setBody({
-      error: {
-        message: 'invalid parameter',
-        explanation: 'A boolean value must be provided for the create_room parameter',
-      },
-    });
-    return callback(null, response);
-  }
-
-  if (typeof create_conversation !== 'boolean') {
-    response.setStatusCode(400);
-    response.setBody({
-      error: {
-        message: 'invalid parameter',
-        explanation: 'A boolean value must be provided for the create_conversation parameter',
-      },
-    });
-    return callback(null, response);
-  }
-
-  if (!user_identity) {
+  if (!identity) {
     response.setStatusCode(400);
     response.setBody({
       error: {
@@ -53,7 +38,7 @@ module.exports.handler = async (context, event, callback) => {
     return callback(null, response);
   }
 
-  if (!room_name && create_room) {
+  if (!room_name) {
     response.setStatusCode(400);
     response.setBody({
       error: {
@@ -64,7 +49,14 @@ module.exports.handler = async (context, event, callback) => {
     return callback(null, response);
   }
 
-  if (create_room) {
+  let responseBody = {
+    roomSid: null,
+    roomAvailable: false,
+    conversationAvailable: false,
+    token: null,
+    roomType: null
+  };
+  if (room_name) {
     const client = context.getTwilioClient();
     let room;
 
@@ -87,10 +79,12 @@ module.exports.handler = async (context, event, callback) => {
       }
     }
 
-    if (create_conversation) {
+    if (room) {
+      responseBody.roomSid = room.sid;
+      responseBody.roomAvailable = true;
       const conversationsClient = client.conversations.services(CONVERSATIONS_SERVICE_SID);
-
-      try {
+      // TODO: Add Conversation service later
+      /*try {
         // See if conversation already exists
         await conversationsClient.conversations(room.sid).fetch();
       } catch (e) {
@@ -127,7 +121,7 @@ module.exports.handler = async (context, event, callback) => {
           });
           return callback(null, response);
         }
-      }
+      }*/
     }
   }
 
@@ -137,7 +131,7 @@ module.exports.handler = async (context, event, callback) => {
   });
 
   // Add participant's identity to token
-  token.identity = user_identity;
+  token.identity = identity;
 
   // Add video grant to token
   const videoGrant = new VideoGrant({ room: room_name });
@@ -149,6 +143,10 @@ module.exports.handler = async (context, event, callback) => {
 
   // Return token
   response.setStatusCode(200);
-  response.setBody({ token: token.toJwt(), room_type: ROOM_TYPE });
+  responseBody.token = token.toJwt();
+  responseBody.roomType = ROOM_TYPE;
+  responseBody.conversationAvailable = true;
+  responseBody.roomAvailable = true;
+  response.setBody(responseBody);
   return callback(null, response);
 };

@@ -1,5 +1,4 @@
-import { TelehealthUser, TelehealthVisit } from "../types";
-import { Uris } from './constants'
+import { PatientUser, TelehealthUser, TelehealthVisit } from "../types";
 
 const visits = [
   {
@@ -30,12 +29,8 @@ function getVisit(id: string): Promise<TelehealthVisit | { error : string }> {
   return Promise.resolve(visits.find(v => v.id === id));
 }
 
-function getVisitForPatient(patient: TelehealthUser): Promise<TelehealthVisit | { error : string }> {
-  if(patient.role !== 'patient') {
-    Promise.reject({ error: "Only patient or visitor should be used" });
-  }
-
-  return Promise.resolve(visits.find(v => v.patientName === patient.name));
+function getVisitForPatient(patient: PatientUser): Promise<TelehealthVisit | { error : string }> {
+  return getVisit(patient.visitId);
 }
 
 export default {

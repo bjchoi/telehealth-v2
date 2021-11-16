@@ -1,20 +1,23 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button, ButtonVariant } from '../../../components/Button';
 import { DateTime } from '../../../components/DateTime';
 import { Heading } from '../../../components/Heading';
 import { Layout } from '../../../components/Patient';
 import { Modal } from '../../../components/Modal';
 import { TechnicalCheck } from '../../../components/TechnicalCheck';
-import { TwilioPage } from '../../../types';
-import { useVisitContext, VisitContextLayout } from '../../../state/VisitContext';
+import { PatientUser, TwilioPage } from '../../../types';
+import { useVisitContext } from '../../../state/VisitContext';
 import useVideoContext from '../../../components/Base/VideoProvider/useVideoContext/useVideoContext';
 import VideoContextLayout from '../../../components/Base/VideoProvider';
+import { roomService } from '../../../services/roomService';
+import { useRouter } from 'next/router';
 
 const WaitingRoomPage: TwilioPage = () => {
   const [showLeaveConfirmation, setShowLeaveConfirmation] = useState(false);
-  const { visit } = useVisitContext();
-  const { getAudioAndVideoTracks, localTracks } = useVideoContext();
+  const { visit, user } = useVisitContext();
+  const { getAudioAndVideoTracks } = useVideoContext();
   const [mediaError, setMediaError] = useState<Error>();
+  const router = useRouter();
 
   useEffect(() => {
     if (!mediaError) {
@@ -25,6 +28,18 @@ const WaitingRoomPage: TwilioPage = () => {
       });
     }
   }, [getAudioAndVideoTracks, mediaError]);
+
+  useEffect(() => {
+    if(user && visit) {
+      const interval = setInterval(() => roomService.checkRoom(user as PatientUser, visit.roomName)
+      .then(room => {
+        if(room.roomAvailable) {
+          router.push("/patient/video/")
+        }
+      }), 5000);
+      return () => clearInterval(interval);
+    }
+  }, [router, visit, user]);
   return (
     <Layout>
       { visit ? (
