@@ -1,35 +1,35 @@
 import { RegisterOptions, UseFormRegister } from 'react-hook-form';
-import { joinClasses } from '../../utils';
 
 export interface InputProps
   extends React.DetailedHTMLProps<
     React.InputHTMLAttributes<HTMLInputElement>,
     HTMLInputElement
   > {
-  isDark?: boolean;
+  label: string;
   register?: UseFormRegister<any>;
   registerOptions?: RegisterOptions;
 }
 
-export const Input = ({
+export const Radio = ({
   className,
-  isDark,
+  label,
   name,
   register,
   registerOptions,
+  value,
   ...props
 }: InputProps) => {
-  const classes = joinClasses(
-    'px-3 py-2 border rounded-md',
-    isDark ? 'bg-black border-dark' : 'border-light',
-    className
-  );
-
   return (
-    <input
-      className={classes}
-      {...(register ? register(name, registerOptions) : {})}
-      {...props}
-    />
+    <label className="flex items-center my-1">
+      <input
+        className="ml-3 mr-2"
+        type="radio"
+        name={name}
+        value={value}
+        {...(register ? register(name, registerOptions) : {})}
+        {...props}
+      />
+      {label}
+    </label>
   );
 };

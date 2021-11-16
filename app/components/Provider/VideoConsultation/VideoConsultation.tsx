@@ -24,6 +24,9 @@ export const VideoConsultation = ({}: VideoConsultationProps) => {
 
   return (
     <div className="relative h-full">
+      <h1 className="absolute text-white text-2xl font-bold top-10 left-32">
+        Owl Health
+      </h1>
       <div
         className={joinClasses(
           'bg-secondary flex flex-col h-full items-center',

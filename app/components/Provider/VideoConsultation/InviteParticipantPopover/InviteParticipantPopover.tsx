@@ -43,7 +43,7 @@ export const InviteParticipantPopover = ({
           isDark
           placeholder="Phone Number"
           value={phoneNumber}
-          onChange={(e) => setPhoneNumber(e.target.value)}
+          onChange={(event) => setPhoneNumber(event.target.value)}
         />
         <Button type="submit" onClick={close}>
           Invite

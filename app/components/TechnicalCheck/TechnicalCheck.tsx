@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import React from 'react';
 import { Button, ButtonVariant } from '../Button';
 
@@ -7,6 +8,16 @@ export interface TechnicalCheckProps {
 }
 
 export const TechnicalCheck = ({ videoImage }: TechnicalCheckProps) => {
+  useEffect(() => {
+    // Temporary implementation to ask for user audio and video permission
+    navigator.mediaDevices
+      .getUserMedia({ video: true, audio: true })
+      .then((stream) => {})
+      .catch((error) => {
+        console.log(error);
+      });
+  });
+
   return (
     <div className="flex mt-4 mb-1">
       <div className="flex flex-col justify-center px-1">

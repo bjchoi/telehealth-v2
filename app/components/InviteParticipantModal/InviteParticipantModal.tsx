@@ -48,7 +48,7 @@ export const InviteParticipantModal = ({
             className="w-full"
             placeholder="Phone Number"
             value={phoneNumber}
-            onChange={(e) => setPhoneNumber(e.target.value)}
+            onChange={(event) => setPhoneNumber(event.target.value)}
           />
         </div>
         <div className="my-2 text-center">

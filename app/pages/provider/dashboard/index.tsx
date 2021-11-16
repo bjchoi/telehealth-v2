@@ -2,6 +2,7 @@ import React from 'react';
 import {
   AudioVideoCard,
   ContentManagementCard,
+  InviteCard,
   Layout,
   PatientQueueCard,
 } from '../../../components/Provider';
@@ -13,6 +14,7 @@ const DashboardPage = () => {
       <div className="grid grid-cols-3 gap-4">
         <div>
           <NextPatientCard className="my-2" />
+          <InviteCard />
         </div>
         <div>
           <PatientQueueCard className="my-2" />

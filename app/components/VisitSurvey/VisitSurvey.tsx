@@ -2,8 +2,9 @@ import { useRouter } from 'next/router';
 import React, { useState } from 'react';
 import { joinClasses } from '../../utils';
 import { Alert } from '../Alert';
-import { Button, ButtonVariant } from '../Button';
+import { Button } from '../Button';
 import { Chips } from '../Chips';
+import { Icon } from '../Icon';
 import { Textarea } from '../Textarea';
 
 export interface VisitSurveyProps {
@@ -30,16 +31,8 @@ export const VisitSurvey = ({ isProvider }: VisitSurveyProps) => {
   const [otherIssue, setOtherIssue] = useState<string>('');
 
   const ThumbIcon = ({ icon }: { icon: Reaction }) => (
-    <Button
-      className={joinClasses(
-        'border-0',
-        icon === selectedThumb && 'text-primary'
-      )}
-      variant={ButtonVariant.tertiary}
-      outline
-      icon={icon}
-      iconClassName="text-4xl"
-      iconType="outline"
+    <button
+      type="button"
       onClick={() => {
         setSelectedThumb(icon);
         setSelectedIssues([]);
@@ -49,7 +42,16 @@ export const VisitSurvey = ({ isProvider }: VisitSurveyProps) => {
           submitFeedback();
         }
       }}
-    />
+    >
+      <Icon
+        className={joinClasses(
+          'text-4xl',
+          icon === selectedThumb && 'text-primary'
+        )}
+        name={icon}
+        outline
+      />
+    </button>
   );
 
   function resetForm() {
@@ -62,19 +64,6 @@ export const VisitSurvey = ({ isProvider }: VisitSurveyProps) => {
     event?.preventDefault();
     // TODO - Submit form to back-end
     console.log(selectedThumb, selectedIssues, otherIssue);
-    fetch('/feedback-survey', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        selectedThumb,
-        selectedIssues,
-        otherIssue,
-      })
-    }).then(res => {
-      console.log(res)
-    }).catch(err => {
-      console.log("Error: ", err)
-    });
     resetForm();
     router.push(
       `/${isProvider ? 'provider' : 'patient'}/visit-survey/thank-you`
@@ -105,7 +94,11 @@ export const VisitSurvey = ({ isProvider }: VisitSurveyProps) => {
           </div>
           {selectedThumb === 'thumb_down' && (
             <div className="my-4">
-              <Chips onChange={setSelectedIssues} options={OPTIONS} />
+              <Chips
+                selected={selectedIssues}
+                onChange={setSelectedIssues}
+                options={OPTIONS}
+              />
             </div>
           )}
           {selectedIssues.includes('Other issue') && (
@@ -114,8 +107,6 @@ export const VisitSurvey = ({ isProvider }: VisitSurveyProps) => {
                 className="w-full"
                 rows={4}
                 placeholder="Tell us more about the other issues you encountered during the call"
-                value={otherIssue}
-                onChange={(e) => setOtherIssue(e.target.value)}
               />
             </div>
           )}

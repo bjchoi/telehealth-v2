@@ -9,6 +9,15 @@ const patientCoreVideoLinks = [
   { name: 'No Mic/Video Permissions', href: '/patient/video/no-av-permission' },
 ];
 
+const patientOnDemandLinks = [
+  { name: 'Info Form', href: '/patient/on-demand/info' },
+  { name: 'Health Form', href: '/patient/on-demand/health' },
+  { name: 'Insurance', href: '/patient/on-demand/insurance' },
+  { name: 'Insurance Received', href: '/patient/on-demand/insurance/received' },
+  { name: 'Payment', href: '/patient/on-demand/payment' },
+  { name: 'Payment Received', href: '/patient/on-demand/payment/received' },
+];
+
 const providerCoreVideoLinks = [
   { name: 'Dashboard', href: '/provider/dashboard' },
   { name: 'Video Consultation', href: '/provider/video' },
@@ -57,6 +66,17 @@ export default function Home() {
               <a className="text-blue-500">Thank You</a>
             </Link>
           </li>
+        </ul>
+
+        <h2 className="mt-6 mb-2 text-xl">Patient Flow - On Demand</h2>
+        <ul className="pl-4">
+          {patientOnDemandLinks.map((link, i) => (
+            <li key={i}>
+              <Link href={link.href}>
+                <a className="text-blue-500">{link.name}</a>
+              </Link>
+            </li>
+          ))}
         </ul>
 
         <h2 className="mt-6 mb-2 text-xl">Provider Flow - Core Video</h2>

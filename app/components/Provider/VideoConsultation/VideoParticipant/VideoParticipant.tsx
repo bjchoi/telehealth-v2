@@ -41,11 +41,30 @@ export const VideoParticipant = ({
     return () => clearTimeout(timer);
   }, [muted, showMutedBanner]);
 
+  useEffect(() => {
+    setMuted(hasAudio);
+  }, [hasAudio]);
+
+  useEffect(() => {
+    setShowVideo(hasVideo);
+  }, [hasVideo]);
+
   return (
     <div className="mx-auto relative w-max group">
       {!isSelf && (
         <div className="absolute top-0 h-[100px] text-right w-full flex justify-end group-hover:bg-gradient-to-b from-[#000000B0] via-[#00000000] to-[#00000000] z-10">
-          <div className={joinClasses(!isPinned && 'hidden group-hover:block')}>
+          <div>
+            <button
+              className={joinClasses(
+                '-mt-1 rotate-45 p-2',
+                isPinned ? 'text-primary' : 'hidden'
+              )}
+              onClick={() => setIsPinned(!isPinned)}
+            >
+              <Icon name="push_pin" outline={!isPinned} />
+            </button>
+          </div>
+          <div className={joinClasses('hidden group-hover:block')}>
             <button
               className={joinClasses('-mt-1 border-0 bg-transparent px-1')}
               onClick={(event) => setShowMenuRef(event.target)}
@@ -118,7 +137,7 @@ export const VideoParticipant = ({
           name="mic"
         />
         {showVideo ? (
-          name
+          !isSelf && name
         ) : (
           <Icon className="text-md text-primary" name="videocam_off" />
         )}

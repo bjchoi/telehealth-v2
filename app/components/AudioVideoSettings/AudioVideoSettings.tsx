@@ -33,7 +33,7 @@ export const AudioVideoSettings = ({
     <div className={joinClasses(className)}>
       <div className="my-3">
         <Label>Virtual Background</Label>
-        <VirtualBackgroundOptions />
+        <VirtualBackgroundOptions isDark={isDark} />
       </div>
       <div className="my-3">
         <Label>Camera</Label>
@@ -63,7 +63,7 @@ export const AudioVideoSettings = ({
       </div>
       {isCallInProgress ? (
         <div className="my-6 flex items-center">
-          <div className="pr-3">Recording</div>
+          <div className="pr-5 text-sm">Recording:</div>
           <div className="flex-grow">
             <Button
               variant={isRecording ? ButtonVariant.primary : ButtonVariant.link}
@@ -81,6 +81,10 @@ export const AudioVideoSettings = ({
           </Button>
         </div>
       )}
+
+      <div className="my-5 font-bold text-center text-xs">
+        Saved to your Twilio account
+      </div>
     </div>
   );
 };

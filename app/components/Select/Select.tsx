@@ -1,3 +1,4 @@
+import { RegisterOptions, UseFormRegister } from 'react-hook-form';
 import { joinClasses } from '../../utils';
 
 export interface SelectProps
@@ -6,14 +7,19 @@ export interface SelectProps
     HTMLSelectElement
   > {
   isDark?: boolean;
+  register?: UseFormRegister<any>;
+  registerOptions?: RegisterOptions;
   options: { label?: string; value: any }[];
 }
 
 export const Select = ({
   className,
   isDark,
+  name,
   options,
   placeholder,
+  register,
+  registerOptions = {},
   ...props
 }: SelectProps) => {
   return (
@@ -23,15 +29,12 @@ export const Select = ({
         isDark && 'bg-black border-dark',
         className
       )}
+      {...(register ? register(name, registerOptions) : {})}
       {...props}
     >
-      {placeholder && (
-        <option selected value="" disabled>
-          {placeholder}
-        </option>
-      )}
+      {placeholder && <option value="">{placeholder}</option>}
       {options.map((option) => (
-        <option key={option.label} value={option.value}>
+        <option key={option.label ?? option.value} value={option.value}>
           {option.label ?? option.value}
         </option>
       ))}

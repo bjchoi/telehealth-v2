@@ -1,9 +1,9 @@
-import { useEffect, useState } from 'react';
 import { joinClasses } from '../../utils';
 
 export interface ChipsProps {
   onChange: (value: string[]) => void;
   options?: Chip[];
+  selected?: string[];
 }
 
 interface Chip {
@@ -11,20 +11,16 @@ interface Chip {
   value: string;
 }
 
-export const Chips = ({ onChange, options }: ChipsProps) => {
-  const [selected, setSelected] = useState([]);
-
+export const Chips = ({ onChange, options, selected }: ChipsProps) => {
   function toggleChipSelection(value) {
+    let newValue;
     if (selected.includes(value)) {
-      setSelected(selected.filter((v) => v !== value));
+      newValue = selected.filter((v) => v !== value);
     } else {
-      setSelected([...selected, value]);
+      newValue = [...selected, value];
     }
+    onChange(newValue);
   }
-
-  useEffect(() => {
-    onChange(selected);
-  }, [onChange, selected]);
 
   return (
     <div className="flex flex-wrap justify-center">
