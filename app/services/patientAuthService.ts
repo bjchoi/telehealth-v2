@@ -1,16 +1,24 @@
-import { TelehealthUser } from "../types";
+import { PatientUser } from "../types";
 import jwtDecode from "jwt-decode";
 
-function authenticatePatient(token: string): Promise<TelehealthUser> {
-    const tokenInfo = jwtDecode(token, { header: true }) as {
-        name: string,
-        role: string,
-    };
+type PatientJwtToken = {
+    grants: {
+        patient: {
+            visitId: string,
+            role: string,
+            name: string
+        }
+    }
+}
+
+function authenticatePatient(token: string): Promise<PatientUser> {
+    // TODO: Add Token Validation
+    const tokenInfo = jwtDecode(token) as PatientJwtToken;
     return Promise.resolve({
-        ...tokenInfo,
+        ...tokenInfo.grants.patient,
         isAuthenticated: true,
         token: token
-    } as TelehealthUser);
+    } as PatientUser);
 }
 
 export default {

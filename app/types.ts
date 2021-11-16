@@ -13,6 +13,10 @@ export interface TelehealthUser {
   token: string
 }
 
+export interface PatientUser extends TelehealthUser {
+  visitId: string
+}
+
 export const GuestUser = {
   name: "Guest",
   isAuthenticated: false,
@@ -37,11 +41,6 @@ declare module 'twilio-video' {
 }
 
 declare global {
-  /*interface Window {
-    visualViewport?: {
-      scale: number;
-    };
-  }*/
 
   interface MediaDevices {
     getDisplayMedia(constraints: MediaStreamConstraints): Promise<MediaStream>;

@@ -1,18 +1,23 @@
 /* global Twilio Runtime */
 'use strict';
-
-const AccessToken = Twilio.jwt.AccessToken;
-const VideoGrant = AccessToken.VideoGrant;
-const ChatGrant = AccessToken.ChatGrant;
-const MAX_ALLOWED_SESSION_DURATION = 14400;
+/**
+ * Generates Patient/Visitor Token for the Visit
+ * Token should be used to generate Visit Link
+ * 
+ * 
+ */
+ const AccessToken = Twilio.jwt.AccessToken;
+ const MAX_ALLOWED_SESSION_DURATION = 14400;
 
 module.exports.handler = async (context, event, callback) => {
-  const { ACCOUNT_SID, TWILIO_API_KEY_SID, TWILIO_API_KEY_SECRET, CONVERSATIONS_SERVICE_SID } = context;
+  const { ACCOUNT_SID, TWILIO_API_KEY_SID, TWILIO_API_KEY_SECRET } = context;
 
-  const authHandler = require(Runtime.getAssets()['/auth-handler.js'].path);
-  authHandler(context, event, callback);
+  // TODO: Add Provider/Admin Auth Handler
 
-  const { user_identity, room_name, visit_id } = event;
+  // const authHandler = require(Runtime.getAssets()['/auth-handler.js'].path);
+  // authHandler(context, event, callback);
+
+  const { patient_identity, visit_id, patient_name } = event;
 
   let response = new Twilio.Response();
   response.appendHeader('Content-Type', 'application/json');
@@ -20,7 +25,7 @@ module.exports.handler = async (context, event, callback) => {
   response.appendHeader('Access-Control-Allow-Methods', 'OPTIONS, POST, GET');
   response.appendHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-  if (!user_identity) {
+  if (!patient_identity) {
     response.setStatusCode(400);
     response.setBody({
       error: {
@@ -34,19 +39,15 @@ module.exports.handler = async (context, event, callback) => {
   // Create token
   const token = new AccessToken(ACCOUNT_SID, TWILIO_API_KEY_SID, TWILIO_API_KEY_SECRET, {
     ttl: MAX_ALLOWED_SESSION_DURATION,
-    visitId: visit_id
   });
 
   // Add participant's identity to token
-  token.identity = user_identity;
-
-  // Add video grant to token
-  const videoGrant = new VideoGrant({ room: room_name });
-  token.addGrant(videoGrant);
-
-  // Add chat grant to token
-  const chatGrant = new ChatGrant({ serviceSid: CONVERSATIONS_SERVICE_SID });
-  token.addGrant(chatGrant);
+  token.identity = patient_identity;
+  const patientGrant = { 
+      key: "patient",
+      toPayload: () => ({ visitId: visit_id, role: "patient", name: patient_name })
+    };
+  token.addGrant(patientGrant);
 
   // Return token
   response.setStatusCode(200);
