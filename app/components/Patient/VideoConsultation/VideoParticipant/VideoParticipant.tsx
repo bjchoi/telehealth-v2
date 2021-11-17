@@ -1,5 +1,9 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { LocalParticipant, RemoteParticipant } from 'twilio-video';
 import { joinClasses } from '../../../../utils';
+import ParticipantTracks from '../../../Base/ParticipantTracks/ParticipantTracks';
+import useParticipants from '../../../Base/VideoProvider/useParticipants/useParticipants';
+import useVideoContext from '../../../Base/VideoProvider/useVideoContext/useVideoContext';
 import { Icon } from '../../../Icon';
 
 export interface VideoParticipantProps {
@@ -9,6 +13,7 @@ export interface VideoParticipantProps {
   isOverlap?: boolean;
   isSelf?: boolean;
   name: string;
+  participant: LocalParticipant | RemoteParticipant
 }
 
 export const VideoParticipant = ({
@@ -18,6 +23,7 @@ export const VideoParticipant = ({
   isProvider,
   isOverlap,
   isSelf,
+  participant,
 }: VideoParticipantProps) => {
   const [showMutedBanner, setShowMutedBanner] = useState(null);
   const [isPinned, setIsPinned] = useState(false);
@@ -80,9 +86,13 @@ export const VideoParticipant = ({
         className={`flex items-center justify-center bg-dark text-white text-2xl overflow-hidden ${heightClass} ${widthClass}`}
       >
         {!hasVideo && name}
-        {isProvider
-          ? hasVideo && <img src="/provider.jpg" alt="Provider" />
-          : hasVideo && <img src="/patient.jpg" alt="Patient" />}
+        {hasVideo && <ParticipantTracks
+          participant={participant}
+          videoOnly
+          enableScreenShare={false}
+          videoPriority={'high'}
+          isLocalParticipant={isSelf}
+        />}
       </div>
       <div className="absolute bottom-0 right-0 text-white bg-[#00000082] px-2 py-1 flex items-center">
         <Icon
