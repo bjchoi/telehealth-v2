@@ -9,7 +9,8 @@ exports.handler = async function(context, event, callback) {
     const response = new Twilio.Response();
     response.appendHeader('Content-Type', 'application/json');
 
-    const twilioClient = require('twilio')(event.accountSid, event.authToken);
+    // const twilioClient = require('twilio')(event.accountSid, event.authToken);
+    const twilioClient = context.getTwilioClient();
     const functions = Runtime.getFunctions();
     console.log(functions);
     const installerHelperPath = Runtime.getFunctions()["installer/installer-helpers"].path;
@@ -37,7 +38,7 @@ exports.handler = async function(context, event, callback) {
       appInfo = await getAppInfo(twilioClient, event.appName);
       response.setStatusCode(200);
       response.setBody({ status: "success", sid: appInfo.sid, url: appInfo.url });
-      return callback(response, null);
+      return callback(null, response);
   }
   catch(err) {
     console.log(err);

@@ -4,12 +4,13 @@
   "private": true,
   "dependencies": {
     "@sendgrid/mail": "^7.6.0",
+    "twilio": "^3.70",
+    "@twilio/runtime-handler":"1.2.1",
+    "jsonwebtoken": "^8.5.1",
     "@twilio-labs/serverless-api": "^5.4.0",
     "configure-env": "^2.0.0-1",
-    "jsonwebtoken": "^8.5.1",
     "moment": "^2.29.1",
-    "nanoid": "^3.1.30",
-    "twilio": "^3.70"
+    "nanoid": "^3.1.30"
   },
   "engines": {
     "node": "12"

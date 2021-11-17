@@ -158,8 +158,8 @@ async function deploy(twilioClient, installationInfo, appInfo) {
 
   const deployOptions = {
     env: {
-      TWILIO_API_KEY_SID: twilioClient.username,
-      TWILIO_API_KEY_SECRET: twilioClient.password,
+      TWILIO_API_KEY_SID: process.env.TWILIO_API_KEY_SID,
+      TWILIO_API_KEY_SECRET: process.env.TWILIO_API_KEY_SECRET,
       API_PASSCODE: pin,
       API_PASSCODE_EXPIRY: expiryTime,
       // ROOM_TYPE: this.flags['room-type'],

@@ -1,16 +1,18 @@
 import React, { useState } from 'react';
+import VideoContextLayout from '../../components/Base/VideoProvider';
 import { Button, ButtonVariant } from '../../components/Button';
 import { DateTime } from '../../components/DateTime';
 import { Heading } from '../../components/Heading';
 import { Layout } from '../../components/Patient';
 import { TechnicalCheck } from '../../components/TechnicalCheck';
+import { TwilioPage } from '../../types';
 
 const data = {
   date: new Date(),
   doctorName: 'Dr. Josefina Santos',
 };
 
-const TechnicalCheckPage = () => {
+const TechnicalCheckPage: TwilioPage = () => {
   return (
     <Layout>
       <div className="my-4 flex flex-col items-center justify-center">
@@ -26,4 +28,5 @@ const TechnicalCheckPage = () => {
   );
 };
 
+TechnicalCheckPage.Layout = VideoContextLayout;
 export default TechnicalCheckPage;
