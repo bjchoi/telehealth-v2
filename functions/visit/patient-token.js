@@ -1,23 +1,18 @@
-/* global Twilio Runtime */
-'use strict';
 /**
  * Generates Patient/Visitor Token for the Visit
  * Token should be used to generate Visit Link
  * 
  * 
  */
- const AccessToken = Twilio.jwt.AccessToken;
- const MAX_ALLOWED_SESSION_DURATION = 14400;
-
 module.exports.handler = async (context, event, callback) => {
-  const { ACCOUNT_SID, TWILIO_API_KEY_SID, TWILIO_API_KEY_SECRET } = context;
-
-  // TODO: Add Provider/Admin Auth Handler
+  const { path } = Runtime.getFunctions()["token-helper"];
+  const { createIdentityToken } = require(path);
 
   // const authHandler = require(Runtime.getAssets()['/auth-handler.js'].path);
   // authHandler(context, event, callback);
 
   const { patient_identity, visit_id, patient_name } = event;
+  const role = "patient";
 
   let response = new Twilio.Response();
   response.appendHeader('Content-Type', 'application/json');
@@ -36,16 +31,10 @@ module.exports.handler = async (context, event, callback) => {
     return callback(null, response);
   }
 
-  // Create token
-  const token = new AccessToken(ACCOUNT_SID, TWILIO_API_KEY_SID, TWILIO_API_KEY_SECRET, {
-    ttl: MAX_ALLOWED_SESSION_DURATION,
-  });
-
-  // Add participant's identity to token
-  token.identity = patient_identity;
+  const token = createIdentityToken(patient_identity, context);
   const patientGrant = { 
       key: "patient",
-      toPayload: () => ({ visitId: visit_id, role: "patient", name: patient_name })
+      toPayload: () => ({ visitId: visit_id, role: role, name: patient_name })
     };
   token.addGrant(patientGrant);
 
