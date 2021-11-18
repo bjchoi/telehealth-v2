@@ -204,3 +204,76 @@ function displayFormFields() {
     console.log("Customer Input ", formFieldObject);
 }
 
+/* --------------------------------------------------------------------------------
+ * check deployment of Service (by uniqueName)
+ * --------------------------------------------------------------------------------
+ */
+function checkService() {
+    const THIS = checkService.name;
+    try {
+         fetch('/installer/check-service', {
+            method: 'POST',
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({}),
+        })
+           .then((response) => response.text())
+           .then((service_sid) => {
+               console.log(THIS, 'server returned:', service_sid);
+               $('#service-deploy .button').removeClass('loading');
+               $('.service-loader').hide();
+               if (service_sid === 'NOT-DEPLOYED') {
+                   $('#service-deploy').show();
+               } else if (service_sid === 'DEPLOYING') {
+                   $('#service-deploy').hide();
+                   $('#service-deploying').show();
+                   setTimeout(checkService, 5000);
+               } else if (service_sid === 'DEPLOY-FAILED') {
+                   throw new Error(response);
+               } else {
+                   $('#service-deploying').hide();
+                   $('#service-deployed').show();
+                   $('#service-open').attr('href', `https://www.twilio.com/console/functions/api/start/${service_sid}`);
+               }
+           });
+    } catch (err) {
+        console.log(THIS, err);
+    }
+}
+
+/* --------------------------------------------------------------------------------
+ * check deployment of Service (by uniqueName)
+ * --------------------------------------------------------------------------------
+ */
+function deployService(e) {
+    const THIS = deployService.name;
+    e.preventDefault();
+    $('#service-deploy .button').addClass('loading');
+    $('.service-loader.button-loader').show();
+
+    fetch('/installer/deploy-service', {
+        method: 'POST',
+        headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({}),
+    })
+      .then(() => {
+          console.log(THIS, 'successfully started deployment');
+          checkService();
+      })
+      .catch ((err) => {
+          console.log(THIS, err);
+          $('#service-deploy .button').removeClass('loading');
+          $('.service-loader.button-loader').hide();
+      });
+}
+
+/* --------------------------------------------------------------------------------
+ * initial execution on-load
+ * --------------------------------------------------------------------------------
+ */
+checkService();

@@ -74,7 +74,6 @@ footer p {
 }
 
 /*
- * flow deployer styles
  */
 #hipaa-disclaimer {
   border: 2px solid rgb(136, 145, 170);
@@ -86,37 +85,6 @@ footer p {
 
 span.checkmark {
   color: rgb(20, 176, 83);
-}
-
-#flow-selector {
-  width: 200px;
-  font-size: 18px;
-}
-
-.flow-loader {
-  border: 4px solid rgb(244, 244, 246);
-  border-top: 4px solid rgb(18, 28, 45);
-  border-radius: 50%;
-  width: 30px;
-  height: 30px;
-  animation: spin 1s linear infinite;
-  display: inline-block;
-  vertical-align: middle;
-  margin-left: 5px;
-  margin-top: -5px;
-}
-
-.deployer {
-  margin: 10px 0;
-  margin-bottom: 30px;
-}
-
-#flow-deploy .button.loading {
-  background: rgb(244, 244, 246);
-  border: 1px solid rgb(244, 244, 246);
-  color: rgb(96, 107, 133);
-  box-shadow: none;
-  cursor: default;
 }
 
 /*

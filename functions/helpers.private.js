@@ -69,7 +69,7 @@ async function setParam(context, key, value) {
  */
 async function getParam(context, key) {
   const CONSTANTS = {
-    APPLICATION_NAME: 'hls-outreach-sms',
+    APPLICATION_NAME: 'telehealth-v2',
   };
 
   // first return context non-null context value
@@ -85,12 +85,19 @@ async function getParam(context, key) {
   // ----------------------------------------------------------------------
   try {
     switch (key) {
+      case 'IS_LOCALHOST': {
+        const domain_name = context['DOMAIN_NAME'];
+        return domain_name.startsWith('localhost:');
+      }
+
       case 'TWILIO_ACCOUNT_SID': {
         return getParam(context, 'ACCOUNT_SID');
       }
+
       case 'TWILIO_AUTH_TOKEN': {
         return getParam(context, 'AUTH_TOKEN');
       }
+
       case 'TWILIO_ENVIRONMENT_SID': {
         const service_sid = await getParam(context, 'TWILIO_SERVICE_SID');
         if (service_sid === null) {
@@ -102,6 +109,7 @@ async function getParam(context, key) {
 
         return environments.length > 0 ? environments[0].sid : null;
       }
+
       case 'TWILIO_ENVIRONMENT_DOMAIN': {
         const service_sid = await getParam(context, 'TWILIO_SERVICE_SID');
         if (service_sid === null) {
@@ -113,6 +121,7 @@ async function getParam(context, key) {
 
         return environments.length > 0 ? environments[0].domainName: null;
       }
+
       case 'TWILIO_FLOW_SID': {
         // context.friendlyName required, returns null if not supplied
         if (! context.flowName) return null;
@@ -122,12 +131,14 @@ async function getParam(context, key) {
 
         return flow ? flow.sid : null;
       }
+
       case 'TWILIO_SERVICE_SID': {
         const services = await client.serverless.services.list();
-        const service = services.find(s => s.friendlyName === CONSTANTS.APPLICATION_NAME);
+        const service = services.find(s => s.uniqueName === CONSTANTS.APPLICATION_NAME);
 
         return service ? service.sid : null;
       }
+
       case 'TWILIO_VERIFY_SID': {
         const services = await client.verify.services.list();
         const service = services.find(s => s.friendlyName === context.CUSTOMER_NAME);
