@@ -11,6 +11,7 @@
   <link rel="stylesheet" href="https://unpkg.com/milligram/dist/milligram.min.css">
   <link rel="stylesheet" href="./style.css" />
   <link rel="stylesheet" href="./authentication.css" />
+  <link rel="stylesheet" href="./administration.css" />
 </head>
 
 <body>
@@ -21,14 +22,10 @@
       <a href="https://ahoy.twilio.com/telehealth" target="_blank">consult with a Twilio Expert</a>
       before publicly offering this service in a production context.
     </div>
-    <p>
-      TBD
-    </p>
   </header>
 
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
   <script type="application/javascript" src="/authentication-controller.js"></script>
-  <script type="application/javascript" src="/controller.js"></script>
   <div class="authentication">
     <div id="password-form">
       <p id="login-error" style="color:red"></p>
@@ -59,17 +56,90 @@
   </div>
   <main style="display: none">
 
-    <section id="cms">
-      <h4>Waiting Room Content Management</h4>
+    <script type="application/javascript" src="/administration-controller.js"></script>
 
+    <section id="telehealth-links">
+      <h2>Telehealth Launching</h2>
+
+      <section>
+        <h3>Patient - scheduled visit</h3>
+
+        <i>To be embedded into customer's patient portal.</i><br/><br/>
+
+        <table class="input">
+          <td class="input-label">
+            Patient Phone Number (<a href="https://www.twilio.com/docs/glossary/what-e164">E.164</a> format):
+          </td>
+          <td class="input-value">
+            <input id="phone-scheduled-patient"
+                   class="input"
+                   type="text"
+                   name="patient-phone">
+          </td>
+        </table>
+        <br/>
+        <a id="send-scheduled-patient-link"
+           class="button"
+           onclick="sendScheduledPatientLink();"
+           enabled>Send Telehealth Link (to waiting room)</a>
+        <br/>
+        <br/>
+      </section>
+
+      <section>
+        <h3>Patient - on-demand visit</h3>
+
+        <i>To be embedded into customer's public website.</i><br/><br/>
+
+        <table class="input">
+          <td class="input-label">
+            Patient Phone Number (<a href="https://www.twilio.com/docs/glossary/what-e164">E.164</a> format):
+          </td>
+          <td class="input-value">
+            <input id="phone-ondemand-patient"
+                   class="input"
+                   type="text"
+                   name="patient-phone">
+          </td>
+        </table>
+        <a id="send-ondemand-patient-link"
+           class="button"
+           onclick="sendOnDemandPatientLink();"
+           enabled>Send Telehealth Link (to intake)</a>
+        <br/>
+        <br/>
+      </section>
+
+      <section>
+        <h3>Provider</h3>
+
+        <i>To be embedded into customer's provider portal or EHR.</i><br/><br/>
+
+        <table class="input">
+          <td class="input-label">
+            Provider Phone Number (<a href="https://www.twilio.com/docs/glossary/what-e164">E.164</a> format):
+          </td>
+          <td class="input-value">
+            <input id="phone-provider"
+                   class="input"
+                   type="text"
+                   name="patient-phone">
+          </td>
+        </table>
+        <a id="send-provider-link"
+           class="button"
+           onclick="sendProviderLink();"
+           enabled>Send Telehealth Link (to dashboard)</a>
+        <br/>
+        <br/>
+      </section>
     </section>
 
   </main>
 
   <footer>
     <p>
-      Made with 💖 by your friends at
-      <a href="https://www.twilio.com">Twilio</a>
+      Made with 💖 by your friends at <a href="https://www.twilio.com">Twilio</a>
     </p>
   </footer>
 </body>
