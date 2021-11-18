@@ -17,8 +17,8 @@ const visits = [
   } as TelehealthVisit
 ];
 
-function getVisits(provider: TelehealthUser): Promise<Array<TelehealthVisit> | { error : string }> {
-  if(provider.role !== 'provider') {
+function getVisits(practitioner: TelehealthUser): Promise<Array<TelehealthVisit> | { error : string }> {
+  if(practitioner.role !== 'practitioner') {
     Promise.reject({ error: "Only provider can get a list of visits" });
   }
 
