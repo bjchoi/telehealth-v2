@@ -2,6 +2,7 @@ import { joinClasses } from '../../utils';
 import { Button, ButtonVariant } from '../Button';
 import { Select } from '../Select';
 import { VirtualBackgroundOptions } from '../VirtualBackgroundOptions';
+import { useEffect } from 'react';
 
 export interface AudioVideoSettingsProps {
   className?: string;
@@ -18,6 +19,17 @@ export const AudioVideoSettings = ({
   isRecording,
   toggleRecording,
 }: AudioVideoSettingsProps) => {
+
+  // Gets machine's Audio and Video output
+  useEffect(() => {
+    //effect
+    
+    return () => {
+      //cleanup
+    }
+  }, [])
+
+
   const Label = ({ children }) => (
     <label
       className={joinClasses(

@@ -11,7 +11,6 @@ const PractitionerLanding = () => {
     if(token) {
       practitionerAuth.authenticatePractitioner(token)
       .then(u => {
-        console.log("u =: ", u);
         clientStorage.saveToStorage(STORAGE_USER_KEY, u);
         router.push('/provider/dashboard');
       }).catch(err => {
