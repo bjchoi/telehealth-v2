@@ -2,9 +2,26 @@
  * administration.html specific css
  */
 
+/*
+ * content table styles
+ */
+table {
+    width: 100%;
+    border: none;
+    padding: 0;
+    margin: 0;
+}
+
+td {
+    padding: 0;
+    margin: 0;
+    padding-left: 2px;
+    padding-right: 2px;
+    vertical-align: middle;
+}
 
 /*
- * input class styles
+ * input table styles
  */
 table.input {
     width: 100%;
@@ -18,13 +35,24 @@ td.input-label {
     border: none;
     padding: 0;
     margin: 0;
+    vertical-align: middle;
 }
 
 td.input-value {
-    width: 60%;
+    width: 30%;
     border: none;
     padding: 0;
     margin: 0;
+    vertical-align: middle;
+}
+
+td.input-action {
+    width: 30%;
+    border: none;
+    padding: 0;
+    margin: 0;
+    vertical-align: middle;
+    text-align: right;
 }
 
 input.input {

@@ -5,32 +5,47 @@
 async function sendScheduledPatientLink(e) {
   const THIS = sendScheduledPatientLink.name;
   try {
+    e.preventDefault();
     let s = 1;
     console.log(THIS, `${s++}. get patient/visit detail from server`);
-    // TBD
-    const patient_identifier = null;
-    const patient_name_text = null;
-    const encounter_identifier = null;
+    // ---------- TODO: fetch from server
+    const patient_id = 'p1000000';
+    const patient_name_text = 'BJ Choi';
+    const patient_name_first = 'BJ';
+    const appointment_id = 'v-doe-jonson-1121';
+    // ----------
 
     console.log(THIS, `${s++}. get patient token from server`);
-    const response = await fetch('/visit/patient-token', {
+    const response0 = await fetch('/visit/patient-token', {
       method: 'POST',
       headers: {
         Accept: 'application/json',
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        patient_identity: 'p1000000',
-        visit_id: 'e1000000',
-        patient_name: 'BJ Choi'
+        patient_identity: patient_id,
+        visit_id: appointment_id,
+        patient_name: patient_name_first,
       })
     });
-    const payload = await response.json();
+    const payload = await response0.json();
     const patient_token = payload.token;
 
     console.log(THIS, `${s++}. send link to patient waiting room via SMS`);
     const link = `${location.origin}/patient/index.html?token=${patient_token}`
-    console.log(link);
+    console.log(THIS, link);
+
+    const response1 = await fetch('/send-sms', {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        to_phone: $('#phone-scheduled-patient').val(),
+        body: `Dear ${patient_name_first}, please join your telehealth visit via ${link}`,
+      })
+    });
 
   } catch (err) {
     console.log(THIS, err);
