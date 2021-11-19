@@ -3,7 +3,8 @@ import { Button, ButtonVariant } from '../Button';
 import { Select } from '../Select';
 import { VirtualBackgroundOptions } from '../VirtualBackgroundOptions';
 import { useEffect, useState } from 'react';
-import { connect, createLocalTracks } from 'twilio-video';
+import MicTest from './MicTest';
+import { Icon } from '../Icon';
 
 export interface AudioVideoSettingsProps {
   className?: string;
@@ -20,6 +21,11 @@ export interface Device {
   label: string;
 }
 
+/**
+ * TODO:
+ * - Figure out a way to change browser's audio settings
+ * - Virtual Backgrounds implementation
+ */
 export const AudioVideoSettings = ({
   className,
   isDark,
@@ -29,16 +35,25 @@ export const AudioVideoSettings = ({
 }: AudioVideoSettingsProps) => {
   const [videoDevices, setVideoDevices] = useState<ReadonlyArray<Device>>([]);
   const [audioInputDevices, setAudioInputDevices] = useState<ReadonlyArray<Device>>([]);
-  const [audioOutputDevices, setAudioOutputDevices] = useState<ReadonlyArray<Device>>([]);  
+  const [audioOutputDevices, setAudioOutputDevices] = useState<ReadonlyArray<Device>>([]);
+  const [isMicOn, setIsMicOn] = useState<boolean>(false);
+  
+  function handleChange(e) {
+    // Todo: Handle Device Change.
+    console.log(e.target.value);
+  }
   
   // Gets machine's Audio and Video devices
   useEffect(() => {
-    console.log("useEffect");
     navigator.mediaDevices.enumerateDevices().then(devices => {
       const videoInputDevices: Device[] = devices.filter(device => device.kind === 'videoinput');
-      const audioInputs: Device[] = devices.filter(device => device.kind === 'audioinput' && !device.label.includes("Virtual"));
-      const audioOutputs: Device[] = devices.filter(device => device.kind === 'audiooutput' && !device.label.includes("Virtual"));
-      console.log("useEffect2");
+      const audioInputs: Device[] = devices.filter((device, index, array) => 
+        device.kind === 'audioinput' && 
+        !device.label.includes("Virtual")
+      );
+      const audioOutputs: Device[] = devices.filter(device => 
+        device.kind === 'audiooutput' &&
+        !device.label.includes("Virtual"));
       setVideoDevices(videoInputDevices);
       setAudioInputDevices(audioInputs);
       setAudioOutputDevices(audioOutputs);
@@ -66,6 +81,8 @@ export const AudioVideoSettings = ({
         <Label>Camera</Label>
         <Select
           isDark={isDark}
+          key={"videoInput"}
+          onChange={handleChange}
           className="w-full"
           options={videoDevices.map(device => (
             { 
@@ -79,6 +96,8 @@ export const AudioVideoSettings = ({
         <Label>Voice Input Device:</Label>
         <Select
           isDark={isDark}
+          key={"audioInput"}
+          onChange={handleChange}
           className="w-full"
           options={audioInputDevices.map(device => ({label: device.label, value: device.deviceId}))}
         />
@@ -88,6 +107,8 @@ export const AudioVideoSettings = ({
         <Label>Audio Output Device:</Label>
         <Select
           isDark={isDark}
+          key={"audioOutput"}
+          onChange={handleChange}
           className="w-full"
           options={audioOutputDevices.map(device => ({label: device.label, value: device.deviceId}))}
         />
@@ -107,10 +128,12 @@ export const AudioVideoSettings = ({
           </div>
         </div>
       ) : (
-        <div className="my-3">
-          <Button variant={ButtonVariant.tertiary} outline>
-            Mic Test
+        <div className="my-3 flex justify-center items-center space-x-5">
+          <Button variant={ButtonVariant.tertiary} onClick={() => {setIsMicOn(!isMicOn); console.log(isMicOn)}} outline className='flex justify-center items-center space-x-2'>
+            Test
+            <Icon name="mic"></Icon>
           </Button>
+          <MicTest className="w-full" isMicOn={isMicOn}/>
         </div>
       )}
 
