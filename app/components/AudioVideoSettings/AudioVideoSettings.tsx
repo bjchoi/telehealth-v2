@@ -2,7 +2,8 @@ import { joinClasses } from '../../utils';
 import { Button, ButtonVariant } from '../Button';
 import { Select } from '../Select';
 import { VirtualBackgroundOptions } from '../VirtualBackgroundOptions';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { connect, createLocalTracks } from 'twilio-video';
 
 export interface AudioVideoSettingsProps {
   className?: string;
@@ -12,6 +13,13 @@ export interface AudioVideoSettingsProps {
   toggleRecording?: () => void;
 }
 
+export interface Device {
+  deviceId: string;
+  groupId: string;
+  kind: string;
+  label: string;
+}
+
 export const AudioVideoSettings = ({
   className,
   isDark,
@@ -19,16 +27,23 @@ export const AudioVideoSettings = ({
   isRecording,
   toggleRecording,
 }: AudioVideoSettingsProps) => {
-
-  // Gets machine's Audio and Video output
+  const [videoDevices, setVideoDevices] = useState<ReadonlyArray<Device>>([]);
+  const [audioInputDevices, setAudioInputDevices] = useState<ReadonlyArray<Device>>([]);
+  const [audioOutputDevices, setAudioOutputDevices] = useState<ReadonlyArray<Device>>([]);  
+  
+  // Gets machine's Audio and Video devices
   useEffect(() => {
-    //effect
-    
-    return () => {
-      //cleanup
-    }
+    console.log("useEffect");
+    navigator.mediaDevices.enumerateDevices().then(devices => {
+      const videoInputDevices: Device[] = devices.filter(device => device.kind === 'videoinput');
+      const audioInputs: Device[] = devices.filter(device => device.kind === 'audioinput' && !device.label.includes("Virtual"));
+      const audioOutputs: Device[] = devices.filter(device => device.kind === 'audiooutput' && !device.label.includes("Virtual"));
+      console.log("useEffect2");
+      setVideoDevices(videoInputDevices);
+      setAudioInputDevices(audioInputs);
+      setAudioOutputDevices(audioOutputs);
+    })
   }, [])
-
 
   const Label = ({ children }) => (
     <label
@@ -52,7 +67,12 @@ export const AudioVideoSettings = ({
         <Select
           isDark={isDark}
           className="w-full"
-          options={[{ value: 'System Default (Webcam)' }]}
+          options={videoDevices.map(device => (
+            { 
+              label: device.label ? device.label : "System Default (Webcam)",
+              value: device.deviceId
+            }))
+          }
         />
       </div>
       <div className="my-3">
@@ -60,7 +80,7 @@ export const AudioVideoSettings = ({
         <Select
           isDark={isDark}
           className="w-full"
-          options={[{ value: 'System Default (Headset Mic)' }]}
+          options={audioInputDevices.map(device => ({label: device.label, value: device.deviceId}))}
         />
         <input className="mt-4 w-full bg-primary" type="range" />
       </div>
@@ -69,7 +89,7 @@ export const AudioVideoSettings = ({
         <Select
           isDark={isDark}
           className="w-full"
-          options={[{ value: 'System Default (Speakers)' }]}
+          options={audioOutputDevices.map(device => ({label: device.label, value: device.deviceId}))}
         />
         <input className="mt-4 w-full bg-primary" type="range" />
       </div>
