@@ -4,7 +4,7 @@ import React from 'react';
 
 export type TwilioPage = NextPage & { Layout?: React.FC }
 
-export type TelehealthRole = 'guest' | 'patient' | 'visitor' | 'provider';
+export type TelehealthRole = 'guest' | 'patient' | 'visitor' | 'practitioner';
 
 export interface TelehealthUser {
   name: string

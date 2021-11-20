@@ -23,13 +23,13 @@ module.exports = {
           ...theme,
         },
         backgroundColors: (theme) => ({
-          ...theme('colors'),
+          ...theme, ...colors,
         }),
         borderColor: (theme) => ({
-          ...theme('colors'),
+          ...theme, ...colors,
         }),
         textColor: (theme) => ({
-          ...theme('colors'),
+          ...theme, ...colors,
         }),
       },
       boxShadow: {

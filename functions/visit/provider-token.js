@@ -5,31 +5,31 @@
  * 
  */
 module.exports.handler = async (context, event, callback) => {
-  const { provider_identity, provider_name } = event;
+  const { practitioner_identity, practitioner_name } = event;
   const { path } = Runtime.getFunctions()["token-helper"];
   const { createIdentityToken } = require(path);
-  const role = "provider";
+  const role = "practitioner";
 
   let response = new Twilio.Response();
 
-  if (!provider_identity || !provider_name) {
+  if (!practitioner_identity || !practitioner_name) {
     response.setStatusCode(400);
     response.setBody({
       error: {
         message: 'missing body parameter(s)',
-        explanation: 'The provider_identity or provider_name parameter is missing.',
+        explanation: 'The practitioner_identity or practitioner_name parameter is missing.',
       },
     });
     return callback(null, response);
   }
 
-  const token = createIdentityToken(provider_identity, context);
+  const token = createIdentityToken(practitioner_identity, context);
   const identityGrant = {
-    key: "provider",
-    toPayload: () => ({ role: role, name: provider_identity})
+    key: "practitioner",
+    toPayload: () => ({ role: role, name: practitioner_name})
   }
   token.addGrant(identityGrant);
-  
+
   // Return token
   response.setStatusCode(200);
   response.setBody({ token: token.toJwt() });

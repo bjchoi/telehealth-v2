@@ -2,6 +2,9 @@ import { joinClasses } from '../../utils';
 import { Button, ButtonVariant } from '../Button';
 import { Select } from '../Select';
 import { VirtualBackgroundOptions } from '../VirtualBackgroundOptions';
+import { useEffect, useState } from 'react';
+import MicTest from './MicTest';
+import { Icon } from '../Icon';
 
 export interface AudioVideoSettingsProps {
   className?: string;
@@ -11,6 +14,18 @@ export interface AudioVideoSettingsProps {
   toggleRecording?: () => void;
 }
 
+export interface Device {
+  deviceId: string;
+  groupId: string;
+  kind: string;
+  label: string;
+}
+
+/**
+ * TODO:
+ * - Figure out a way to change browser's audio settings
+ * - Virtual Backgrounds implementation
+ */
 export const AudioVideoSettings = ({
   className,
   isDark,
@@ -18,6 +33,33 @@ export const AudioVideoSettings = ({
   isRecording,
   toggleRecording,
 }: AudioVideoSettingsProps) => {
+  const [videoDevices, setVideoDevices] = useState<ReadonlyArray<Device>>([]);
+  const [audioInputDevices, setAudioInputDevices] = useState<ReadonlyArray<Device>>([]);
+  const [audioOutputDevices, setAudioOutputDevices] = useState<ReadonlyArray<Device>>([]);
+  const [isMicOn, setIsMicOn] = useState<boolean>(false);
+  
+  function handleChange(e) {
+    // Todo: Handle Device Change.
+    console.log(e.target.value);
+  }
+  
+  // Gets machine's Audio and Video devices
+  useEffect(() => {
+    navigator.mediaDevices.enumerateDevices().then(devices => {
+      const videoInputDevices: Device[] = devices.filter(device => device.kind === 'videoinput');
+      const audioInputs: Device[] = devices.filter((device, index, array) => 
+        device.kind === 'audioinput' && 
+        !device.label.includes("Virtual")
+      );
+      const audioOutputs: Device[] = devices.filter(device => 
+        device.kind === 'audiooutput' &&
+        !device.label.includes("Virtual"));
+      setVideoDevices(videoInputDevices);
+      setAudioInputDevices(audioInputs);
+      setAudioOutputDevices(audioOutputs);
+    })
+  }, [])
+
   const Label = ({ children }) => (
     <label
       className={joinClasses(
@@ -39,16 +81,25 @@ export const AudioVideoSettings = ({
         <Label>Camera</Label>
         <Select
           isDark={isDark}
+          key={"videoInput"}
+          onChange={handleChange}
           className="w-full"
-          options={[{ value: 'System Default (Webcam)' }]}
+          options={videoDevices.map(device => (
+            { 
+              label: device.label ? device.label : "System Default (Webcam)",
+              value: device.deviceId
+            }))
+          }
         />
       </div>
       <div className="my-3">
         <Label>Voice Input Device:</Label>
         <Select
           isDark={isDark}
+          key={"audioInput"}
+          onChange={handleChange}
           className="w-full"
-          options={[{ value: 'System Default (Headset Mic)' }]}
+          options={audioInputDevices.map(device => ({label: device.label, value: device.deviceId}))}
         />
         <input className="mt-4 w-full bg-primary" type="range" />
       </div>
@@ -56,8 +107,10 @@ export const AudioVideoSettings = ({
         <Label>Audio Output Device:</Label>
         <Select
           isDark={isDark}
+          key={"audioOutput"}
+          onChange={handleChange}
           className="w-full"
-          options={[{ value: 'System Default (Speakers)' }]}
+          options={audioOutputDevices.map(device => ({label: device.label, value: device.deviceId}))}
         />
         <input className="mt-4 w-full bg-primary" type="range" />
       </div>
@@ -75,10 +128,12 @@ export const AudioVideoSettings = ({
           </div>
         </div>
       ) : (
-        <div className="my-3">
-          <Button variant={ButtonVariant.tertiary} outline>
-            Mic Test
+        <div className="my-3 flex justify-center items-center space-x-5">
+          <Button variant={ButtonVariant.tertiary} onClick={() => {setIsMicOn(!isMicOn); console.log(isMicOn)}} outline className='flex justify-center items-center space-x-2'>
+            Test
+            <Icon name="mic"></Icon>
           </Button>
+          <MicTest className="w-full" isMicOn={isMicOn}/>
         </div>
       )}
 
