@@ -5,7 +5,8 @@ import clientStorage from '../services/clientStorage';
 
 export interface VisitContextType {
   user: TelehealthUser,
-  visit: TelehealthVisit
+  visit: TelehealthVisit,
+  setVisit: (visit) => void,
 }
 
 export const VisitContext = createContext<VisitContextType>(null!);
@@ -26,7 +27,7 @@ export function VisitStateProvider(props: React.PropsWithChildren<{}>) {
   }, [setUser, setVisit]);
 
   return (
-    <VisitContext.Provider value={{ user, visit }}>
+    <VisitContext.Provider value={{ user, visit, setVisit }}>
       {props.children}
     </VisitContext.Provider>
   );

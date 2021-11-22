@@ -3,6 +3,9 @@ import { Button } from '../../Button';
 import { Card } from '../../Card';
 import { CardHeading } from '../CardHeading';
 import { Icon } from '../../Icon';
+import { useRouter } from 'next/router';
+import clientStorage from '../../../services/clientStorage';
+import { CURRENT_VISIT_ID } from '../../../constants';
 
 export interface NextPatientCardProps {
   className?: string;
@@ -20,9 +23,12 @@ const patient = {
   currentMedications: 'Albuterol, singulair, ibuprofen',
   translator: false,
   files: [{ name: 'twisted_ankle_photo.jpg' }],
+  roomName: 'v-doe-jonson-1121'
 };
 
 export const NextPatientCard = ({ className }: NextPatientCardProps) => {
+  const router = useRouter();
+
   const Field = ({ label, value }) => (
     <li className="my-4 text-xs">
       <label className="font-bold">{label}:</label>
@@ -36,6 +42,13 @@ export const NextPatientCard = ({ className }: NextPatientCardProps) => {
       </div>
     </li>
   );
+
+  function startVisit() {
+    // TODO: Possibly use Visit object instead but we only need the roomName
+    // to reduce abstraction.
+    clientStorage.saveToStorage(CURRENT_VISIT_ID, patient.roomName);
+    router.push("/provider/video/");
+  }
 
   return (
     <Card className={className}>
@@ -73,7 +86,7 @@ export const NextPatientCard = ({ className }: NextPatientCardProps) => {
         )}
       </ul>
       <div className="mt-5 text-center">
-        <Button as="a" href="/provider/video">
+        <Button as="button" onClick={startVisit}>
           Start Visit
         </Button>
       </div>

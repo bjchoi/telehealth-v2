@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { joinClasses } from '../../../utils';
+import useParticipants from '../../Base/VideoProvider/useParticipants/useParticipants';
+import useVideoContext from '../../Base/VideoProvider/useVideoContext/useVideoContext';
 import { Chat } from '../../Chat';
 import { ConnectionIssueModal } from '../../ConnectionIssueModal';
 import { PoweredByTwilio } from '../../PoweredByTwilio';
@@ -19,8 +21,31 @@ export const VideoConsultation = ({}: VideoConsultationProps) => {
   const [isRecording, setIsRecording] = useState(false);
   const [inviteModalRef, setInviteModalRef] = useState(null);
   const [settingsModalRef, setSettingsModalRef] = useState(null);
-  const [connectionIssueModalVisible, setConnectionIssueModalVisible] =
-    useState(false);
+  const [connectionIssueModalVisible, setConnectionIssueModalVisible] = useState(false);
+  const participants = useParticipants();
+  const { room } = useVideoContext();
+  const [callState, setCallState] = useState({
+    patientName: null,
+    providerName: null,
+    patientParticipant: null,
+    providerParticipant: null
+  });
+  
+  useEffect(() =>{
+    console.log(room)
+    if(room) {
+      setCallState(prev => {
+        return {
+          ...prev,
+          patientParticipant: participants.find(p => p.identity != room!.localParticipant.identity),
+          providerParticipant: room!.localParticipant,
+        }
+      });
+    }
+  }
+  ,[room]);
+
+  
 
   return (
     <div className="relative h-full">
@@ -34,16 +59,25 @@ export const VideoConsultation = ({}: VideoConsultationProps) => {
         )}
       >
         <div className="flex-grow">
-          <div className="flex flex-col justify-evenly h-full">
-            <VideoParticipant name="Sarah Cooper" hasAudio hasVideo />
-            <div className="absolute top-20 right-10">
-              <VideoParticipant
-                name={providerName}
-                hasAudio={hasAudio}
-                hasVideo={hasVideo}
-                isProvider
-                isSelf
+          <div className="flex flex-col justify-evenly h-full mt-20">
+            {callState.patientParticipant && 
+              <VideoParticipant 
+                name="Sarah Coopers" 
+                hasAudio 
+                hasVideo 
+                participant={callState.patientParticipant}
               />
+            }
+            <div className="absolute top-20 right-10">
+              {callState.providerParticipant && 
+                <VideoParticipant
+                  name={providerName}
+                  hasAudio={hasAudio}
+                  hasVideo={hasVideo}
+                  isProvider
+                  isSelf
+                  participant={callState.providerParticipant}
+                />}
             </div>
           </div>
         </div>

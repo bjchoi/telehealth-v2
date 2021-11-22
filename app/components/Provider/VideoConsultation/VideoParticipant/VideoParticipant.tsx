@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
+import { LocalParticipant, RemoteParticipant } from 'twilio-video';
 import { joinClasses } from '../../../../utils';
+import ParticipantTracks from '../../../Base/ParticipantTracks/ParticipantTracks';
 import { Icon } from '../../../Icon';
 import { Popover } from '../Popover';
 
@@ -9,6 +11,7 @@ export interface VideoParticipantProps {
   isProvider?: boolean;
   isSelf?: boolean;
   name: string;
+  participant: LocalParticipant | RemoteParticipant;
 }
 
 export const VideoParticipant = ({
@@ -17,13 +20,13 @@ export const VideoParticipant = ({
   hasVideo,
   isProvider,
   isSelf,
+  participant
 }: VideoParticipantProps) => {
   const [showMutedBanner, setShowMutedBanner] = useState(null);
   const [showMenuRef, setShowMenuRef] = useState(null);
   const [isPinned, setIsPinned] = useState(false);
   const [muted, setMuted] = useState(!hasAudio);
   const [showVideo, setShowVideo] = useState(hasVideo);
-
   // TODO - move to tailwind config
   const widthClass = isProvider ? 'w-[405px]' : 'w-[685px]';
   const heightClass = isProvider ? 'h-[234px]' : 'max-h-100%';
@@ -125,11 +128,13 @@ export const VideoParticipant = ({
             {name}
           </div>
         )}
-        {isProvider ? (
-          <img src="/provider.jpg" alt="Provider" />
-        ) : (
-          <img src="/patient-large.png" alt="Patient" />
-        )}
+        <ParticipantTracks
+          participant={participant}
+          videoOnly
+          enableScreenShare={false}
+          videoPriority={'high'}
+          isLocalParticipant={isSelf}
+        />
       </div>
       <div className="absolute top-0 left-0 w-max z-50 text-white bg-[#00000082] px-2 py-1 flex items-center">
         <Icon
