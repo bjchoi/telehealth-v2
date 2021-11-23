@@ -13,7 +13,7 @@ module.exports.handler = async (context, event, callback) => {
   const authHandler = require(Runtime.getFunctions()['auth/jwt-auth-handler'].path);
   const authResult = await authHandler(context, event, callback);
   if(authResult.response) {
-      return callback(null, response);
+      return callback(null, authResult.response);
   }
 
   console.log("Auth result");

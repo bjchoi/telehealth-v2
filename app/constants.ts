@@ -16,6 +16,7 @@ export const SELECTED_BACKGROUND_SETTINGS_KEY = 'TwilioVideoApp-selectedBackgrou
 
 export const STORAGE_USER_KEY = 'TelehealthUser';
 export const STORAGE_VISIT_KEY = 'TelehealthVisit';
+export const CURRENT_VISIT_ID = 'CurrentVisitId';
 
 export const initialSettings: Settings = {
   trackSwitchOffMode: undefined,
