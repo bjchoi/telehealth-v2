@@ -14,6 +14,8 @@
  * --------------------------------------------------------------------------------
  */
 
+const SERVER_START_TIMESTAMP = new Date().toISOString().replace(/.\d+Z$/g, "Z");
+
 /*
  * --------------------------------------------------------------------------------
  * sets environment variable
@@ -85,6 +87,10 @@ async function getParam(context, key) {
   // ----------------------------------------------------------------------
   try {
     switch (key) {
+      case 'SERVER_START_TIMESTAMP': {
+        return SERVER_START_TIMESTAMP;
+      }
+
       case 'IS_LOCALHOST': {
         const domain_name = context['DOMAIN_NAME'];
         return domain_name.startsWith('localhost:');
