@@ -32,14 +32,15 @@ export const VideoConsultation = ({}: VideoConsultationProps) => {
   });
   
   useEffect(() =>{
-    console.log(room)
     if(room) {
-      setCallState(prev => {
-        return {
-          ...prev,
-          patientParticipant: participants.find(p => p.identity != room!.localParticipant.identity),
-          providerParticipant: room!.localParticipant,
-        }
+      room.once('participantConnected', participant => {
+        setCallState(prev => {
+          return {
+            ...prev,
+            patientParticipant: participant || participants.find(p => p.identity != room!.localParticipant.identity),
+            providerParticipant: room!.localParticipant,
+          }
+        });
       });
     }
   }
