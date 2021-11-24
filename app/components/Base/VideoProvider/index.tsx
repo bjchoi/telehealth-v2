@@ -1,4 +1,4 @@
-import React, { createContext, ReactNode, useCallback, useState } from 'react';
+import React, { createContext, ReactNode, useCallback, useEffect, useState } from 'react';
 import { CreateLocalTrackOptions, ConnectOptions, LocalAudioTrack, LocalVideoTrack, Room } from 'twilio-video';
 import { ErrorCallback } from '../../../types';
 import { SelectedParticipantProvider } from './useSelectedParticipant/useSelectedParticipant';
@@ -12,7 +12,8 @@ import useRestartAudioTrackOnDeviceChange from './useRestartAudioTrackOnDeviceCh
 import useRoom from './useRoom/useRoom';
 import useScreenShareToggle from './useScreenShareToggle/useScreenShareToggle';
 import useConnectionOptions from './useConnectionOptions/useConnectionOptions';
-import { VisitStateProvider } from '../../../state/VisitContext';
+import { useVisitContext, VisitStateProvider } from '../../../state/VisitContext';
+import useVideoContext from './useVideoContext/useVideoContext';
 
 /*
  *  The hooks used by the VideoProvider component are different than the hooks found in the 'hooks/' directory. The hooks
@@ -117,12 +118,37 @@ function VideoProvider({ options, children, onError = () => {} }: VideoProviderP
   );
 }
 
+export function VideoProviderChildrenWrapper(props: React.PropsWithChildren<{}>) {
+  const { visit, user } = useVisitContext();
+  const { getAudioAndVideoTracks, localTracks } = useVideoContext();
+  const [mediaError, setMediaError] = useState<Error>();
+
+  useEffect(() => {
+    if (!mediaError) {
+      getAudioAndVideoTracks().catch(error => {
+        console.log('Error acquiring local media:');
+        console.dir(error);
+        setMediaError(error);
+      });
+    }
+  }, [getAudioAndVideoTracks, mediaError]);
+  return (
+    visit && user && (localTracks && localTracks.length > 0) &&
+    <>
+      { props.children }
+    </>
+  );
+}
+
+
 export function VideoContextLayout(props: React.PropsWithChildren<{}>) {
   const connectionOptions = useConnectionOptions();
   return (
     <VisitStateProvider>
       <VideoProvider options={connectionOptions} onError={(error) => console.log(error)}>
-        { props.children }
+        <VideoProviderChildrenWrapper>
+          { props.children }
+        </VideoProviderChildrenWrapper>
       </VideoProvider>
     </VisitStateProvider>
   );
