@@ -38,8 +38,6 @@ export const SimpleVideoControls = ({ containerClass }: { containerClass: string
     if (currentFacingMode && supportsFacingMode === false) {
       setSupportsFacingMode(true);
     }
-    console.log(currentFacingMode, mediaStreamTrack?.getSettings(), supportsFacingMode);
-
   }, [mediaStreamTrack, supportsFacingMode]);
 
   useEffect(() => {
@@ -50,7 +48,9 @@ export const SimpleVideoControls = ({ containerClass }: { containerClass: string
         videoTrack.enable();
       }
     }
+  }, [isVideoStopped]);
 
+  useEffect(() => {
     if (audioTrack) {
       if (isMuted) {
         audioTrack.disable()
@@ -58,7 +58,7 @@ export const SimpleVideoControls = ({ containerClass }: { containerClass: string
         audioTrack.enable();
       }
     }
-  });
+  }, [isMuted]);
 
 
 
