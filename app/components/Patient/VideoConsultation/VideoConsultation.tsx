@@ -11,6 +11,7 @@ import { InviteParticipantModal } from '../../InviteParticipantModal';
 import { PoweredByTwilio } from '../../PoweredByTwilio';
 import { VideoControls } from '../../VideoControls';
 import { VideoParticipant } from './VideoParticipant';
+import { LocalAudioTrackPublication, LocalVideoTrackPublication } from 'twilio-video';
 
 export interface VideoConsultationProps {}
 
@@ -33,6 +34,7 @@ export const VideoConsultation = ({}: VideoConsultationProps) => {
 
   useEffect(() => {
     if (room) {
+
       setCallState(prev => {
         return {
           ...prev,
@@ -42,6 +44,24 @@ export const VideoConsultation = ({}: VideoConsultationProps) => {
       })
     }
   }, [participants, room])
+
+  useEffect(() => {
+    if (callState.patientParticipant) {
+      const videoTracks = callState.patientParticipant.videoTracks;
+      videoTracks.forEach((item: LocalVideoTrackPublication) => {
+        hasVideo ? item.track.enable() : item.track.disable()
+      })
+    }
+  }, [hasVideo]);
+
+  useEffect(() => {
+    if (callState.patientParticipant) {
+      const audioTracks = callState.patientParticipant.audioTracks;
+      audioTracks.forEach((item: LocalAudioTrackPublication) => {
+        hasAudio ? item.track.enable() : item.track.disable()
+      })
+    }
+  }, [hasAudio]);
 
   function toggleInviteModal() {
     setInviteModalVisible(!inviteModalVisible);

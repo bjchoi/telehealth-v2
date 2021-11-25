@@ -1,8 +1,9 @@
 import React from 'react';
-import { LocalVideoTrack } from 'twilio-video';
+import {LocalAudioTrack, LocalVideoTrack } from 'twilio-video';
 import VideoTrack from '../Base/ParticipantTracks/Publication/VideoTrack/VideoTrack';
 import useVideoContext from '../Base/VideoProvider/useVideoContext/useVideoContext';
-import { Button, ButtonVariant } from '../Button';
+import AudioTrack from '../Base/ParticipantTracks/Publication/AudioTrack/AudioTrack';
+import { SimpleVideoControls } from '../SimpleVideoControls';
 
 export interface TechnicalCheckProps {
   // Can be removed in actual implementation
@@ -10,31 +11,14 @@ export interface TechnicalCheckProps {
 }
 
 export const TechnicalCheck = ({ videoImage }: TechnicalCheckProps) => {
-  const { localTracks } = useVideoContext();
 
-  const videoTrack = localTracks.find(track => track.name.includes('camera')) as LocalVideoTrack;
+  const { localTracks }: { localTracks: (LocalAudioTrack | LocalVideoTrack)[]} = useVideoContext();
+  const audioTrack = localTracks.find(track => track.kind ==='audio' ) as LocalAudioTrack;
+  const videoTrack = localTracks.find(track => track.kind === 'video' ) as LocalVideoTrack;
+
   return (
     <div className="flex mt-4 mb-1">
-      <div className="flex flex-col justify-center px-1">
-        <Button
-          className="my-2"
-          icon="flip_camera_ios"
-          iconType="outline"
-          variant={ButtonVariant.tertiary}
-        />
-        <Button
-          className="my-2"
-          icon="videocam"
-          iconType="outline"
-          variant={ButtonVariant.tertiary}
-        />
-        <Button
-          className="my-2"
-          icon="mic"
-          iconType="outline"
-          variant={ButtonVariant.tertiary}
-        />
-      </div>
+      <SimpleVideoControls containerClass='flex flex-col justify-center px-1'/>
       <div className="flex-grow px-1">
       {videoTrack ? (
           <VideoTrack track={videoTrack} isLocal />
@@ -42,6 +26,7 @@ export const TechnicalCheck = ({ videoImage }: TechnicalCheckProps) => {
             <img src={videoImage} alt="Video" width={187} height={250} />
         )}
       </div>
+      {audioTrack && <AudioTrack track={audioTrack} />}
     </div>
   );
 };
