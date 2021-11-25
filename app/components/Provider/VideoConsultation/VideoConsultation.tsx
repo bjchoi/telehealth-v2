@@ -9,6 +9,7 @@ import { VideoControls } from '../../VideoControls';
 import { InviteParticipantPopover } from './InviteParticipantPopover';
 import { SettingsPopover } from './SettingsPopover';
 import { VideoParticipant } from './VideoParticipant';
+import { ProviderRoomState } from '../../../constants';
 
 export interface VideoConsultationProps {}
 
@@ -24,29 +25,25 @@ export const VideoConsultation = ({}: VideoConsultationProps) => {
   const [connectionIssueModalVisible, setConnectionIssueModalVisible] = useState(false);
   const participants = useParticipants();
   const { room } = useVideoContext();
-  const [callState, setCallState] = useState({
+  const [callState, setCallState] = useState<ProviderRoomState>({
     patientName: null,
     providerName: null,
     patientParticipant: null,
     providerParticipant: null
   });
-  
-  useEffect(() =>{
-    if(room) {
-      room.once('participantConnected', participant => {
-        setCallState(prev => {
-          return {
-            ...prev,
-            patientParticipant: participant || participants.find(p => p.identity != room!.localParticipant.identity),
-            providerParticipant: room!.localParticipant,
-          }
-        });
-      });
-    }
-  }
-  ,[room]);
 
-  
+  useEffect(() => {
+    console.log(participants);
+    if (room) {
+      setCallState(prev => {
+        return {
+          ...prev,
+          providerParticipant: room!.localParticipant,
+          patientParticipant: participants.find(p => p.identity != room!.localParticipant.identity),
+        }
+      })
+    }
+  }, [participants, room])
 
   return (
     <div className="relative h-full">
