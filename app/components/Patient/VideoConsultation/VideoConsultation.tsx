@@ -34,7 +34,6 @@ export const VideoConsultation = ({}: VideoConsultationProps) => {
 
   useEffect(() => {
     if (room) {
-      console.log('room: ', room);
 
       setCallState(prev => {
         return {
@@ -57,7 +56,6 @@ export const VideoConsultation = ({}: VideoConsultationProps) => {
 
   useEffect(() => {
     if (callState.patientParticipant) {
-      console.log('hasAudio', hasAudio, callState.patientParticipant.audioTracks);
       const audioTracks = callState.patientParticipant.audioTracks;
       audioTracks.forEach((item: LocalAudioTrackPublication) => {
         hasAudio ? item.track.enable() : item.track.disable()
@@ -68,8 +66,6 @@ export const VideoConsultation = ({}: VideoConsultationProps) => {
   function toggleInviteModal() {
     setInviteModalVisible(!inviteModalVisible);
   }
-
-  console.log('callState', callState);
 
   return (
     <>
