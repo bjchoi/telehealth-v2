@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { PatientRoomState } from '../../../constants';
 import { useVisitContext } from '../../../state/VisitContext';
 import useParticipants from '../../Base/VideoProvider/useParticipants/useParticipants';
 import useRoomState from '../../Base/VideoProvider/useRoomState/useRoomState';
@@ -23,26 +24,25 @@ export const VideoConsultation = ({}: VideoConsultationProps) => {
   const { user, visit } = useVisitContext();
   const participants = useParticipants();
   const { room } = useVideoContext();
-  const [callState, setCallState] = useState({
+  const [callState, setCallState] = useState<PatientRoomState>({
     patientName: null,
     providerName: null,
     patientParticipant: null,
     providerParticipant: null
   });
-  const [providerParticipant, setProviderParticipant] = useState(null);
-  useEffect(() =>{    
-    if(visit) {
-      if(room) {
-        setCallState(prev => {
-          return {
-            ...prev,
-            patientParticipant: room!.localParticipant,
-            providerParticipant: participants.find(p => p.identity != room!.localParticipant.identity)
-          }
-        });
-      }
+
+  useEffect(() => {
+    if (room) {
+      setCallState(prev => {
+        return {
+          ...prev,
+          patientParticipant: room!.localParticipant,
+          providerParticipant: participants.find(p => p.identity != room!.localParticipant.identity)
+        }
+      })
     }
-  },[visit, room]);
+  }, [participants, room])
+
   function toggleInviteModal() {
     setInviteModalVisible(!inviteModalVisible);
   }

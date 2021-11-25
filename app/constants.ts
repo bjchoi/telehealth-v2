@@ -1,3 +1,4 @@
+import { LocalParticipant, RemoteParticipant } from "twilio-video";
 import { Settings } from "./types";
 
 export const DEFAULT_VIDEO_CONSTRAINTS: MediaStreamConstraints['video'] = {
@@ -27,3 +28,18 @@ export const initialSettings: Settings = {
   clientTrackSwitchOffControl: 'auto',
   roomType: 'group'
 };
+
+export interface ParticipantRoomState {
+  patientName: string;
+  providerName: string;
+}
+
+export interface ProviderRoomState extends ParticipantRoomState {
+  patientParticipant: RemoteParticipant;
+  providerParticipant: LocalParticipant;
+}
+
+export interface PatientRoomState extends ParticipantRoomState {
+  patientParticipant: LocalParticipant;
+  providerParticipant: RemoteParticipant;
+}
