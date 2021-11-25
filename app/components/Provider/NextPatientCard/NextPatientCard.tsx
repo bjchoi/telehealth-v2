@@ -11,6 +11,7 @@ export interface NextPatientCardProps {
   className?: string;
 }
 
+// This Patient will come from backend call
 const patient = {
   name: 'Sarah Cooper',
   waitTime: '00:23:14',
