@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import VideoContextLayout from '../../../components/Base/VideoProvider';
 import useVideoContext from '../../../components/Base/VideoProvider/useVideoContext/useVideoContext';
 import {
   AudioVideoCard,
@@ -10,6 +9,7 @@ import {
 } from '../../../components/Provider';
 import { NextPatientCard } from '../../../components/Provider/NextPatientCard';
 import { TwilioPage } from '../../../types';
+import ProviderVideoContextLayout from '../../../components/Provider/ProviderLayout';
 
 const DashboardPage: TwilioPage = () => {
   
@@ -44,5 +44,5 @@ const DashboardPage: TwilioPage = () => {
   );
 };
  
-DashboardPage.Layout = VideoContextLayout;
+DashboardPage.Layout = ProviderVideoContextLayout;
 export default DashboardPage;

@@ -4,8 +4,8 @@ import { VideoConsultation } from '../../../components/Patient';
 import { useVisitContext } from '../../../state/VisitContext';
 import { PatientUser } from '../../../types';
 import { roomService } from '../../../services/roomService';
-import VideoContextLayout from '../../../components/Base/VideoProvider';
 import { useRouter } from 'next/router';
+import PatientVideoContextLayout from '../../../components/Patient/PatientLayout';
 
 
 const VideoPage = () => {
@@ -27,5 +27,5 @@ const VideoPage = () => {
   return <VideoConsultation />;
 };
 
-VideoPage.Layout = VideoContextLayout;
+VideoPage.Layout = PatientVideoContextLayout;
 export default VideoPage;

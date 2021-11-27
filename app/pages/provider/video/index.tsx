@@ -4,10 +4,10 @@ import { VideoConsultation } from '../../../components/Provider';
 import { useVisitContext } from '../../../state/VisitContext';
 import { useRouter } from 'next/router';
 import { roomService } from '../../../services/roomService';
-import { TelehealthUser, TelehealthVisit, TwilioPage } from '../../../types';
-import VideoContextLayout from '../../../components/Base/VideoProvider';
+import { TelehealthUser, TwilioPage } from '../../../types';
 import clientStorage from '../../../services/clientStorage';
 import { CURRENT_VISIT_ID } from '../../../constants';
+import ProviderVideoContextLayout from '../../../components/Provider/ProviderLayout';
 
 const VideoPage: TwilioPage = () => {
   const { user, visit } = useVisitContext();
@@ -31,5 +31,5 @@ const VideoPage: TwilioPage = () => {
   return <VideoConsultation />;
 };
 
-VideoPage.Layout = VideoContextLayout;
+VideoPage.Layout = ProviderVideoContextLayout;
 export default VideoPage;

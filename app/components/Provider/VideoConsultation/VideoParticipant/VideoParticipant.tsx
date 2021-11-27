@@ -130,7 +130,7 @@ export const VideoParticipant = ({
         )}
         <ParticipantTracks
           participant={participant}
-          videoOnly
+          videoOnly={false}
           enableScreenShare={false}
           videoPriority={'high'}
           isLocalParticipant={isSelf}
