@@ -45,7 +45,7 @@ export const VideoParticipant = ({
   }, [muted, showMutedBanner]);
 
   useEffect(() => {
-    setMuted(hasAudio);
+    setMuted(!hasAudio);
   }, [hasAudio]);
 
   useEffect(() => {

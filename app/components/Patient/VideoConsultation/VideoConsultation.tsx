@@ -79,21 +79,21 @@ export const VideoConsultation = ({}: VideoConsultationProps) => {
           <>
             <div className="flex">
               <div className="relative">
-              {callState.patientParticipant && <VideoParticipant
-                  name={visit.patientName}
+              {callState.providerParticipant && <VideoParticipant
+                  name={visit.providerName}
                   hasAudio
                   hasVideo
-                  isSelf
-                  participant={callState.patientParticipant}
+                  isProvider
+                  participant={callState.providerParticipant}
                 />}
                 <div className="absolute top-1 right-1">
-                {callState.providerParticipant && <VideoParticipant
-                    name={visit.providerName}
+                {callState.patientParticipant && <VideoParticipant
+                    name={visit.patientName}
                     hasAudio={hasAudio}
                     hasVideo={hasVideo}
                     isOverlap
-                    isProvider
-                    participant={callState.providerParticipant}
+                    isSelf
+                    participant={callState.patientParticipant}
                   /> }
                 </div>
                 <Button
@@ -112,21 +112,21 @@ export const VideoConsultation = ({}: VideoConsultationProps) => {
           <>
             <div className="flex-grow">
               <div className="flex flex-col justify-evenly h-full">
-              {callState.providerParticipant && <VideoParticipant
-                  name={visit.providerName}
+              {callState.patientParticipant && <VideoParticipant
+                  name={visit.patientName}
                   hasAudio={hasAudio}
                   hasVideo={hasVideo}
-                  isSelf={false}
-                  isProvider={true}
-                  participant={callState.providerParticipant}
+                  isSelf={true}
+                  isProvider={false}
+                  participant={callState.patientParticipant}
                 />}
-                {callState.patientParticipant && <VideoParticipant
-                  name={visit.patientName}
+                {callState.providerParticipant && <VideoParticipant
+                  name={visit.providerName}
                   hasAudio
                   hasVideo
-                  isProvider={false}
-                  isSelf={true}
-                  participant={callState.patientParticipant}
+                  isProvider={true}
+                  isSelf={false}
+                  participant={callState.providerParticipant}
                 />}
               </div>
               {showChat && (
