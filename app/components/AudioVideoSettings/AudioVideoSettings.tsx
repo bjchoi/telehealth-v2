@@ -58,7 +58,7 @@ export const AudioVideoSettings = ({
       setAudioInputDevices(audioInputs);
       setAudioOutputDevices(audioOutputs);
     })
-  }, [])
+  }, [isMicOn])
 
   const Label = ({ children }) => (
     <label

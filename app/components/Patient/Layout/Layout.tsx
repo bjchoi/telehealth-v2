@@ -13,7 +13,7 @@ export const Layout = ({ children, title }: LayoutProps) => {
       <div>
         <Header />
       </div>
-      <div className="max-w-sm w-full mx-auto flex flex-grow justify-center items-center">
+      <div className="max-w-sm w-full mx-auto flex flex-grow justify-center md:items-center lg:items-center xl:items-center">
         {title && <Heading>{title}</Heading>}
         <div>{children}</div>
       </div>

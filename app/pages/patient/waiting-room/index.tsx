@@ -43,27 +43,30 @@ const WaitingRoomPage: TwilioPage = () => {
   return (
     <Layout>
       { visit ? (
-      <div className="my-4 flex flex-col items-center justify-center">
-        <Heading>Your Appointment</Heading>
-        <div className="mb-2 text-secondary">{visit.providerName}</div>
-        <DateTime date={visit.visitDateTime} />
-
-        <TechnicalCheck videoImage="/patient.jpg" />
-        <div className="text-tertiary">
-          Your visit will start when the provider joins
-        </div>
-        <div className="flex items-center justify-center bg-secondary text-white text-2xl h-[200px] w-full m-2">
-          Content Area
-        </div>
-        <Button
-          className="mt-2 px-8"
-          variant={ButtonVariant.secondary}
-          outline
-          onClick={() => setShowLeaveConfirmation(true)}
-        >
-          Leave Waiting Room
-        </Button>
-      </div>) : (<></>)
+        <>
+          <Heading>Your Appointment</Heading>
+          <div className='mb-2 text-secondary flex flex-col items-center'>
+            <p>{visit.providerName}</p>
+            <DateTime date={visit.visitDateTime.toString()} />
+          </div>
+          <div className='my-4 px-10 md:px-2 lg:px-2 xl:px-2 flex flex-col items-center justify-center'>
+            <TechnicalCheck videoImage='/patient.jpg' />
+            <div className='text-tertiary'>
+              Your visit will start when the provider joins
+            </div>
+            <div className='flex items-center justify-center bg-secondary text-white text-2xl h-[150px] w-full m-2'>
+              Content Area
+            </div>
+            <Button
+              className='mt-2 px-8'
+              variant={ButtonVariant.secondary}
+              outline
+              onClick={() => setShowLeaveConfirmation(true)}
+            >
+              Leave Waiting Room
+            </Button>
+          </div>
+        </>) : (<></>)
       }
       <Modal isVisible={showLeaveConfirmation}>
         <div className="flex flex-col text-center p-4">

@@ -10,7 +10,6 @@ export type PatientRoomResponse = {
 }
 
 function checkRoom(patient: PatientUser, roomName: string): Promise<PatientRoomResponse> {
-    console.log("checkRoom: ", roomName);
     return fetch(Uris.get(Uris.visits.patientRoomToken), {
         method: 'POST',
         body: JSON.stringify({ room_name: roomName}),

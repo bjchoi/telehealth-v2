@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { PatientRoomState } from '../../../constants';
 import { useVisitContext } from '../../../state/VisitContext';
 import useParticipants from '../../Base/VideoProvider/useParticipants/useParticipants';
 import useRoomState from '../../Base/VideoProvider/useRoomState/useRoomState';
@@ -10,6 +11,7 @@ import { InviteParticipantModal } from '../../InviteParticipantModal';
 import { PoweredByTwilio } from '../../PoweredByTwilio';
 import { VideoControls } from '../../VideoControls';
 import { VideoParticipant } from './VideoParticipant';
+import { LocalAudioTrackPublication, LocalVideoTrackPublication } from 'twilio-video';
 
 export interface VideoConsultationProps {}
 
@@ -23,26 +25,44 @@ export const VideoConsultation = ({}: VideoConsultationProps) => {
   const { user, visit } = useVisitContext();
   const participants = useParticipants();
   const { room } = useVideoContext();
-  const [callState, setCallState] = useState({
+  const [callState, setCallState] = useState<PatientRoomState>({
     patientName: null,
     providerName: null,
     patientParticipant: null,
     providerParticipant: null
   });
-  const [providerParticipant, setProviderParticipant] = useState(null);
-  useEffect(() =>{    
-    if(visit) {
-      if(room) {
-        setCallState(prev => {
-          return {
-            ...prev,
-            patientParticipant: room!.localParticipant,
-            providerParticipant: participants.find(p => p.identity != room!.localParticipant.identity)
-          }
-        });
-      }
+
+  useEffect(() => {
+    if (room) {
+
+      setCallState(prev => {
+        return {
+          ...prev,
+          patientParticipant: room!.localParticipant,
+          providerParticipant: participants.find(p => p.identity != room!.localParticipant.identity)
+        }
+      })
     }
-  },[visit, room]);
+  }, [participants, room])
+
+  useEffect(() => {
+    if (callState.patientParticipant) {
+      const videoTracks = callState.patientParticipant.videoTracks;
+      videoTracks.forEach((item: LocalVideoTrackPublication) => {
+        hasVideo ? item.track.enable() : item.track.disable()
+      })
+    }
+  }, [hasVideo]);
+
+  useEffect(() => {
+    if (callState.patientParticipant) {
+      const audioTracks = callState.patientParticipant.audioTracks;
+      audioTracks.forEach((item: LocalAudioTrackPublication) => {
+        hasAudio ? item.track.enable() : item.track.disable()
+      })
+    }
+  }, [hasAudio]);
+
   function toggleInviteModal() {
     setInviteModalVisible(!inviteModalVisible);
   }
