@@ -1,7 +1,20 @@
 /*
  * main controller javascript used by administration.html
+ *
+ * references html css id in the administration.html
  */
+const UI = {
+  patients: '#patients',
+  contents: '#contents',
+  content_add: '#content-add',
+  providers: '#providers',
+  provider_selector: '#provider-selector',
+  provider_contents: '#provider-contents',
+  provider_patients: '#provider-patients'
+}
 
+
+// --------------------------------------------------------------------------------------------------------------
 async function sendScheduledPatientLink(e) {
   const THIS = sendScheduledPatientLink.name;
   try {
@@ -52,6 +65,7 @@ async function sendScheduledPatientLink(e) {
   }
 }
 
+// --------------------------------------------------------------------------------------------------------------
 function sendOnDemandPatientLink(e) {
   const THIS = sendOnDemandPatientLink.name;
   let i = 1;
@@ -59,6 +73,7 @@ function sendOnDemandPatientLink(e) {
   console.log(THIS, `${i++}. send link to patient in-take via SMS`);
 }
 
+// --------------------------------------------------------------------------------------------------------------
 function sendProviderLink(e) {
   const THIS = sendProviderLink.name;
   let i = 1;
@@ -68,14 +83,13 @@ function sendProviderLink(e) {
 }
 
 /* --------------------------------------------------------------------------------------------------------------
+ * patients
  * --------------------------------------------------------------------------------------------------------------
  */
-async function populatePatients(table_css_id) {
+async function populatePatients() {
   const THIS = populatePatients.name;
 
   try {
-    console.log(THIS, `load patients from server to ${table_css_id}`);
-
     {
       const parameters = new URLSearchParams({
         action: 'GET',
@@ -90,9 +104,10 @@ async function populatePatients(table_css_id) {
           },
         });
       const patients = await response.json();
+      console.log(THIS, `loaded ${patients.length} patients`);
 
       patients.forEach(row => {
-        $(table_css_id).append(`<tr>
+        $(UI.patients).append(`<tr>
         <td>${row.patient_id}</td>
         <td>${row.patient_name}</td>
         <td>${row.patient_phone}</td>
@@ -104,31 +119,17 @@ async function populatePatients(table_css_id) {
   }
 }
 
+
 /* --------------------------------------------------------------------------------------------------------------
- * content controller
+ * contents
  * --------------------------------------------------------------------------------------------------------------
  */
-// class contentController {
-//
-//   construction(
-//     main_table_css_id,
-//     provider_table_css_id,
-//     select_css_id) {
-//       this.css_t0 = main_table_css_id;
-//       this.css_t1 = provider_table_css_id;
-//       this.css_s0 = provider_table_css_id;
-//
-// };
-
-
-async function populateContents(table_css_id, css_t2,  select_css_id) {
+async function populateContents() {
   const THIS = populateContents.name;
 
   try {
-    console.log(THIS, `load contents from server to ${table_css_id}`);
-
-    $(table_css_id).find("tr:gt(0)").remove();
-    $('#content-add').removeAttr('disabled'); // (re-)enable 'Add' button
+    $(UI.contents).find("tr:gt(0)").remove();
+    $(UI.content_add).removeAttr('disabled'); // (re-)enable 'Add' button
 
     const parameters =  new URLSearchParams({
       action: 'GET',
@@ -143,17 +144,11 @@ async function populateContents(table_css_id, css_t2,  select_css_id) {
         },
       });
     const content = await response.json();
+    console.log(THIS, `loaded ${contents.length} contents`);
 
     content.forEach(row => {
-      console.log(`<tr>
-        <td><a class="button" onclick="removeContent('${table_css_id}', '${css_t2}', '${select_css_id}', '${row.content_id}');">Remove</a></td>
-        <td id="#content-${row.content_id}" hidden>${row.content_id}</td>
-        <td>${row.content_title}</td>
-        <td><a class="button" href="${row.content_video_url}" target="_blank">Watch Video</a></td>
-        <td><small>${row.content_description}</small></td>
-      </tr>`);
-      $(table_css_id).append(`<tr>
-        <td><a class="button" onclick="removeContent('${table_css_id}', '${css_t2}', '${select_css_id}', '${row.content_id}');">Remove</a></td>
+      $(UI.contents).append(`<tr>
+        <td><a class="button" onclick="removeContent('${row.content_id}');">Remove</a></td>
         <td id="#content-${row.content_id}" hidden>${row.content_id}</td>
         <td>${row.content_title}</td>
         <td><a class="button" href="${row.content_video_url}" target="_blank">Watch Video</a></td>
@@ -167,26 +162,20 @@ async function populateContents(table_css_id, css_t2,  select_css_id) {
 }
 
 // --------------------------------------------------------------------------------------------------------------
-async function addContent(table_css_id, css_t2, select_css_id) {
+async function addContent() {
   const THIS = addContent.name;
   try {
     const content_id = 'dr' + new Date().getTime();
-    console.log(THIS, table_css_id, content_id);
-    console.log(THIS, `<tr>
-      <td><a class="button" onclick="saveContent('${table_css_id}', '${css_t2}', '${select_css_id}', '${content_id}');">Save</a></td>
+    console.log(THIS, `contentid: ${content_id}`);
+
+    $(UI.contents).append(`<tr>
+      <td><a class="button" onclick="saveContent('${content_id}');">Save</a></td>
       <td><input type="text" name="content-title" id="new-content-title"></td>
       <td><input type="text" name="content-video-url" id="new-content-video-url"></td>
       <td><input type="text" name="content-description" id="new-content-description"></td>
     </tr>`);
 
-    $(table_css_id).append(`<tr>
-      <td><a class="button" onclick="saveContent('${table_css_id}', '${css_t2}', '${select_css_id}', '${content_id}');">Save</a></td>
-      <td><input type="text" name="content-title" id="new-content-title"></td>
-      <td><input type="text" name="content-video-url" id="new-content-video-url"></td>
-      <td><input type="text" name="content-description" id="new-content-description"></td>
-    </tr>`);
-
-    $('#content-add').attr('disabled', 'disabled');    // disable 'Add' button
+    $(UI.content_add).attr('disabled', 'disabled');    // disable 'Add' button
 
   } catch (err) {
     console.log(THIS, err);
@@ -194,10 +183,10 @@ async function addContent(table_css_id, css_t2, select_css_id) {
 }
 
 // --------------------------------------------------------------------------------------------------------------
-async function saveContent(table_css_id, css_t2, select_css_id, content_id) {
+async function saveContent(content_id) {
   const THIS = saveContent.name;
 
-  console.log(THIS, table_css_id, content_id);
+  console.log(THIS, 'content_id: ', content_id);
   const content_title = $('#new-content-title').val();
   const content_video_url = $('#new-content-video-url').val();
   const description = $('#new-content-description').val();
@@ -222,8 +211,8 @@ async function saveContent(table_css_id, css_t2, select_css_id, content_id) {
     .then((response) => response.json())
     .then((result) => {
       console.log(THIS, result);
-      populateContents(table_css_id, css_t2, select_css_id);
-      populateProviderContents(css_t2, select_css_id);
+      populateContents();
+      populateProviderContents();
     })
     .catch((err) => {
       console.log(THIS, err);
@@ -232,10 +221,10 @@ async function saveContent(table_css_id, css_t2, select_css_id, content_id) {
 }
 
 // --------------------------------------------------------------------------------------------------------------
-async function removeContent(table_css_id, css_t2, select_css_id, content_id) {
+async function removeContent(content_id) {
   const THIS = removeContent.name;
 
-  console.log(THIS, table_css_id, content_id);
+  console.log(THIS, 'content_id: ', content_id);
 
   fetch('/datastore/contents', {
     method: 'POST',
@@ -251,8 +240,8 @@ async function removeContent(table_css_id, css_t2, select_css_id, content_id) {
     .then((response) => response.json())
     .then((result) => {
       console.log(THIS, result);
-      populateContents(table_css_id, css_t2, select_css_id);
-      populateProviderContents(css_t2, select_css_id);
+      populateContents();
+      populateProviderContents();
     })
     .catch((err) => {
       console.log(THIS, err);
@@ -263,12 +252,10 @@ async function removeContent(table_css_id, css_t2, select_css_id, content_id) {
 /* --------------------------------------------------------------------------------------------------------------
  * --------------------------------------------------------------------------------------------------------------
  */
-async function populateProviders(table_css_id) {
+async function populateProviders() {
   const THIS = populateProviders.name;
 
   try {
-    console.log(THIS, `load providers from server to ${table_css_id}`);
-
     const parameters = new URLSearchParams({
       action: 'GET',
     });
@@ -282,9 +269,10 @@ async function populateProviders(table_css_id) {
         },
       });
     const providers = await response.json();
+    console.log(THIS, `loaded ${providers.length} providers`);
 
     providers.forEach(row => {
-      $(table_css_id).append(`<tr>
+      $(UI.providers).append(`<tr>
       <td><input type="checkbox" ${row.provider_on_call ? "checked": ""} disabled></td>
       <td>${row.provider_id}</td>
       <td>${row.provider_name}</td>
@@ -300,12 +288,10 @@ async function populateProviders(table_css_id) {
 /* --------------------------------------------------------------------------------------------------------------
  * --------------------------------------------------------------------------------------------------------------
  */
-async function populateProviderSelector(select_css_id) {
+async function populateProviderSelector() {
   const THIS = populateProviderSelector.name;
 
   try {
-    console.log(THIS, `load providers from server to ${select_css_id}`);
-
     const parameters = new URLSearchParams({
       action: 'GET',
     });
@@ -319,9 +305,10 @@ async function populateProviderSelector(select_css_id) {
         },
       });
     const providers = await response.json();
+    console.log(THIS, `loaded ${providers.length} providers`);
 
     providers.forEach(row => {
-      $(select_css_id).append(`<option value="${row.provider_id}">${row.provider_name}</option>`);
+      $(UI.provider_selector).append(`<option value="${row.provider_id}">${row.provider_name}</option>`);
     });
 
   } catch (err) {
@@ -330,25 +317,28 @@ async function populateProviderSelector(select_css_id) {
 }
 
 // --------------------------------------------------------------------------------------------------------------
-async function selectProvider(select_css_id) {
+async function selectProvider() {
   const THIS = selectProvider.name;
 
-  const provider_id = $(select_css_id).val();
+  const provider_id = $(UI.provider_selector).val();
   console.log(THIS, `select provider: ${provider_id}`);
+
+  populateProviderContents();
+  populateProviderPatients();
 }
 
 
 /* --------------------------------------------------------------------------------------------------------------
  * --------------------------------------------------------------------------------------------------------------
  */
-async function populateProviderContents(table_css_id, select_css_id) {
+async function populateProviderContents() {
   const THIS = populateProviderContents.name;
 
-  try {
-    const provider_id = $(select_css_id).val();
-    console.log(THIS, `load contents for ${provider_id}`);
+  $(UI.provider_contents).find("tr:gt(0)").remove();
 
-    $(table_css_id).find("tr:gt(0)").remove();
+  try {
+    const provider_id = $(UI.provider_selector).val();
+    console.log(THIS, `load contents for ${provider_id}`);
 
     const parameters = new URLSearchParams({
       action: 'GET',
@@ -366,8 +356,8 @@ async function populateProviderContents(table_css_id, select_css_id) {
 
     contents.forEach(row => {
       const is_assigned = row.providers.find(e => e === provider_id) ? 'checked' : '';
-      $(table_css_id).append(`<tr>
-      <td><input type="checkbox" ${is_assigned} onclick="assignContent2Provider('${table_css_id}', '${select_css_id}', '${row.content_id}');"></td>
+      $(UI.provider_contents).append(`<tr>
+      <td><input type="checkbox" ${is_assigned} onclick="assignContent2Provider('${row.content_id}');"></td>
       <td>${row.content_title}</td>
       <td><a class="button" href="${row.content_video_url}" target="_blank">Watch Video</a></td>
       </tr>`);
@@ -379,10 +369,10 @@ async function populateProviderContents(table_css_id, select_css_id) {
 }
 
 
-async function assignContent2Provider(table_css_id, select_css_id, content_id) {
+async function assignContent2Provider(content_id) {
   const THIS = assignContent2Provider.name;
 
-  const provider_id = $(select_css_id).val();
+  const provider_id = $(UI.provider_selector).val();
 
   console.log(THIS, `assigned ${content_id} to ${provider_id}`);
 }
@@ -391,12 +381,13 @@ async function assignContent2Provider(table_css_id, select_css_id, content_id) {
 /* --------------------------------------------------------------------------------------------------------------
  * --------------------------------------------------------------------------------------------------------------
  */
-async function populateProviderPatientQueue(table_css_id, select_css_id) {
-  const THIS = populateProviderPatientQueue.name;
+async function populateProviderPatients() {
+  const THIS =  populateProviderPatients.name;
+
+  $(UI.provider_patients).find("tr:gt(0)").remove();
 
   try {
-    const provider_id = $(select_css_id).val();
-    console.log(THIS, `load patient queue for provider ${table_css_id}`);
+    const provider_id = $(UI.provider_selector).val();
 
     let appointments = null;
     {
@@ -437,7 +428,7 @@ async function populateProviderPatientQueue(table_css_id, select_css_id) {
 
     appointments.forEach(row => {
       const p = patients.find(e => e.patient_id === row.patient_id);
-      $(table_css_id).append(`<tr>
+      $(UI.provider_patients).append(`<tr>
       <td>${row.appointment_type}</td>
       <td>${row.appointment_id}</td>
       <td>${p.patient_name}</td>
@@ -456,10 +447,10 @@ async function populateProviderPatientQueue(table_css_id, select_css_id) {
 async function initialize() {
   console.log('initialize function in administration-controller.js');
 
-  await populatePatients(table_css_id = '#patients');
-  await populateContents( '#contents', '#provider-content', '#provider-selector');
-  await populateProviders(table_css_id = '#providers');
-  await populateProviderSelector(select_css_id = '#provider-selector');
-  await populateProviderContents(table_css_id = '#provider-content', select_css_id = '#provider-selector')
-  await populateProviderPatientQueue(table_css_id = '#provider-patient-queue', select_css_id = '#provider-selector')
+  await populatePatients();
+  await populateContents();
+  await populateProviders();
+  await populateProviderSelector();
+  await populateProviderContents();
+  await populateProviderPatients();
 }
