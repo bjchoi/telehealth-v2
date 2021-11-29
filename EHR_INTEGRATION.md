@@ -1,5 +1,7 @@
 #Telehealth EHR Integration Specification
 
+[content json schema](assets/datastore/content.schema.json)
+
 Telehealth application can be integrated with EHR to <span style="color:magenta">pull</span>
 information about providers, patient, and telehealth appointments.
 
@@ -68,7 +70,7 @@ http://your-fhir-endpoint/fhir/Practitioner?parameter=value
 
 </details>
 
-### Provider for On-Deamnd Appointments: : [PractitionerRole](https://www.hl7.org/fhir/practitionerrole.html)
+### Provider for On-Demand Appointments: : [PractitionerRole](https://www.hl7.org/fhir/practitionerrole.html)
 
 Search of providers who is on-call for on-demand appointments.
 There can be only ONE provider on-call.
@@ -131,26 +133,33 @@ http://your-fhir-endpoint/fhir/Patient?parameter=value
 ```json
 {
   "resourceType": "Bundle",
-  "meta": {
-    "lastUpdated": "2014-08-18T01:43:30Z"
-  },
   "type": "searchset",                       // fixed to 'searchset'
   "total": <NumberofPatients>,
   "entry": [
     {
       "resourceType": "Patient",
       "id": "<PatientID>",                   // unique patient ID
+      "meta": {
+        "source": "<http://twilio.com | customer's FHIR endpoint url>"
+      },
       "name": [{
         "use": "official",
         "text": "<PatientFullName>",
         "family": "<PatientLastName>", 
         "given": [ "<PatientFirstName>" ]    // used as SMS salutation 
       }],
-      "telecom": [{
-        "system": "sms",
-        "value": "<PatientMobilePhone>",     // E.164 format is preferred
-        "use": "mobile"
-      }],
+      "telecom": [
+        {
+          "system": "sms",
+          "value": "<PatientMobilePhone>",   // E.164 format is preferred
+          "use": "mobile"
+        },
+        {
+          "system": "email",
+          "value": "<PatientEmailAddress>",  // E.164 format is preferred
+          "use": "home"
+        }
+      ],
       "gender": "<PatientGender>",           // code value from AdministrativeGender code system 
       "communication": [{                    // optional, present ONLY if translator is needed
         "language": {
@@ -200,6 +209,9 @@ http://your-fhir-endpoint/fhir/MedicationStatement?parameter=value
   "entry": [
     {
       "resourceType": "MedicationStatement",
+      "meta": {
+        "source": "<http://twilio.com | customer's FHIR endpoint url>"
+      },
       "medicationCodeableConcept": {
         "text": "<PatientMedication>"
       },
@@ -248,6 +260,9 @@ http://your-fhir-endpoint/fhir/Practitioner?parameter=value
   "entry": [
     {
       "resourceType": "Condition",
+      "meta": {
+        "source": "<http://twilio.com | customer's FHIR endpoint url>"
+      },
       "clinicalStatus": {
         "coding": [
           {
@@ -298,7 +313,7 @@ http://your-fhir-endpoint/fhir/Practitioner?parameter=value
     {
       "resourceType": "Appointment",
       "id": "<AppointmentID>",
-      "status": "booked",
+      "status": "booked if from customer EHR | arrived if from Teleheath",
       "appointmentType": {
         "coding": [
           {
@@ -345,6 +360,59 @@ http://your-fhir-endpoint/fhir/Practitioner?parameter=value
 - `.entry[].appointmentType` value from [Appointment Reason Code](http://terminology.hl7.org/CodeSystem/v2-0276)
 - `.entry[].reasonCode.text` value for scheduled appointments from [Encounter Reason Code](http://hl7.org/fhir/ValueSet/encounter-reason)
 - `.entry[].participant[].type[].coding` values from [Encounter Participant Type](http://hl7.org/fhir/ValueSet/encounter-participant-type)
+
+</details>
+
+
+### Waiting Room Content: [DocumentReference](https://www.hl7.org/fhir/documentreference)
+
+Search of waiting room content for telehealth
+
+<details><summary>Open JSON template</summary>
+
+#### Request
+```http request
+http://your-fhir-endpoint/fhir/DocumentReference?parameter=value
+```
+
+#### Response
+
+
+```json
+{
+  "resourceType": "Bundle",
+  "type": "searchset",
+  "total": <NumberofContents>,                             // required for checksum
+  "entry": [
+    {
+      "resourceType": "DocumentReference",
+      "id": "<ContentID>",                                 // required (1..1)
+      "meta": {
+        "source": "<http://twilio.com | customer's FHIR endpoint url>"
+      },
+      "status": "current",
+      "description": "<ContentLongDescription>",           // optional (0..1), for tooltip
+      "content": [
+        {
+          "attachment": {
+            "url": "<ContentVideoURL>",                    // required (1..1)
+            "title": "<ContentShortTitle>"                 // required (1..1)
+          }
+        }
+      ],
+      "context": {
+        "related": [
+          {
+            "reference": "<ContentAssignedPractitionerID>" // optional (0..*)
+          }
+        ]
+      }
+    }
+  ]
+}
+```
+- `.type` value from [Bundle Type](http://hl7.org/fhir/ValueSet/bundle-type)
+- `.entry[].status` value from [Document Reference Status](http://hl7.org/fhir/ValueSet/document-reference-status)
 
 </details>
 

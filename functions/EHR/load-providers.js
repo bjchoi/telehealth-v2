@@ -1,48 +1,26 @@
 /*
  * --------------------------------------------------------------------------------
- * load practitioners from EHR
+ * load providers from EHR
  *
  * event parameters:
  * .generate_sample: if true, will return sample output
  *
- * returns: array of practitioner information
+ * returns: json array of provider information
  * --------------------------------------------------------------------------------
  */
 
-/* --------------------------------------------------------------------------------
- * read Practitioners from EHR
- *
- * execute search against EHR FHIR endpoint and returns transformed results
- *
- * parameter:
- * - simulate: true/false, default true
- *
- * returns: array of transformed object, see below for transformation
- * --------------------------------------------------------------------------------
- */
-async function search_practitioners(simulate=true) {
+// --------------------------------------------------------------------------------
+async function load_practitioners(simulate=true) {
+  if (!simulate) throw new Error('live GET from EHR not implemented');
+
   const fs = require('fs');
 
-  if (simulate) {
-    const path = Runtime.getAssets()['/EHR/Practitioners.json'].path;
+  const path = Runtime.getAssets()['/EHR/Practitioners.json'].path;
 
-    const payload = fs.readFileSync(path).toString('utf-8');
-    const bundle = JSON.parse(payload);
+  const payload = fs.readFileSync(path).toString('utf-8');
+  const bundle = JSON.parse(payload);
 
-    const transformed = bundle.entry.map((resource) => {
-      return {
-        practitioner_id: resource.id,
-        practitioner_name: resource.name[0].text,
-        practitioner_phone: resource.telecom[0].value,
-      };
-    });
-
-    return transformed;
-  }
-  else
-  {
-    throw new Error('live GET from EHR not implemented');
-  }
+  return bundle;
 }
 
 
@@ -116,9 +94,20 @@ exports.handler = async function(context, event, callback) {
       return callback(null, sample);
     }
 
-    const practitioner = await search_practitioners(simulate = true);
-    //console.log(THIS, practitioner);
+    const practitioners = await load_practitioners();
+
+    const providers = practitioners.entry.map((resource) => {
+      return {
+        practitioner_id: resource.id,
+        practitioner_name: resource.name[0].text,
+        practitioner_phone: resource.telecom[0].value,
+      };
+    });
+
     console.log(THIS, `loaded ${practitioner.length} practitioners`);
+
+    return callback(null, providers);
+
 
     const role = await search_practitioner_roles(simulate = true);
     //console.log(role);
