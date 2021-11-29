@@ -10,6 +10,7 @@ import { InviteParticipantPopover } from './InviteParticipantPopover';
 import { SettingsPopover } from './SettingsPopover';
 import { VideoParticipant } from './VideoParticipant';
 import { ProviderRoomState } from '../../../constants';
+import { LocalAudioTrackPublication, LocalVideoTrackPublication } from 'twilio-video';
 
 export interface VideoConsultationProps {}
 
@@ -35,6 +36,8 @@ export const VideoConsultation = ({}: VideoConsultationProps) => {
   useEffect(() => {
     console.log(participants);
     if (room) {
+      const providerParticipant = room!.localParticipant;
+      const patientParticipant = participants.find(p => p.identity != room!.localParticipant.identity);
       setCallState(prev => {
         return {
           ...prev,
@@ -44,6 +47,24 @@ export const VideoConsultation = ({}: VideoConsultationProps) => {
       })
     }
   }, [participants, room])
+
+  useEffect(() => {
+    if (callState.providerParticipant) {
+      const videoTracks = callState.providerParticipant.videoTracks;
+      videoTracks.forEach((item: LocalVideoTrackPublication) => {
+        hasVideo ? item.track.enable() : item.track.disable()
+      })
+    }
+  }, [hasVideo]);
+
+  useEffect(() => {
+    if (callState.providerParticipant) {
+      const audioTracks = callState.providerParticipant.audioTracks;
+      audioTracks.forEach((item: LocalAudioTrackPublication) => {
+        hasAudio ? item.track.enable() : item.track.disable()
+      })
+    }
+  }, [hasAudio]);
 
   return (
     <div className="relative h-full">

@@ -45,7 +45,7 @@ export const VideoParticipant = ({
   }, [muted, showMutedBanner]);
 
   useEffect(() => {
-    setMuted(hasAudio);
+    setMuted(!hasAudio);
   }, [hasAudio]);
 
   useEffect(() => {
@@ -130,7 +130,7 @@ export const VideoParticipant = ({
         )}
         <ParticipantTracks
           participant={participant}
-          videoOnly
+          videoOnly={false}
           enableScreenShare={false}
           videoPriority={'high'}
           isLocalParticipant={isSelf}

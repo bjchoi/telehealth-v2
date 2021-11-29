@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Participant, Track } from 'twilio-video';
 import Publication from './Publication/Publication';
 import usePublications from './usePublications/usePublications';
@@ -27,14 +27,15 @@ export default function ParticipantTracks({
   isLocalParticipant,
 }: ParticipantTracksProps) {
   const publications = usePublications(participant);
+  const [filteredPublications, setFilteredPublications] = useState([]);
 
-  let filteredPublications;
-
+useEffect(() => {
   if (enableScreenShare && publications.some(p => p.trackName.includes('screen'))) {
-    filteredPublications = publications.filter(p => !p.trackName.includes('camera'));
+    setFilteredPublications(publications.filter(p => !p.trackName.includes('camera')));
   } else {
-    filteredPublications = publications.filter(p => !p.trackName.includes('screen'));
+    setFilteredPublications(publications.filter(p => !p.trackName.includes('screen')));
   }
+},[publications]);
 
   return (
     <>

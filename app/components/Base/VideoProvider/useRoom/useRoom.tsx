@@ -31,7 +31,7 @@ export default function useRoom(localTracks: LocalTrack[], onError: Callback, op
           // a warning from the EventEmitter object. Here we increase the max listeners to suppress the warning.
           newRoom.setMaxListeners(15);
 
-          newRoom.once('disconnected', () => {
+          newRoom.on('disconnected', () => {
             // Reset the room only after all other `disconnected` listeners have been called.
             setTimeout(() => setRoom(null));
             window.removeEventListener('beforeunload', disconnect);

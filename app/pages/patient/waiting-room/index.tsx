@@ -8,9 +8,9 @@ import { TechnicalCheck } from '../../../components/TechnicalCheck';
 import { PatientUser, TwilioPage } from '../../../types';
 import { useVisitContext } from '../../../state/VisitContext';
 import useVideoContext from '../../../components/Base/VideoProvider/useVideoContext/useVideoContext';
-import VideoContextLayout from '../../../components/Base/VideoProvider';
 import { roomService } from '../../../services/roomService';
 import { useRouter } from 'next/router';
+import PatientVideoContextLayout from '../../../components/Patient/PatientLayout';
 
 const WaitingRoomPage: TwilioPage = () => {
   const [showLeaveConfirmation, setShowLeaveConfirmation] = useState(false);
@@ -96,5 +96,5 @@ const WaitingRoomPage: TwilioPage = () => {
   );
 };
 
-WaitingRoomPage.Layout = VideoContextLayout;
+WaitingRoomPage.Layout = PatientVideoContextLayout;
 export default WaitingRoomPage;

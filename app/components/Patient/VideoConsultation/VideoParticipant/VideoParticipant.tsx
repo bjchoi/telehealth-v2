@@ -2,8 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { LocalParticipant, RemoteParticipant } from 'twilio-video';
 import { joinClasses } from '../../../../utils';
 import ParticipantTracks from '../../../Base/ParticipantTracks/ParticipantTracks';
-import useParticipants from '../../../Base/VideoProvider/useParticipants/useParticipants';
-import useVideoContext from '../../../Base/VideoProvider/useVideoContext/useVideoContext';
 import { Icon } from '../../../Icon';
 
 export interface VideoParticipantProps {
@@ -88,7 +86,7 @@ export const VideoParticipant = ({
         {!hasVideo && name}
         {hasVideo && <ParticipantTracks
           participant={participant}
-          videoOnly
+          videoOnly={false}
           enableScreenShare={false}
           videoPriority={'high'}
           isLocalParticipant={isSelf}
