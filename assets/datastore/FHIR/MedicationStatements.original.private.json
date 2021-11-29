@@ -1,10 +1,7 @@
 {
   "resourceType": "Bundle",
-  "meta": {
-    "lastUpdated": "2014-08-18T01:43:30Z"
-  },
   "type": "searchset",
-  "total": 1,
+  "total": 4,
   "entry": [
     {
       "resourceType": "MedicationStatement",

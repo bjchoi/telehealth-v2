@@ -22,6 +22,7 @@ const SERVER_START_TIMESTAMP = new Date().toISOString().replace(/.\d+Z$/g, "Z");
  * --------------------------------------------------------------------------------
  */
 const assert = require("assert");
+const https = require("https");
 
 async function setParam(context, key, value) {
   const onLocalhost = Boolean(
@@ -256,6 +257,39 @@ async function assignPhone2Flow(context, flow_sid) {
 }
 
 // --------------------------------------------------------------------------------
+async function fetchJsonAsset(context, assetPath) {
+  const hostname = context.DOMAIN_NAME.split(':')[0];
+  const port = context.DOMAIN_NAME.split(':')[1];
+  const options = {
+    hostname: hostname,
+    port: port,
+    secure: false,
+    path: assetPath,
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  };
+
+  return new Promise((resolve, reject) => {
+    console.log(options);
+    const request = https.request(options, (response) => {
+      let data = '';
+      response.on('data', (chunk) => {
+        data += chunk;
+      });
+      response.on('end', () => {
+        console.log('here - ', JSON.parse(data));
+        resolve(JSON.parse(data));
+      });
+      response.on('error', (error) => {
+        reject(error);
+      });
+    });
+    request.end();
+  });
+}
+
+
+// --------------------------------------------------------------------------------
 module.exports = {
   getParam,
   setParam,
@@ -263,4 +297,5 @@ module.exports = {
   addFlowFriendlyName,
   removeFlowFriendlyName,
   assignPhone2Flow,
+  fetchJsonAsset,
 };

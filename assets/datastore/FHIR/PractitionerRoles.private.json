@@ -1,14 +1,10 @@
 {
   "resourceType": "Bundle",
-  "meta": {
-    "lastUpdated": "2014-08-18T01:43:30Z"
-  },
   "type": "searchset",
   "total": 1,
   "entry": [
     {
       "resourceType": "PractitionerRole",
-      "id": "example",
       "active": true,
       "practitioner": {
         "reference": "Practitioner/d1000"

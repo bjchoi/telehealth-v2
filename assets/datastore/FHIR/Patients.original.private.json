@@ -1,20 +1,22 @@
 {
   "resourceType": "Bundle",
-  "meta": {
-    "lastUpdated": "2021-08-18T01:43:30Z"
-  },
   "type": "searchset",
-  "total": 1,
+  "total": 3,
   "entry": [
     {
       "resourceType": "Patient",
       "id": "p1000000",
+      "meta": {
+        "source": "http://owlhealth.com/"
+      },
       "name": [
         {
           "use": "official",
           "text": "Cooper, Sarah",
           "family": "Cooper",
-          "given": [ "Sarah" ]
+          "given": [
+            "Sarah"
+          ]
         }
       ],
       "telecom": [
@@ -28,13 +30,7 @@
       "communication": [
         {
           "language": {
-            "coding": [
-              {
-                "system": "urn:ietf:bcp:47",
-                "code": "en",
-                "display": "English"
-              }
-            ]
+            "text": "English"
           },
           "preferred": true
         }
@@ -43,12 +39,17 @@
     {
       "resourceType": "Patient",
       "id": "p2000000",
+      "meta": {
+        "source": "http://owlhealth.com/"
+      },
       "name": [
         {
           "use": "official",
           "text": "Green, Jakob",
           "family": "Green",
-          "given": [ "Jakob" ]
+          "given": [
+            "Jakob"
+          ]
         }
       ],
       "telecom": [
@@ -62,13 +63,7 @@
       "communication": [
         {
           "language": {
-            "coding": [
-              {
-                "system": "urn:ietf:bcp:47",
-                "code": "es",
-                "display": "Spanish"
-              }
-            ]
+            "text": "Spanish"
           },
           "preferred": true
         }
@@ -77,12 +72,17 @@
     {
       "resourceType": "Patient",
       "id": "p3000000",
+      "meta": {
+        "source": "http://owlhealth.com/"
+      },
       "name": [
         {
           "use": "official",
           "text": "Owusu-Koramoah, Jeremiah",
           "family": "Owusu-Koramoah",
-          "given": [ "Jeremiah" ]
+          "given": [
+            "Jeremiah"
+          ]
         }
       ],
       "telecom": [
@@ -96,13 +96,7 @@
       "communication": [
         {
           "language": {
-            "coding": [
-              {
-                "system": "urn:ietf:bcp:47",
-                "code": "es",
-                "display": "English"
-              }
-            ]
+            "text": "English"
           },
           "preferred": true
         }
