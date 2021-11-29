@@ -119,7 +119,7 @@ function VideoProvider({ options, children, onError = () => {} }: VideoProviderP
 }
 
 export function VideoProviderChildrenWrapper(props: React.PropsWithChildren<{}>) {
-  const { visit, user } = useVisitContext();
+  const { user } = useVisitContext();
   const { getAudioAndVideoTracks, localTracks } = useVideoContext();
   const [mediaError, setMediaError] = useState<Error>();
 
@@ -133,7 +133,7 @@ export function VideoProviderChildrenWrapper(props: React.PropsWithChildren<{}>)
     }
   }, [getAudioAndVideoTracks, mediaError]);
   return (
-    visit && user && (localTracks && localTracks.length > 0) &&
+    user && (localTracks && localTracks.length > 0) &&
     <>
       { props.children }
     </>
