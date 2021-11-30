@@ -34,10 +34,7 @@ export const VideoConsultation = ({}: VideoConsultationProps) => {
   });
 
   useEffect(() => {
-    console.log(participants);
     if (room) {
-      const providerParticipant = room!.localParticipant;
-      const patientParticipant = participants.find(p => p.identity != room!.localParticipant.identity);
       setCallState(prev => {
         return {
           ...prev,
