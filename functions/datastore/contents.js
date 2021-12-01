@@ -9,25 +9,27 @@
 
 const SCHEMA = '/datastore/content-schema.json';
 const PROTOTYPE = '/datastore/content-prototype.json';
-const FHIR_DOCUMENT_REFERENCE = '/datastore/FHIR/DocumentReferences.json';
+const FHIR_DOCUMENT_REFERENCE = 'DocumentReferences';
 
 const assert = require("assert");
-const fs = require("fs");
+const { getParam, fetchPublicJsonAsset } = require(Runtime.getFunctions()['helpers'].path);
+const { selectSyncDocument, upsertSyncDocument } = require(Runtime.getFunctions()['datastore/datastore-helpers'].path);
 
 // --------------------------------------------------------------------------------
-async function read_fhir(resourceType, simulate = true) {
+async function read_fhir(context, resourceType, simulate = true) {
   if (!simulate) throw new Error('live retrieval from EHR/CMS not implemented');
+  const TWILIO_SYNC_SID = await getParam(context, 'TWILIO_SYNC_SID');
 
-  const openFile = Runtime.getAssets()[resourceType].open;
-  const bundle = JSON.parse(openFile());
+  const bundle = await selectSyncDocument(context, TWILIO_SYNC_SID, resourceType);
   assert(bundle.total === bundle.entry.length, 'bundle checksum error!!!');
 
   return bundle.entry;
 }
 
 // --------------------------------------------------------------------------------
-async function save_fhir(resourceType, resources, simulate = true) {
+async function save_fhir(context, resourceType, resources, simulate = true) {
   if (!simulate) throw new Error('live saving to EHR/CMS not implemented');
+  const TWILIO_SYNC_SID = await getParam(context, 'TWILIO_SYNC_SID');
 
   const bundle = {
     resourceType: 'Bundle',
@@ -35,9 +37,9 @@ async function save_fhir(resourceType, resources, simulate = true) {
     total: resources.length,
     entry: resources,
   }
-  await fs.writeFileSync(Runtime.getAssets()[resourceType].path, JSON.stringify(bundle));
+  const document = await upsertSyncDocument(context, TWILIO_SYNC_SID, resourceType, bundle);
 
-  return true;
+  return document ? document.sid : null;
 }
 
 // --------------------------------------------------------------------------------
@@ -89,7 +91,6 @@ exports.handler = async function(context, event, callback) {
   const THIS = 'contents:';
   console.time(THIS);
 
-  const { getParam } = require(Runtime.getFunctions()['helpers'].path);
   const { isValidAppToken } = require(Runtime.getFunctions()["authentication-helper"].path);
 
   /* Following code checks that a valid token was sent with the API call */
@@ -162,21 +163,19 @@ exports.handler = async function(context, event, callback) {
       break;
 
       case 'SCHEMA': {
-        const openFile = Runtime.getAssets()[SCHEMA].open;
-        const schema = JSON.parse(openFile());
+        const schema = await fetchPublicJsonAsset(context, SCHEMA);
         return callback(null, schema);
       }
       break;
 
       case 'PROTOTYPE': {
-        const openFile = Runtime.getAssets()[SCHEMA].open;
-        const schema = JSON.parse(openFile());
+        const prototype = await fetchPublicJsonAsset(context, PROTOTYPE);
         return callback(null, prototype);
       }
       break;
 
       case 'GET': {
-        const resources = await read_fhir(FHIR_DOCUMENT_REFERENCE);
+        const resources = await read_fhir(context, FHIR_DOCUMENT_REFERENCE);
 
         let filtered_resources = null;
         if (event.provider_id) {
@@ -196,7 +195,6 @@ exports.handler = async function(context, event, callback) {
       break;
 
       case 'ADD': {
-        console.log(THIS, event);
         assert(event.content, 'Mssing event.content!!!');
         const content = JSON.parse(event.content);
         assert(content.content_id, 'Mssing content_id!!!');
@@ -205,10 +203,10 @@ exports.handler = async function(context, event, callback) {
 
         const fhir_document_reference = transform_content_to_fhir(content);
 
-        const resources = await read_fhir(FHIR_DOCUMENT_REFERENCE);
+        const resources = await read_fhir(context, FHIR_DOCUMENT_REFERENCE);
         resources.push(fhir_document_reference);
 
-        save_fhir(FHIR_DOCUMENT_REFERENCE, resources);
+        await save_fhir(context, FHIR_DOCUMENT_REFERENCE, resources);
 
         console.log(THIS, `added content ${content.content_id}`);
         return callback(null, { content_id : content.content_id });
@@ -218,9 +216,9 @@ exports.handler = async function(context, event, callback) {
       case 'REMOVE': {
         assert(event.content_id, 'Mssing event.content_id!!!');
 
-        const resources = await read_fhir(FHIR_DOCUMENT_REFERENCE);
+        const resources = await read_fhir(context, FHIR_DOCUMENT_REFERENCE);
         const remainder = resources.filter(r => r.id != event.content_id);
-        save_fhir(FHIR_DOCUMENT_REFERENCE, remainder);
+        await save_fhir(context, FHIR_DOCUMENT_REFERENCE, remainder);
 
         console.log(THIS, `removed content ${event.content_id}`);
         return callback(null, { content_id : event.content_id });
@@ -231,11 +229,11 @@ exports.handler = async function(context, event, callback) {
         assert(event.content_id, 'Mssing event.content_id!!!');
         assert(event.provider_id, 'Mssing event.provider_id!!!');
 
-        const resources = await read_fhir(FHIR_DOCUMENT_REFERENCE);
+        const resources = await read_fhir(context, FHIR_DOCUMENT_REFERENCE);
         const i = resources.findIndex(r => r.id === event.content_id);
         if (i > -1) {
           resources[i].context.related.push({reference: 'Practitioner/' + event.provider_id});
-          save_fhir(FHIR_DOCUMENT_REFERENCE, resources);
+          await save_fhir(context, FHIR_DOCUMENT_REFERENCE, resources);
 
           console.log(THIS, `assigned content ${event.content_id} provider ${event.provider_id}`);
         } else {
@@ -253,12 +251,12 @@ exports.handler = async function(context, event, callback) {
         assert(event.content_id, 'Mssing event.content_id!!!');
         assert(event.provider_id, 'Mssing event.provider_id!!!');
 
-        const resources = await read_fhir(FHIR_DOCUMENT_REFERENCE);
+        const resources = await read_fhir(context, FHIR_DOCUMENT_REFERENCE);
         const i = resources.findIndex(r => r.id === event.content_id);
         if (i > -1) {
           const providers = resources[i].context.related.filter(e => e.reference !== 'Practitioner/' + event.provider_id);
           resources[i].context.related = providers;
-          save_fhir(FHIR_DOCUMENT_REFERENCE, resources);
+          await save_fhir(context, FHIR_DOCUMENT_REFERENCE, resources);
 
           console.log(THIS, `unassigned content ${event.content_id} provider ${event.provider_id}`);
         } else {
