@@ -9,6 +9,7 @@ export const Uris = {
     list: '/visits',
     get: '/visits/{id}',
     patientRoomToken: '/visit/room',
+    patientToken: '/visit/patient-token',    
     providerRoomToken: '/visit/provider-room',
   },
 
