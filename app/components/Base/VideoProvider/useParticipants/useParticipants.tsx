@@ -24,13 +24,9 @@ export default function useParticipants() {
     if (room) {
       setParticipants(Array.from(room?.participants.values()));
       const participantConnected = (participant: RemoteParticipant) => {
-        console.log("Participant connected");
-        console.log(participant);
         setParticipants(prevParticipants => [...prevParticipants, participant]);
       }
       const participantDisconnected = (participant: RemoteParticipant) => {
-        console.log("Participant disconnected");
-        console.log(participant);
         setParticipants(prevParticipants => prevParticipants.filter(p => p !== participant));
       }
       room.on('participantConnected', participantConnected);

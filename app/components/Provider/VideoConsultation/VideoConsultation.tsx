@@ -11,6 +11,7 @@ import { SettingsPopover } from './SettingsPopover';
 import { VideoParticipant } from './VideoParticipant';
 import { ProviderRoomState } from '../../../constants';
 import { LocalAudioTrackPublication, LocalVideoTrackPublication } from 'twilio-video';
+import useChatContext from '../../Base/ChatProvider/useChatContext/useChatContext';
 
 export interface VideoConsultationProps {}
 
@@ -26,6 +27,7 @@ export const VideoConsultation = ({}: VideoConsultationProps) => {
   const [connectionIssueModalVisible, setConnectionIssueModalVisible] = useState(false);
   const participants = useParticipants();
   const { room } = useVideoContext();
+  const { conversation } = useChatContext();
   const [callState, setCallState] = useState<ProviderRoomState>({
     patientName: null,
     providerName: null,
@@ -34,6 +36,9 @@ export const VideoConsultation = ({}: VideoConsultationProps) => {
   });
 
   useEffect(() => {
+    // if (conversation) {
+    //   console.log(conversation.getParticipants().then(p => console.log(p)));
+    // }
     if (room) {
       setCallState(prev => {
         return {
@@ -44,6 +49,23 @@ export const VideoConsultation = ({}: VideoConsultationProps) => {
       })
     }
   }, [participants, room])
+
+  // Todo:
+  // - Will need to grant provider permissions to add others to conversation
+  // - Will need to fix this such that Patient is aware of conversation locally.
+  // - get video participants and update the chat participants
+
+  // useEffect(() => {
+  //   console.log(conversation);
+  //   if (conversation && callState.patientParticipant) {
+  //     conversation.add(callState.patientParticipant.identity).then(res => 
+  //       console.log(res)  
+  //     ).catch(err => {
+  //       console.log("error: ", err);
+  //     });
+  //   }
+  //   console.log(conversation);
+  // }, [conversation]);
 
   useEffect(() => {
     if (callState.providerParticipant) {

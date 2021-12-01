@@ -1,9 +1,11 @@
+import { Message } from '@twilio/conversations';
 import { joinClasses } from '../../../utils';
 
 export interface ChatMessageProps {
-  content: string;
+  content?: string;
   isProvider?: boolean;
-  name: string;
+  name?: string;
+  mess?: Message;
 }
 
 export const ChatMessage = ({
@@ -14,6 +16,7 @@ export const ChatMessage = ({
   return (
     <div className={joinClasses('mb-5', !isProvider && 'text-right')}>
       <div className="text-sm text-secondary mb-3">{name}</div>
+      
       <span
         className={joinClasses(
           'p-2 rounded-md',

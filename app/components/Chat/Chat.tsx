@@ -1,7 +1,9 @@
 import { useRef, useState } from 'react';
+import useChatContext from '../Base/ChatProvider/useChatContext/useChatContext';
 import { Button } from '../Button';
 import { Icon } from '../Icon';
 import { ChatMessage } from './ChatMessage/ChatMessage';
+import ChatInput from './ChatInput/ChatInput';
 
 export interface ChatProps {
   close?: () => void;
@@ -15,7 +17,8 @@ const patientName = 'Sarah Cooper';
 export const Chat = ({ close, inputPlaceholder, showHeader }: ChatProps) => {
   const fileInputRef = useRef(null);
   const [messageValue, setMessageValue] = useState('');
-  const [messages, setMessages] = useState([
+  const { messages, isChatWindowOpen, conversation } = useChatContext();
+  const [fakeMessages, setFakeMessages] = useState([
     { name: providerName, isProvider: true, content: 'Any symptoms?' },
     {
       name: patientName,
@@ -26,8 +29,8 @@ export const Chat = ({ close, inputPlaceholder, showHeader }: ChatProps) => {
 
   function sendMessage(event) {
     event.preventDefault();
-    setMessages([
-      ...messages,
+    setFakeMessages([
+      ...fakeMessages,
       {
         name: patientName,
         isProvider: false,
@@ -54,37 +57,15 @@ export const Chat = ({ close, inputPlaceholder, showHeader }: ChatProps) => {
             )}
           </div>
         )}
+        {/* Message List */}
         <div className="bg-white flex-grow w-full p-3 overflow-auto pb-16">
-          {messages.map((message, i) => (
-            <ChatMessage key={i} {...message} />
-          ))}
+          {messages.map((message, i) => {
+            if (message.body) {
+              return <ChatMessage key={i} isProvider={false} name={providerName} content={message.body}/>
+            }
+          })}
         </div>
-        <div className="absolute bottom-0 bg-white w-full p-3">
-          <form
-            className="flex justify-center items-center"
-            onSubmit={sendMessage}
-          >
-            <div className="pr-2">
-              <Button
-                type="button"
-                className="bg-white text-primary border-0"
-                icon="file_upload"
-                iconType="outline"
-                onClick={() => fileInputRef?.current?.click()}
-              />
-              <input ref={fileInputRef} className="hidden" type="file" />
-            </div>
-            <div className="flex-grow">
-              <input
-                className="bg-[#F4F4F4] rounded-[4.5em] p-2 px-4 w-full"
-                type="text"
-                placeholder={inputPlaceholder}
-                value={messageValue}
-                onChange={(event) => setMessageValue(event.target.value)}
-              />
-            </div>
-          </form>
-        </div>
+        <ChatInput conversation={conversation} isChatWindowOpen={isChatWindowOpen} inputPlaceholder={inputPlaceholder}/>
       </div>
     </>
   );

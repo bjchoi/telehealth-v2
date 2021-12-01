@@ -12,6 +12,7 @@ import { PoweredByTwilio } from '../../PoweredByTwilio';
 import { VideoControls } from '../../VideoControls';
 import { VideoParticipant } from './VideoParticipant';
 import { LocalAudioTrackPublication, LocalVideoTrackPublication } from 'twilio-video';
+import useChatContext from '../../Base/ChatProvider/useChatContext/useChatContext';
 
 export interface VideoConsultationProps {}
 
@@ -34,7 +35,6 @@ export const VideoConsultation = ({}: VideoConsultationProps) => {
 
   useEffect(() => {
     if (room) {
-
       setCallState(prev => {
         return {
           ...prev,

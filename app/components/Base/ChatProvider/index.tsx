@@ -2,6 +2,9 @@ import React, { createContext, useEffect, useState, useRef, useCallback } from '
 import { Conversation, Message } from '@twilio/conversations';
 import { Client } from '@twilio/conversations';
 import useVideoContext from '../VideoProvider/useVideoContext/useVideoContext';
+import clientStorage from '../../../services/clientStorage';
+import { CURRENT_VISIT_ID, STORAGE_USER_KEY } from '../../../constants';
+import { TelehealthUser } from '../../../types';
 
 type ChatContextType = {
   isChatWindowOpen: boolean;
@@ -20,7 +23,7 @@ export const ChatProvider: React.FC = ({children}) => {
   const [conversation, setConversation] = useState<Conversation | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [hasUnreadMessages, setHasUnreadMessages] = useState<boolean>(false);
-  const [chatClient, setChatClient] = useState<Client>();
+  const [chatClient, setChatClient] = useState<Client>(null);
   const isChatWindowOpenRef = useRef(false);
 
   const connect = useCallback(
@@ -30,7 +33,7 @@ export const ChatProvider: React.FC = ({children}) => {
       window.chatClient = chatClient;
       setChatClient(chatClient);
     },
-    [room, onError],
+    [onError],
   );
 
   // useEffect to handle addition of messages
@@ -72,7 +75,7 @@ export const ChatProvider: React.FC = ({children}) => {
   }, [room, chatClient, onError]);
 
   return (
-    <ChatContext.Provider value={{ isChatWindowOpen, setIsChatWindowOpen, connect, hasUnreadMessages, messages, conversation }}>
+    <ChatContext.Provider value={{ isChatWindowOpen, setIsChatWindowOpen, hasUnreadMessages, connect, messages, conversation }}>
       {children}
     </ChatContext.Provider>
   )
