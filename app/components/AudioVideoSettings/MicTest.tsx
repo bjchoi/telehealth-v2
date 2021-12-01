@@ -60,7 +60,6 @@ function MicTest({className, isMicOn}: MicTestProps) {
   useEffect(() => {
     if (isTrackEnabled && progressBarRef && analyser && isMicOn) {
       const sampleArray = new Uint8Array(analyser.frequencyBinCount);
-      console.log(sampleArray);
 
       const timer = interval(() => {
         analyser.getByteFrequencyData(sampleArray);

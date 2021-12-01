@@ -1,10 +1,14 @@
-import { useRef, useState } from 'react';
+import { useRef, useEffect } from 'react';
+import useChatContext from '../Base/ChatProvider/useChatContext/useChatContext';
 import { Button } from '../Button';
 import { Icon } from '../Icon';
 import { ChatMessage } from './ChatMessage/ChatMessage';
+import ChatInput from './ChatInput/ChatInput';
 
 export interface ChatProps {
   close?: () => void;
+  userName: string;
+  userRole: string;
   inputPlaceholder?: string;
   showHeader?: boolean;
 }
@@ -12,30 +16,17 @@ export interface ChatProps {
 const providerName = 'Dr. Josefina Santos';
 const patientName = 'Sarah Cooper';
 
-export const Chat = ({ close, inputPlaceholder, showHeader }: ChatProps) => {
+export const Chat = ({ inputPlaceholder, showHeader, userName, userRole }: ChatProps) => {
   const fileInputRef = useRef(null);
-  const [messageValue, setMessageValue] = useState('');
-  const [messages, setMessages] = useState([
-    { name: providerName, isProvider: true, content: 'Any symptoms?' },
-    {
-      name: patientName,
-      isProvider: false,
-      content: 'Just a mild fever of 99.7',
-    },
-  ]);
+  const messageListRef = useRef(null);
+  const { messages, isChatWindowOpen, setIsChatWindowOpen, conversation } = useChatContext();
 
-  function sendMessage(event) {
-    event.preventDefault();
-    setMessages([
-      ...messages,
-      {
-        name: patientName,
-        isProvider: false,
-        content: messageValue,
-      },
-    ]);
-    setMessageValue('');
-  }
+  // Scrolls to the bottom of the dummy div in chat
+  useEffect(() => {
+    if (isChatWindowOpen) {
+      messageListRef.current.scrollIntoView({behavior: 'smooth'});
+    }
+  }, [messages])
 
   return (
     <>
@@ -43,11 +34,11 @@ export const Chat = ({ close, inputPlaceholder, showHeader }: ChatProps) => {
         {showHeader && (
           <div className="relative bg-primary text-white rounded-t p-2 text-center w-full">
             Chat with {patientName}
-            {close && (
+            {isChatWindowOpen && (
               <button
                 className="absolute right-3"
                 type="button"
-                onClick={close}
+                onClick={() => setIsChatWindowOpen(!isChatWindowOpen)}
               >
                 <Icon name="close" />
               </button>
@@ -55,36 +46,20 @@ export const Chat = ({ close, inputPlaceholder, showHeader }: ChatProps) => {
           </div>
         )}
         <div className="bg-white flex-grow w-full p-3 overflow-auto pb-16">
-          {messages.map((message, i) => (
-            <ChatMessage key={i} {...message} />
-          ))}
-        </div>
-        <div className="absolute bottom-0 bg-white w-full p-3">
-          <form
-            className="flex justify-center items-center"
-            onSubmit={sendMessage}
-          >
-            <div className="pr-2">
-              <Button
-                type="button"
-                className="bg-white text-primary border-0"
-                icon="file_upload"
-                iconType="outline"
-                onClick={() => fileInputRef?.current?.click()}
+          {messages.map((message, i) => {
+            //console.log(message, userRole);
+            if (message.body) {
+              return <ChatMessage 
+                key={i} 
+                isSelf={message.author === userRole ? true : false} 
+                name={message.author ===  userRole ? userName : message.author} 
+                content={message.body}
               />
-              <input ref={fileInputRef} className="hidden" type="file" />
-            </div>
-            <div className="flex-grow">
-              <input
-                className="bg-[#F4F4F4] rounded-[4.5em] p-2 px-4 w-full"
-                type="text"
-                placeholder={inputPlaceholder}
-                value={messageValue}
-                onChange={(event) => setMessageValue(event.target.value)}
-              />
-            </div>
-          </form>
+            }
+          })}
+          <div className="bottom-scroll" ref={messageListRef} />
         </div>
+        <ChatInput conversation={conversation} isChatWindowOpen={isChatWindowOpen} inputPlaceholder={inputPlaceholder}/>
       </div>
     </>
   );

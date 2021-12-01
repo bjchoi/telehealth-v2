@@ -11,13 +11,14 @@ import { SettingsPopover } from './SettingsPopover';
 import { VideoParticipant } from './VideoParticipant';
 import { ProviderRoomState } from '../../../constants';
 import { LocalAudioTrackPublication, LocalVideoTrackPublication } from 'twilio-video';
+import useChatContext from '../../Base/ChatProvider/useChatContext/useChatContext';
+import { useVisitContext } from '../../../state/VisitContext';
 
 export interface VideoConsultationProps {}
 
 const providerName = 'Dr. Josefina Santos';
 
 export const VideoConsultation = ({}: VideoConsultationProps) => {
-  const [showChat, setShowChat] = useState(false);
   const [hasAudio, setHasAudio] = useState(true);
   const [hasVideo, setHasVideo] = useState(true);
   const [isRecording, setIsRecording] = useState(false);
@@ -25,6 +26,8 @@ export const VideoConsultation = ({}: VideoConsultationProps) => {
   const [settingsModalRef, setSettingsModalRef] = useState(null);
   const [connectionIssueModalVisible, setConnectionIssueModalVisible] = useState(false);
   const participants = useParticipants();
+  const { setIsChatWindowOpen, isChatWindowOpen } = useChatContext();
+  const { user } = useVisitContext();
   const { room } = useVideoContext();
   const [callState, setCallState] = useState<ProviderRoomState>({
     patientName: null,
@@ -34,10 +37,7 @@ export const VideoConsultation = ({}: VideoConsultationProps) => {
   });
 
   useEffect(() => {
-    console.log(participants);
     if (room) {
-      const providerParticipant = room!.localParticipant;
-      const patientParticipant = participants.find(p => p.identity != room!.localParticipant.identity);
       setCallState(prev => {
         return {
           ...prev,
@@ -106,7 +106,7 @@ export const VideoConsultation = ({}: VideoConsultationProps) => {
             setInviteModalRef(inviteModalRef ? null : event?.target)
           }
           toggleAudio={() => setHasAudio(!hasAudio)}
-          toggleChat={() => setShowChat(!showChat)}
+          toggleChat={() => setIsChatWindowOpen(!isChatWindowOpen)}
           toggleScreenShare={() => {}}
           toggleSettings={(event) =>
             setSettingsModalRef(settingsModalRef ? null : event?.target)
@@ -117,10 +117,12 @@ export const VideoConsultation = ({}: VideoConsultationProps) => {
           <PoweredByTwilio inverted />
         </div>
       </div>
-      {showChat && (
+      {isChatWindowOpen && (
         <div className="absolute bottom-0 right-10 max-w-[405px] w-full max-h-[400px] h-full">
           <Chat
-            close={() => setShowChat(false)}
+            close={() => setIsChatWindowOpen(false)}
+            userName={user.name}
+            userRole={user.role}
             showHeader
             inputPlaceholder="Message Sarah Cooper"
           />

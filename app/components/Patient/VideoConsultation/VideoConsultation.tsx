@@ -12,11 +12,11 @@ import { PoweredByTwilio } from '../../PoweredByTwilio';
 import { VideoControls } from '../../VideoControls';
 import { VideoParticipant } from './VideoParticipant';
 import { LocalAudioTrackPublication, LocalVideoTrackPublication } from 'twilio-video';
+import useChatContext from '../../Base/ChatProvider/useChatContext/useChatContext';
 
 export interface VideoConsultationProps {}
 
 export const VideoConsultation = ({}: VideoConsultationProps) => {
-  const [showChat, setShowChat] = useState(false);
   const [hasAudio, setHasAudio] = useState(true);
   const [hasVideo, setHasVideo] = useState(true);
   const [inviteModalVisible, setInviteModalVisible] = useState(false);
@@ -25,6 +25,7 @@ export const VideoConsultation = ({}: VideoConsultationProps) => {
   const { user, visit } = useVisitContext();
   const participants = useParticipants();
   const { room } = useVideoContext();
+  const { setIsChatWindowOpen, isChatWindowOpen } = useChatContext();
   const [callState, setCallState] = useState<PatientRoomState>({
     patientName: null,
     providerName: null,
@@ -34,7 +35,6 @@ export const VideoConsultation = ({}: VideoConsultationProps) => {
 
   useEffect(() => {
     if (room) {
-
       setCallState(prev => {
         return {
           ...prev,
@@ -75,7 +75,7 @@ export const VideoConsultation = ({}: VideoConsultationProps) => {
         </div>        
         { 
           roomState == 'connected' ? (
-          showChat ? (
+          isChatWindowOpen ? (
           <>
             <div className="flex">
               <div className="relative">
@@ -100,12 +100,17 @@ export const VideoConsultation = ({}: VideoConsultationProps) => {
                   className="absolute left-4 bottom-3"
                   icon="chat_bubble"
                   variant={ButtonVariant.tertiary}
-                  onClick={() => setShowChat(!showChat)}
+                  onClick={() => setIsChatWindowOpen(!isChatWindowOpen)}
                 />
               </div>
             </div>
             <div className="flex-grow w-full">
-              <Chat inputPlaceholder={`Message to ${visit.providerName}`} />
+              <Chat
+                close={() => setIsChatWindowOpen(false)} 
+                userName={user.name} 
+                userRole={user.role} 
+                inputPlaceholder={`Message to ${visit.providerName}`} 
+              />
             </div>
           </>
         ) : (
@@ -129,10 +134,10 @@ export const VideoConsultation = ({}: VideoConsultationProps) => {
                   participant={callState.providerParticipant}
                 />}
               </div>
-              {showChat && (
+              {isChatWindowOpen && (
                 <Button
                   icon="chat_bubble_outline"
-                  onClick={() => setShowChat(!showChat)}
+                  onClick={() => setIsChatWindowOpen(!isChatWindowOpen)}
                 />
               )}
             </div>
@@ -141,7 +146,7 @@ export const VideoConsultation = ({}: VideoConsultationProps) => {
               addParticipant={toggleInviteModal}
               flipCamera={() => setConnectionIssueModalVisible(true)}
               toggleAudio={() => setHasAudio(!hasAudio)}
-              toggleChat={() => setShowChat(!showChat)}
+              toggleChat={() => setIsChatWindowOpen(!isChatWindowOpen)}
               toggleVideo={() => setHasVideo(!hasVideo)}
             />
           </>

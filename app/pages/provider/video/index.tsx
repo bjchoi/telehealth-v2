@@ -8,21 +8,25 @@ import { TelehealthUser, TwilioPage } from '../../../types';
 import clientStorage from '../../../services/clientStorage';
 import { CURRENT_VISIT_ID } from '../../../constants';
 import ProviderVideoContextLayout from '../../../components/Provider/ProviderLayout';
+import useChatContext from '../../../components/Base/ChatProvider/useChatContext/useChatContext';
 
 const VideoPage: TwilioPage = () => {
   const { user, visit } = useVisitContext();
   const { connect: videoConnect, room } = useVideoContext();
+  const { connect: chatConnect } = useChatContext();
   const router = useRouter();
+
   useEffect(() => {
     if(!room) {
       clientStorage.getFromStorage<string>(CURRENT_VISIT_ID)
         .then(roomName => {
           roomService.createRoom(user as TelehealthUser, roomName)
-          .then(roomTokenResp => {
+          .then(async roomTokenResp => {
             if(!roomTokenResp.roomAvailable) {
               router.push('/provider/dashboard');
             }
-            videoConnect(roomTokenResp.token);
+            await videoConnect(roomTokenResp.token); 
+            chatConnect(roomTokenResp.token);
           });
         });
     }

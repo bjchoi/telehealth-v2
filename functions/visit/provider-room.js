@@ -84,7 +84,7 @@ module.exports.handler = async (context, event, callback) => {
       responseBody.roomAvailable = true;
       const conversationsClient = client.conversations.services(CONVERSATIONS_SERVICE_SID);
       // TODO: Add Conversation service later
-      /*try {
+      try {
         // See if conversation already exists
         await conversationsClient.conversations(room.sid).fetch();
       } catch (e) {
@@ -108,7 +108,7 @@ module.exports.handler = async (context, event, callback) => {
 
       try {
         // Add participant to conversation
-        await conversationsClient.conversations(room.sid).participants.create({ identity: user_identity });
+        await conversationsClient.conversations(room.sid).participants.create({ identity: identity });
       } catch (e) {
         // Ignore "Participant already exists" error (50433)
         if (e.code !== 50433) {
@@ -121,7 +121,7 @@ module.exports.handler = async (context, event, callback) => {
           });
           return callback(null, response);
         }
-      }*/
+      }
     }
   }
 

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useVisitContext, VisitStateProvider } from "../../state/VisitContext";
+import { ChatProvider } from "../Base/ChatProvider";
 import VideoProvider from "../Base/VideoProvider";
 import useConnectionOptions from "../Base/VideoProvider/useConnectionOptions/useConnectionOptions";
 import useVideoContext from "../Base/VideoProvider/useVideoContext/useVideoContext";
@@ -26,14 +27,15 @@ import useVideoContext from "../Base/VideoProvider/useVideoContext/useVideoConte
     );
   }
   
-  
   export function PatientVideoContextLayout(props: React.PropsWithChildren<{}>) {
     const connectionOptions = useConnectionOptions();
     return (
       <VisitStateProvider>
         <VideoProvider options={connectionOptions} onError={(error) => console.log(error)}>
           <VideoProviderChildrenWrapper>
-            { props.children }
+            <ChatProvider>
+              { props.children }
+            </ChatProvider>
           </VideoProviderChildrenWrapper>
         </VideoProvider>
       </VisitStateProvider>

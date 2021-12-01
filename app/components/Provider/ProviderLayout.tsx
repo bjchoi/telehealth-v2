@@ -3,6 +3,7 @@ import VideoProvider from "../Base/VideoProvider";
 import useConnectionOptions from "../Base/VideoProvider/useConnectionOptions/useConnectionOptions";
 import { useVisitContext, VisitStateProvider } from "../../state/VisitContext";
 import useVideoContext from "../Base/VideoProvider/useVideoContext/useVideoContext";
+import { ChatProvider } from "../Base/ChatProvider";
 
  function VideoProviderChildrenWrapper(props: React.PropsWithChildren<{}>) {
     const { user } = useVisitContext();
@@ -25,15 +26,16 @@ import useVideoContext from "../Base/VideoProvider/useVideoContext/useVideoConte
       </>
     );
   }
-  
-  
+
   export function ProviderVideoContextLayout(props: React.PropsWithChildren<{}>) {
     const connectionOptions = useConnectionOptions();
     return (
       <VisitStateProvider>
         <VideoProvider options={connectionOptions} onError={(error) => console.log(error)}>
           <VideoProviderChildrenWrapper>
-            { props.children }
+            <ChatProvider>
+              { props.children }
+            </ChatProvider>
           </VideoProviderChildrenWrapper>
         </VideoProvider>
       </VisitStateProvider>
