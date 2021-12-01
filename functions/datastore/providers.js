@@ -9,19 +9,19 @@
 
 const SCHEMA = '/datastore/provider-schema.json';
 const PROTOTYPE = '/datastore/provider-prototype.json';
-const FHIR_PRACTITIONER = '/datastore/FHIR/Practitioners.json';
-const FHIR_PRACTITIONER_ROLE = '/datastore/FHIR/PractitionerRoles.json';
+const FHIR_PRACTITIONER = 'Practitioners';
+const FHIR_PRACTITIONER_ROLE = 'PractitionerRoles';
 
 const assert = require("assert");
-const fs = require("fs");
-
+const { getParam, fetchPublicJsonAsset } = require(Runtime.getFunctions()['helpers'].path);
+const { selectSyncDocument } = require(Runtime.getFunctions()['datastore/datastore-helpers'].path);
 
 // --------------------------------------------------------------------------------
-async function read_fhir(resourceType, simulate = true) {
+async function read_fhir(context, resourceType, simulate = true) {
   if (!simulate) throw new Error('live retrieval from EHR not implemented');
+  const TWILIO_SYNC_SID = await getParam(context, 'TWILIO_SYNC_SID');
 
-  const openFile = Runtime.getAssets()[resourceType].open;
-  const bundle = JSON.parse(openFile());
+  const bundle = await selectSyncDocument(context, TWILIO_SYNC_SID, resourceType);
   assert(bundle.total === bundle.entry.length, 'bundle checksum error!!!');
 
   return bundle.entry;
@@ -93,22 +93,20 @@ exports.handler = async function(context, event, callback) {
         break;
 
       case 'SCHEMA': {
-        const openFile = Runtime.getAssets()[SCHEMA].open;
-        const schema = JSON.parse(openFile());
+        const schema = await fetchPublicJsonAsset(context, SCHEMA);
         return callback(null, schema);
       }
         break;
 
       case 'PROTOTYPE': {
-        const openFile = Runtime.getAssets()[PROTOTYPE].open;
-        const prototype = JSON.parse(openFile());
+        const prototype = await fetchPublicJsonAsset(context, PROTOTYPE);
         return callback(null, prototype);
       }
         break;
 
       case 'GET': {
-        const resources = await read_fhir(FHIR_PRACTITIONER);
-        const practitioner_roles = await read_fhir(FHIR_PRACTITIONER_ROLE);
+        const resources = await read_fhir(context, FHIR_PRACTITIONER);
+        const practitioner_roles = await read_fhir(context, FHIR_PRACTITIONER_ROLE);
 
         let filtered = null;
         if (event.provider_id)

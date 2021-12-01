@@ -356,8 +356,9 @@ async function populateProviderContents() {
 
     contents.forEach(row => {
       const is_assigned = row.providers.find(e => e === provider_id) ? 'checked' : '';
+      const id = row.content_id + '-assigned';
       $(UI.provider_contents).append(`<tr>
-      <td><input type="checkbox" ${is_assigned} onclick="assignContent2Provider('${row.content_id}');"></td>
+      <td><input type="checkbox" ${is_assigned} id="${id}" onclick="assignContent2Provider('#${id}', '${row.content_id}');"></td>
       <td>${row.content_title}</td>
       <td><a class="button" href="${row.content_video_url}" target="_blank">Watch Video</a></td>
       </tr>`);
@@ -369,12 +370,40 @@ async function populateProviderContents() {
 }
 
 
-async function assignContent2Provider(content_id) {
+// --------------------------------------------------------------------------------------------------------------
+async function assignContent2Provider(css_id, content_id) {
   const THIS = assignContent2Provider.name;
 
+  const is_checked = $(css_id).is(':checked'); // $(css_id).prop('checked');
   const provider_id = $(UI.provider_selector).val();
 
-  console.log(THIS, `assigned ${content_id} to ${provider_id}`);
+  fetch('/datastore/contents', {
+    method: 'POST',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      action: is_checked ? 'ASSIGN' : 'UNASSIGN',
+      content_id: content_id,
+      provider_id: provider_id,
+    })
+  })
+    .then((response) => response.json())
+    .then((result) => {
+      console.log(THIS, result);
+      populateProviderContents();
+    })
+    .catch((err) => {
+      console.log(THIS, err);
+      throw Error(err);
+    });
+
+  if (is_checked) {
+    console.log(THIS, `assigned ${content_id} to ${provider_id}`);
+  } else {
+    console.log(THIS, `unassigned ${content_id} to ${provider_id}`);
+  }
 }
 
 
@@ -447,10 +476,13 @@ async function populateProviderPatients() {
 async function initialize() {
   console.log('initialize function in administration-controller.js');
 
-  await populatePatients();
-  await populateContents();
-  await populateProviders();
+  populatePatients();
+  populateContents();
+  populateProviders();
+
+  // provider selector needs to be populated first
   await populateProviderSelector();
-  await populateProviderContents();
-  await populateProviderPatients();
+
+  populateProviderContents();
+  populateProviderPatients();
 }

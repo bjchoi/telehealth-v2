@@ -23,6 +23,7 @@ const SERVER_START_TIMESTAMP = new Date().toISOString().replace(/.\d+Z$/g, "Z");
  */
 const assert = require("assert");
 const https = require("https");
+const http = require("http");
 
 async function setParam(context, key, value) {
   const onLocalhost = Boolean(
@@ -166,6 +167,26 @@ async function getParam(context, key) {
         return null;
       }
 
+      case 'TWILIO_SYNC_SID': {
+        const services = await client.sync.services.list();
+        const service = services.find(s => s.friendlyName === context.CUSTOMER_NAME);
+        if (service) return service.sid;
+
+        console.log('Sync service not found so creating a new sync service...');
+        let sync_sid = null;
+        await client.sync.services
+          .create({ friendlyName: context.CUSTOMER_NAME })
+          .then((result) => {
+            console.log(result);
+            console.log(result.sid);
+            sync_sid = result.sid;
+          });
+        if (sync_sid) return sync_sid;
+
+        console.log('Unable to create a Twilio Sync Service!!! ABORTING!!! ');
+        return null;
+      }
+
       default:
         throw new Error(`Undefined variable ${key} !!!`);
     }
@@ -257,27 +278,25 @@ async function assignPhone2Flow(context, flow_sid) {
 }
 
 // --------------------------------------------------------------------------------
-async function fetchJsonAsset(context, assetPath) {
+async function fetchPublicJsonAsset(context, assetPath) {
   const hostname = context.DOMAIN_NAME.split(':')[0];
   const port = context.DOMAIN_NAME.split(':')[1];
   const options = {
     hostname: hostname,
     port: port,
-    secure: false,
     path: assetPath,
     method: 'GET',
     headers: { 'Content-Type': 'application/json' },
   };
+  const http_protocol = (hostname === 'localhost') ? http : https;
 
   return new Promise((resolve, reject) => {
-    console.log(options);
-    const request = https.request(options, (response) => {
+    const request = http_protocol.request(options, (response) => {
       let data = '';
       response.on('data', (chunk) => {
         data += chunk;
       });
       response.on('end', () => {
-        console.log('here - ', JSON.parse(data));
         resolve(JSON.parse(data));
       });
       response.on('error', (error) => {
@@ -297,5 +316,5 @@ module.exports = {
   addFlowFriendlyName,
   removeFlowFriendlyName,
   assignPhone2Flow,
-  fetchJsonAsset,
+  fetchPublicJsonAsset,
 };

@@ -9,26 +9,28 @@
 
 const SCHEMA = '/datastore/appointment-schema.json';
 const PROTOTYPE = '/datastore/appointment-prototype.json';
-const FHIR_APPOINTMENT = '/datastore/FHIR/Appointments.json';
+const FHIR_APPOINTMENT = 'Appointments';
 
 const assert = require("assert");
 const fs = require("fs");
-const { getParam, fetchJsonAsset } = require(Runtime.getFunctions()['helpers'].path);
+const { getParam, fetchPublicJsonAsset } = require(Runtime.getFunctions()['helpers'].path);
+const { selectSyncDocument, upsertSyncDocument } = require(Runtime.getFunctions()['datastore/datastore-helpers'].path);
 
 // --------------------------------------------------------------------------------
-async function read_fhir(resourceType, simulate = true) {
+async function read_fhir(context, resourceType, simulate = true) {
   if (!simulate) throw new Error('live retrieval from EHR not implemented');
+  const TWILIO_SYNC_SID = await getParam(context, 'TWILIO_SYNC_SID');
 
-  const openFile = Runtime.getAssets()[resourceType].open;
-  const bundle = JSON.parse(openFile());
+  const bundle = await selectSyncDocument(context, TWILIO_SYNC_SID, resourceType);
   assert(bundle.total === bundle.entry.length, 'bundle checksum error!!!');
 
   return bundle.entry;
 }
 
 // --------------------------------------------------------------------------------
-async function save_fhir(resourceType, resources, simulate = true) {
+async function save_fhir(context, resourceType, resources, simulate = true) {
   if (!simulate) throw new Error('live saving to EHR not implemented');
+  const TWILIO_SYNC_SID = await getParam(context, 'TWILIO_SYNC_SID');
 
   const bundle = {
     resourceType: 'Bundle',
@@ -36,9 +38,9 @@ async function save_fhir(resourceType, resources, simulate = true) {
     total: resources.length,
     entry: resources,
   }
-  await fs.writeFileSync(Runtime.getAssets()[resourceType].path, JSON.stringify(bundle));
+  const document = await upsertSyncDocument(context, TWILIO_SYNC_SID, resourceType, bundle);
 
-  return true;
+  return document ? document.sid : null;
 }
 
 // --------------------------------------------------------------------------------
@@ -168,21 +170,19 @@ exports.handler = async function(context, event, callback) {
       break;
 
       case 'SCHEMA': {
-        const openFile = Runtime.getAssets()[SCHEMA].open;
-        const schema = JSON.parse(openFile());
+        const schema = await fetchPublicJsonAsset(context, SCHEMA);
         return callback(null, schema);
       }
         break;
 
       case 'PROTOTYPE': {
-        const openFile = Runtime.getAssets()[PROTOTYPE].open;
-        const prototype = JSON.parse(openFile());
+        const prototype = await fetchPublicJsonAsset(context, PROTOTYPE);
         return callback(null, prototype);
       }
         break;
 
       case 'GET': {
-        const resources = await read_fhir(FHIR_APPOINTMENT);
+        const resources = await read_fhir(context, FHIR_APPOINTMENT);
 
         let by_patient = null;
         if (event.patient_id) {
@@ -227,7 +227,7 @@ exports.handler = async function(context, event, callback) {
         break;
 
       case 'GET': {
-        const resources = await read_fhir(FHIR_APPOINTMENT);
+        const resources = await read_fhir(context, FHIR_APPOINTMENT);
 
         let filtered_resources = null;
         if (event.provider_id) {
@@ -262,10 +262,10 @@ exports.handler = async function(context, event, callback) {
 
         const fhir_appointment = transform_appointment_to_fhir(appointment);
 
-        const resources = await read_fhir(FHIR_APPOINTMENT);
+        const resources = await read_fhir(context, FHIR_APPOINTMENT);
         resources.push(fhir_appointment);
 
-        save_fhir(FHIR_APPOINTMENT, resources);
+        await save_fhir(context, FHIR_APPOINTMENT, resources);
 
         console.log(THIS, `added appointment ${appointment.appointment_id}`);
         return callback(null, { appointment_id : appointment.appointment_id });
@@ -275,9 +275,9 @@ exports.handler = async function(context, event, callback) {
       case 'REMOVE': {
         assert(event.appointment_id, 'Mssing event.appointment_id!!!');
 
-        const resources = await read_fhir(FHIR_APPOINTMENT);
+        const resources = await read_fhir(context, FHIR_APPOINTMENT);
         const remainder = resources.filter(r => r.id != event.appointment_id);
-        save_fhir(FHIR_APPOINTMENT, remainder);
+        await save_fhir(context, FHIR_APPOINTMENT, remainder);
 
         console.log(THIS, `removed appointment ${event.appointment_id}`);
         return callback(null, { appointment_id : event.appointment_id });

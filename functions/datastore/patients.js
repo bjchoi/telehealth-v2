@@ -9,27 +9,29 @@
 
 const SCHEMA = '/datastore/patient-schema.json';
 const PROTOTYPE = '/datastore/patient-prototype.json';
-const FHIR_PATIENT = '/datastore/FHIR/Patients.json';
-const FHIR_MEDICATION_STATEMENT = '/datastore/FHIR/MedicationStatements.json';
-const FHIR_CONDITION = '/datastore/FHIR/Conditions.json';
+const FHIR_PATIENT = 'Patients';
+const FHIR_MEDICATION_STATEMENT = 'MedicationStatements';
+const FHIR_CONDITION = 'Conditions';
 
 const assert = require("assert");
-const fs = require("fs");
+const { getParam, fetchPublicJsonAsset } = require(Runtime.getFunctions()['helpers'].path);
+const { selectSyncDocument, upsertSyncDocument } = require(Runtime.getFunctions()['datastore/datastore-helpers'].path);
 
 // --------------------------------------------------------------------------------
-async function read_fhir(resourceType, simulate=true) {
+async function read_fhir(context, resourceType, simulate=true) {
   if (!simulate) throw new Error('live retrieval from EHR not implemented');
+  const TWILIO_SYNC_SID = await getParam(context, 'TWILIO_SYNC_SID');
 
-  const openFile = Runtime.getAssets()[resourceType].open;
-  const bundle = JSON.parse(openFile());
+  const bundle = await selectSyncDocument(context, TWILIO_SYNC_SID, resourceType);
   assert(bundle.total === bundle.entry.length, 'bundle checksum error!!!');
 
   return bundle.entry;
 }
 
 // --------------------------------------------------------------------------------
-async function save_fhir(resourceType, resources, simulate = true) {
+async function save_fhir(context, resourceType, resources, simulate = true) {
   if (!simulate) throw new Error('live saving to EHR not implemented');
+  const TWILIO_SYNC_SID = await getParam(context, 'TWILIO_SYNC_SID');
 
   const bundle = {
     resourceType: 'Bundle',
@@ -37,9 +39,9 @@ async function save_fhir(resourceType, resources, simulate = true) {
     total: resources.length,
     entry: resources,
   }
-  await fs.writeFileSync(Runtime.getAssets()[resourceType].path, JSON.stringify(bundle));
+  const document = await upsertSyncDocument(context, TWILIO_SYNC_SID, resourceType, bundle);
 
-  return true;
+  return document ? document.sid : null;
 }
 
 // --------------------------------------------------------------------------------
@@ -201,23 +203,21 @@ exports.handler = async function(context, event, callback) {
         break;
 
       case 'SCHEMA': {
-        const openFile = Runtime.getAssets()[SCHEMA].open;
-        const schema = JSON.parse(openFile());
+        const schema = await fetchPublicJsonAsset(context, SCHEMA);
         return callback(null, schema);
       }
         break;
 
       case 'PROTOTYPE': {
-        const openFile = Runtime.getAssets()[PROTOTYPE].open;
-        const prototype = JSON.parse(openFile());
+        const prototype = await fetchPublicJsonAsset(context, PROTOTYPE);
         return callback(null, prototype);
       }
         break;
 
       case 'GET': {
-        const resources = await read_fhir(FHIR_PATIENT);
-        const medication_statements = await read_fhir(FHIR_MEDICATION_STATEMENT);
-        const conditions = await read_fhir(FHIR_CONDITION);
+        const resources = await read_fhir(context, FHIR_PATIENT);
+        const medication_statements = await read_fhir(context, FHIR_MEDICATION_STATEMENT);
+        const conditions = await read_fhir(context, FHIR_CONDITION);
 
         let filtered = null;
         if (event.patient_id)
@@ -250,17 +250,17 @@ exports.handler = async function(context, event, callback) {
 
         const added = transform_patient_to_fhir(patient);
 
-        const current_patients = await read_fhir(FHIR_PATIENT);
-        const current_medications = await read_fhir(FHIR_MEDICATION_STATEMENT);
-        const current_conditions = await read_fhir(FHIR_CONDITION);
+        const current_patients = await read_fhir(context, FHIR_PATIENT);
+        const current_medications = await read_fhir(context, FHIR_MEDICATION_STATEMENT);
+        const current_conditions = await read_fhir(context, FHIR_CONDITION);
 
         new_patients = current_patients.concat(added.fhir_patient);
         new_medications = current_medications.concat(added.fhir_medication_statements);
         new_conditions = current_conditions.concat(added.fhir_conditions);
 
-        save_fhir(FHIR_PATIENT, new_patients);
-        save_fhir(FHIR_MEDICATION_STATEMENT, new_medications);
-        save_fhir(FHIR_CONDITION, new_conditions);
+        await save_fhir(context, FHIR_PATIENT, new_patients);
+        await save_fhir(context, FHIR_MEDICATION_STATEMENT, new_medications);
+        await save_fhir(context, FHIR_CONDITION, new_conditions);
 
         console.log(THIS, `added content ${patient.patient_id}`);
         return callback(null, { patient_id : patient.patient_id });
@@ -270,18 +270,18 @@ exports.handler = async function(context, event, callback) {
       case 'REMOVE': {
         assert(event.patient_id, 'Mssing event.patient_id!!!');
 
-        const current_patients = await read_fhir(FHIR_PATIENT);
-        const current_medications = await read_fhir(FHIR_MEDICATION_STATEMENT);
-        const current_conditions = await read_fhir(FHIR_CONDITION);
+        const current_patients = await read_fhir(context, FHIR_PATIENT);
+        const current_medications = await read_fhir(context, FHIR_MEDICATION_STATEMENT);
+        const current_conditions = await read_fhir(context, FHIR_CONDITION);
 
         const pid = 'Patient/' + event.patient_id;
         const new_patients = current_patients.filter(r => r.id != event.patient_id);
         const new_medications = current_medications.filter(r => r.subject.reference != pid);
         const new_conditions = current_conditions.filter(r => r.subject.reference != pid);
 
-        save_fhir(FHIR_PATIENT, new_patients);
-        save_fhir(FHIR_MEDICATION_STATEMENT, new_medications);
-        save_fhir(FHIR_CONDITION, new_conditions);
+        await save_fhir(context, FHIR_PATIENT, new_patients);
+        await save_fhir(context, FHIR_MEDICATION_STATEMENT, new_medications);
+        await save_fhir(context, FHIR_CONDITION, new_conditions);
 
         console.log(THIS, `removed patient ${event.patient_id}`);
         return callback(null, { patient_id : event.patient_id });
