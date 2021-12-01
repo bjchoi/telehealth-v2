@@ -2,9 +2,6 @@ import React, { createContext, useEffect, useState, useRef, useCallback } from '
 import { Conversation, Message } from '@twilio/conversations';
 import { Client } from '@twilio/conversations';
 import useVideoContext from '../VideoProvider/useVideoContext/useVideoContext';
-import clientStorage from '../../../services/clientStorage';
-import { CURRENT_VISIT_ID, STORAGE_USER_KEY } from '../../../constants';
-import { TelehealthUser } from '../../../types';
 
 type ChatContextType = {
   isChatWindowOpen: boolean;

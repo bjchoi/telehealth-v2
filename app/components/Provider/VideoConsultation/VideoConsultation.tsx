@@ -12,13 +12,13 @@ import { VideoParticipant } from './VideoParticipant';
 import { ProviderRoomState } from '../../../constants';
 import { LocalAudioTrackPublication, LocalVideoTrackPublication } from 'twilio-video';
 import useChatContext from '../../Base/ChatProvider/useChatContext/useChatContext';
+import { useVisitContext } from '../../../state/VisitContext';
 
 export interface VideoConsultationProps {}
 
 const providerName = 'Dr. Josefina Santos';
 
 export const VideoConsultation = ({}: VideoConsultationProps) => {
-  const [showChat, setShowChat] = useState(false);
   const [hasAudio, setHasAudio] = useState(true);
   const [hasVideo, setHasVideo] = useState(true);
   const [isRecording, setIsRecording] = useState(false);
@@ -26,8 +26,9 @@ export const VideoConsultation = ({}: VideoConsultationProps) => {
   const [settingsModalRef, setSettingsModalRef] = useState(null);
   const [connectionIssueModalVisible, setConnectionIssueModalVisible] = useState(false);
   const participants = useParticipants();
+  const { setIsChatWindowOpen, isChatWindowOpen } = useChatContext();
+  const { user } = useVisitContext();
   const { room } = useVideoContext();
-  const { conversation } = useChatContext();
   const [callState, setCallState] = useState<ProviderRoomState>({
     patientName: null,
     providerName: null,
@@ -36,9 +37,6 @@ export const VideoConsultation = ({}: VideoConsultationProps) => {
   });
 
   useEffect(() => {
-    // if (conversation) {
-    //   console.log(conversation.getParticipants().then(p => console.log(p)));
-    // }
     if (room) {
       setCallState(prev => {
         return {
@@ -49,23 +47,6 @@ export const VideoConsultation = ({}: VideoConsultationProps) => {
       })
     }
   }, [participants, room])
-
-  // Todo:
-  // - Will need to grant provider permissions to add others to conversation
-  // - Will need to fix this such that Patient is aware of conversation locally.
-  // - get video participants and update the chat participants
-
-  // useEffect(() => {
-  //   console.log(conversation);
-  //   if (conversation && callState.patientParticipant) {
-  //     conversation.add(callState.patientParticipant.identity).then(res => 
-  //       console.log(res)  
-  //     ).catch(err => {
-  //       console.log("error: ", err);
-  //     });
-  //   }
-  //   console.log(conversation);
-  // }, [conversation]);
 
   useEffect(() => {
     if (callState.providerParticipant) {
@@ -125,7 +106,7 @@ export const VideoConsultation = ({}: VideoConsultationProps) => {
             setInviteModalRef(inviteModalRef ? null : event?.target)
           }
           toggleAudio={() => setHasAudio(!hasAudio)}
-          toggleChat={() => setShowChat(!showChat)}
+          toggleChat={() => setIsChatWindowOpen(!isChatWindowOpen)}
           toggleScreenShare={() => {}}
           toggleSettings={(event) =>
             setSettingsModalRef(settingsModalRef ? null : event?.target)
@@ -136,10 +117,12 @@ export const VideoConsultation = ({}: VideoConsultationProps) => {
           <PoweredByTwilio inverted />
         </div>
       </div>
-      {showChat && (
+      {isChatWindowOpen && (
         <div className="absolute bottom-0 right-10 max-w-[405px] w-full max-h-[400px] h-full">
           <Chat
-            close={() => setShowChat(false)}
+            close={() => setIsChatWindowOpen(false)}
+            userName={user.name}
+            userRole={user.role}
             showHeader
             inputPlaceholder="Message Sarah Cooper"
           />

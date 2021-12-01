@@ -76,7 +76,7 @@ module.exports.handler = async (context, event, callback) => {
     if (room) {
       responseBody.roomSid = room.sid;
       responseBody.roomAvailable = true;
-      /*const conversationsClient = client.conversations.services(CONVERSATIONS_SERVICE_SID);
+      const conversationsClient = client.conversations.services(CONVERSATIONS_SERVICE_SID);
       try {
         // See if conversation already exists
         await conversationsClient.conversations(room.sid).fetch();
@@ -87,7 +87,7 @@ module.exports.handler = async (context, event, callback) => {
             console.log(`Error adding participant to conversation conversaion ${room.sid}`);
             console.log(e);
         }
-      }*/
+      }
     }
   }
 

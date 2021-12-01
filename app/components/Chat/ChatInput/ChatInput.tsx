@@ -1,6 +1,7 @@
 import { Button } from '../../Button';
 import React, { useRef, useState, useEffect } from 'react';
 import { Conversation } from '@twilio/conversations';
+import { isMobile } from '../../../utils';
 
 interface ChatInputProps {
   conversation: Conversation;
@@ -16,11 +17,10 @@ export default function ChatInput({ conversation, inputPlaceholder, isChatWindow
   const chatInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    console.log("convo",conversation);
     if (isChatWindowOpen) {
       chatInputRef.current?.focus();
     }
-  }, [])
+  }, [chatInputRef])
 
   function handleSendMessage(message: string) {
     if (isValidMessage) {
@@ -29,16 +29,17 @@ export default function ChatInput({ conversation, inputPlaceholder, isChatWindow
     }
   }
 
-  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    console.log(event.target);
+  function handleSubmit(event: React.KeyboardEvent) {
+    if (!isMobile && event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault();
+      handleSendMessage(messageBody);
+    }
   }
 
   return (
     <div className="absolute bottom-0 bg-white w-full p-3 flex">
       <form
         className="flex justify-center items-center"
-        onSubmit={handleSubmit}
       >
         <div className="pr-2">
           <Button
@@ -55,6 +56,7 @@ export default function ChatInput({ conversation, inputPlaceholder, isChatWindow
             className="bg-[#F4F4F4] rounded-[4.5em] p-2 px-4 w-full flex-auto"
             type="text"
             ref={chatInputRef}
+            onKeyPress={handleSubmit}
             placeholder={inputPlaceholder}
             value={messageBody}
             onChange={(event: React.ChangeEvent<HTMLInputElement>) => setMessageBody(event.target.value)}
