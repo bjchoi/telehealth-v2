@@ -93,7 +93,7 @@ function login(context, event, callback) {
     if(checkDisableAuthForLocalhost(context)){
         response.setStatusCode(200);
         response.setBody({
-            accessToken: createAppToken('login', context),
+            accessToken: createAppToken(context),
             refreshToken: createRefreshToken('login', context),
         });
         return callback(null, response);
