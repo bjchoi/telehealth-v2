@@ -1,24 +1,18 @@
-/**
- * Generates Patient/Visitor Token for the Visit
- * Token should be used to generate Visit Link
- * 
- * 
- */
-async function getPasscode(context, event, response) {
-  const { createPatientToken } = require(Runtime.getFunctions()["datastore/patient-tokens"].path);
+const tokens = require(Runtime.getFunctions()["datastore/tokens"].path);
 
-  if (!event.patient_identity) {
+async function getPasscode(context, role, event, response) {
+  if (!event.id) {
     response.setStatusCode(400);
     response.setBody({
       error: {
-        message: 'missing patient_identity',
-        explanation: 'The patient_identity parameter is missing.',
+        message: 'missing id',
+        explanation: 'The id parameter is missing.',
       },
     });
     return response;
   }
 
-  const tokenData = await createPatientToken(context, event);
+  const tokenData = await tokens.createToken(context, role, event);
   // Return token
   response.setStatusCode(200);
   response.setBody(tokenData);
@@ -26,8 +20,6 @@ async function getPasscode(context, event, response) {
 };
 
 async function getToken(context, event, response) {
-  const { getPatientToken } = require(Runtime.getFunctions()["datastore/patient-tokens"].path);
-
   if (!event.passcode) {
     response.setStatusCode(400);
     response.setBody({
@@ -39,7 +31,7 @@ async function getToken(context, event, response) {
     return response;
   }
 
-  const tokenData = await getPatientToken(context, event.passcode);
+  const tokenData = await tokens.getToken(context, event.passcode);
   // Return token
   response.setStatusCode(200);
   response.setBody(tokenData);
@@ -47,21 +39,26 @@ async function getToken(context, event, response) {
 };
 
 module.exports.handler = async (context, event, callback) => {
-
-  const { patient_identity, visit_id, patient_name } = event;
-
+  // TODO: Secure this handler after debug
   let response = new Twilio.Response();
   response.appendHeader('Content-Type', 'application/json');
   response.appendHeader('Access-Control-Allow-Origin', '*');
   response.appendHeader('Access-Control-Allow-Methods', 'OPTIONS, POST, GET');
   response.appendHeader('Access-Control-Allow-Headers', 'Content-Type');
-  if(event.action === 'PASSCODE') {
-    await getPasscode(context, event, response);
-  } else if (event.action === 'TOKEN') {
+  if(event.action === 'PATIENT') {    
+    await getPasscode(context, 'patient', event, response);
+  }
+  else if(event.action === 'VISITOR') {    
+    await getPasscode(context, 'visitor', event, response);
+  } 
+  else if(event.action === 'PROVIDER') {    
+    await getPasscode(context, 'provider', event, response);
+  }
+  else if (event.action === 'TOKEN') {
     await getToken(context, event, response);
   } else {
     response.setStatusCode(400);
-    response.setBody({error: "Unknown Action: ''. Expecting PASSCODE or TOKEN"});
+    response.setBody({error: "Unknown Action: ''. Expecting CREATE or TOKEN"});
   }    
   return callback(null, response);
 };
