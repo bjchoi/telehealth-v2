@@ -5,13 +5,13 @@
   "entry": [
     {
       "resourceType": "Appointment",
-      "id": "v-doe-jonson-1121",
+      "id": "a1000000",
       "status": "booked",
       "appointmentType": {
         "coding": [
           {
             "system": "http://terminology.hl7.org/CodeSystem/v2-0276",
-            "code": "ROUTINE"
+            "code": "WALKIN"
           }
         ]
       },
@@ -52,7 +52,7 @@
     },
     {
       "resourceType": "Appointment",
-      "id": "v-doe-peterson-1121",
+      "id": "a2000000",
       "status": "booked",
       "appointmentType": {
         "coding": [

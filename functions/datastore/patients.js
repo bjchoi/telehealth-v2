@@ -15,45 +15,17 @@ const FHIR_CONDITION = 'Conditions';
 
 const assert = require("assert");
 const { getParam, fetchPublicJsonAsset } = require(Runtime.getFunctions()['helpers'].path);
-const { selectSyncDocument, upsertSyncDocument } = require(Runtime.getFunctions()['datastore/datastore-helpers'].path);
-
-// --------------------------------------------------------------------------------
-async function read_fhir(context, resourceType, simulate=true) {
-  if (!simulate) throw new Error('live retrieval from EHR not implemented');
-  const TWILIO_SYNC_SID = await getParam(context, 'TWILIO_SYNC_SID');
-
-  const bundle = await selectSyncDocument(context, TWILIO_SYNC_SID, resourceType);
-  assert(bundle.total === bundle.entry.length, 'bundle checksum error!!!');
-
-  return bundle.entry;
-}
-
-// --------------------------------------------------------------------------------
-async function save_fhir(context, resourceType, resources, simulate = true) {
-  if (!simulate) throw new Error('live saving to EHR not implemented');
-  const TWILIO_SYNC_SID = await getParam(context, 'TWILIO_SYNC_SID');
-
-  const bundle = {
-    resourceType: 'Bundle',
-    type: 'searchset',
-    total: resources.length,
-    entry: resources,
-  }
-  const document = await upsertSyncDocument(context, TWILIO_SYNC_SID, resourceType, bundle);
-
-  return document ? document.sid : null;
-}
+const { read_fhir, save_fhir } = require(Runtime.getFunctions()['datastore/datastore-helpers'].path);
 
 // --------------------------------------------------------------------------------
 function transform_fhir_to_patient(fhir_patient, fhir_medication_statements, fhir_conditions) {
   const r = fhir_patient;
 
   const pid = 'Patient/' + r.id;
-
   const patient = {
     patient_id: r.id,
     patient_name: r.name[0].text,
-    patient_family_name: r.name[0].family,
+    ...(r.name[0].family && { patient_family_name: r.name[0].family }),
     patient_given_name: r.name[0].given[0],
     patient_phone: r.telecom[0].value,
     patient_gender: r.gender.charAt(0).toUpperCase() + r.gender.slice(1),
@@ -151,7 +123,6 @@ exports.handler = async function(context, event, callback) {
   const THIS = 'patients:';
   console.time(THIS);
 
-  const { getParam } = require(Runtime.getFunctions()['helpers'].path);
   const { isValidAppToken } = require(Runtime.getFunctions()["authentication-helper"].path);
 
   /* Following code checks that a valid token was sent with the API call */
@@ -168,33 +139,39 @@ exports.handler = async function(context, event, callback) {
     switch (action) {
 
       case 'USAGE': {
-        const openFile = Runtime.getAssets()[PROTOTYPE].open;
-        const prototype = JSON.parse(openFile());
+        // json prototype for ADD
+        const prototype = await fetchPublicJsonAsset(context, PROTOTYPE);
 
         const usage = {
-          action: 'valid values for patients function',
+          action: 'usage for patients function',
           USAGE: {
             description: 'returns function signature, default action',
             parameters: {},
           },
           SCHEMA: {
-            description: 'returns json schema for patient',
+            description: 'returns json schema for patient in telehealth',
             parameters: {},
           },
           PROTOTYPE: {
-            description: 'returns prototype of patient',
+            description: 'returns prototype of patient in telehealth',
             parameters: {},
           },
           GET: {
             description: 'returns array of patient',
             parameters: {
-              patient_id: 'optional, filters for specified patient',
+              patient_id: 'optional, filters for specified patient. will return zero or one',
             },
           },
           ADD: {
             description: 'add a new patient',
             parameters: {
               patient: prototype,
+            },
+          },
+          REMOVE: {
+            description: 'removes an existing patient',
+            parameters: {
+              patient_id: 'required, patient_id to remove',
             },
           },
         };
@@ -215,19 +192,17 @@ exports.handler = async function(context, event, callback) {
         break;
 
       case 'GET': {
-        const resources = await read_fhir(context, FHIR_PATIENT);
-        const medication_statements = await read_fhir(context, FHIR_MEDICATION_STATEMENT);
-        const conditions = await read_fhir(context, FHIR_CONDITION);
+        const TWILIO_SYNC_SID = await getParam(context, 'TWILIO_SYNC_SID');
 
-        let filtered = null;
-        if (event.patient_id)
-          filtered = resources.filter(r => r.id === event.patient_id);
-        else
-          filtered = resources;
+        let resources = await read_fhir(context, TWILIO_SYNC_SID, FHIR_PATIENT);
+        const medication_statements = await read_fhir(context, TWILIO_SYNC_SID, FHIR_MEDICATION_STATEMENT);
+        const conditions = await read_fhir(context, TWILIO_SYNC_SID, FHIR_CONDITION);
 
-        const patients = filtered.map(r => {
-          return transform_fhir_to_patient(r, medication_statements, conditions);
-        });
+        resources = event.patient_id
+          ? resources.filter(r => r.id === event.patient_id)
+          : resources;
+
+        const patients = resources.map(r => transform_fhir_to_patient(r, medication_statements, conditions));
 
         console.log(THIS, `retrieved ${patients.length} patients`);
         return callback(null, patients);
@@ -237,7 +212,6 @@ exports.handler = async function(context, event, callback) {
       case 'ADD': {
         assert(event.patient, 'Mssing event.patient!!!');
         const patient = JSON.parse(event.patient);
-        console.log(patient);
         assert(patient.patient_id, 'Mssing patient_id!!!');
         assert(patient.patient_name, 'Mssing patient_name!!!');
         assert(patient.patient_family_name, 'Mssing patient_family_name!!!');
@@ -247,20 +221,21 @@ exports.handler = async function(context, event, callback) {
         assert(patient.patient_language, 'Mssing patient_language!!!');
         assert(patient.patient_medications, 'Mssing patient_medications!!!');
         assert(patient.patient_conditions, 'Mssing patient_conditions!!!');
+        const TWILIO_SYNC_SID = await getParam(context, 'TWILIO_SYNC_SID');
 
         const added = transform_patient_to_fhir(patient);
 
-        const current_patients = await read_fhir(context, FHIR_PATIENT);
-        const current_medications = await read_fhir(context, FHIR_MEDICATION_STATEMENT);
-        const current_conditions = await read_fhir(context, FHIR_CONDITION);
+        const current_patients = await read_fhir(context, TWILIO_SYNC_SID, FHIR_PATIENT);
+        const current_medications = await read_fhir(context, TWILIO_SYNC_SID, FHIR_MEDICATION_STATEMENT);
+        const current_conditions = await read_fhir(context, TWILIO_SYNC_SID, FHIR_CONDITION);
 
         new_patients = current_patients.concat(added.fhir_patient);
         new_medications = current_medications.concat(added.fhir_medication_statements);
         new_conditions = current_conditions.concat(added.fhir_conditions);
 
-        await save_fhir(context, FHIR_PATIENT, new_patients);
-        await save_fhir(context, FHIR_MEDICATION_STATEMENT, new_medications);
-        await save_fhir(context, FHIR_CONDITION, new_conditions);
+        await save_fhir(context, TWILIO_SYNC_SID, FHIR_PATIENT, new_patients);
+        await save_fhir(context, TWILIO_SYNC_SID, FHIR_MEDICATION_STATEMENT, new_medications);
+        await save_fhir(context, TWILIO_SYNC_SID, FHIR_CONDITION, new_conditions);
 
         console.log(THIS, `added content ${patient.patient_id}`);
         return callback(null, { patient_id : patient.patient_id });
@@ -268,20 +243,23 @@ exports.handler = async function(context, event, callback) {
         break;
 
       case 'REMOVE': {
-        assert(event.patient_id, 'Mssing event.patient_id!!!');
+        assert(event.patient_id, 'Missing event.patient_id!!!');
+        const TWILIO_SYNC_SID = await getParam(context, 'TWILIO_SYNC_SID');
 
-        const current_patients = await read_fhir(context, FHIR_PATIENT);
-        const current_medications = await read_fhir(context, FHIR_MEDICATION_STATEMENT);
-        const current_conditions = await read_fhir(context, FHIR_CONDITION);
+        const current_patients = await read_fhir(context, TWILIO_SYNC_SID, FHIR_PATIENT);
+        const current_medications = await read_fhir(context, TWILIO_SYNC_SID, FHIR_MEDICATION_STATEMENT);
+        const current_conditions = await read_fhir(context, TWILIO_SYNC_SID, FHIR_CONDITION);
 
         const pid = 'Patient/' + event.patient_id;
-        const new_patients = current_patients.filter(r => r.id != event.patient_id);
-        const new_medications = current_medications.filter(r => r.subject.reference != pid);
-        const new_conditions = current_conditions.filter(r => r.subject.reference != pid);
+        assert(current_patients.some(r => r.id === event.patient_id), `Unable to find patient: ${event.patient_id}`);
 
-        await save_fhir(context, FHIR_PATIENT, new_patients);
-        await save_fhir(context, FHIR_MEDICATION_STATEMENT, new_medications);
-        await save_fhir(context, FHIR_CONDITION, new_conditions);
+        const new_patients = current_patients.filter(r => r.id !== event.patient_id);
+        const new_medications = current_medications.filter(r => r.subject.reference !== pid);
+        const new_conditions = current_conditions.filter(r => r.subject.reference !== pid);
+
+        await save_fhir(context, TWILIO_SYNC_SID, FHIR_PATIENT, new_patients);
+        await save_fhir(context, TWILIO_SYNC_SID, FHIR_MEDICATION_STATEMENT, new_medications);
+        await save_fhir(context, TWILIO_SYNC_SID, FHIR_CONDITION, new_conditions);
 
         console.log(THIS, `removed patient ${event.patient_id}`);
         return callback(null, { patient_id : event.patient_id });

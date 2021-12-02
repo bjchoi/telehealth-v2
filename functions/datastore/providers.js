@@ -14,30 +14,18 @@ const FHIR_PRACTITIONER_ROLE = 'PractitionerRoles';
 
 const assert = require("assert");
 const { getParam, fetchPublicJsonAsset } = require(Runtime.getFunctions()['helpers'].path);
-const { selectSyncDocument } = require(Runtime.getFunctions()['datastore/datastore-helpers'].path);
-
-// --------------------------------------------------------------------------------
-async function read_fhir(context, resourceType, simulate = true) {
-  if (!simulate) throw new Error('live retrieval from EHR not implemented');
-  const TWILIO_SYNC_SID = await getParam(context, 'TWILIO_SYNC_SID');
-
-  const bundle = await selectSyncDocument(context, TWILIO_SYNC_SID, resourceType);
-  assert(bundle.total === bundle.entry.length, 'bundle checksum error!!!');
-
-  return bundle.entry;
-}
+const { read_fhir } = require(Runtime.getFunctions()['datastore/datastore-helpers'].path);
 
 // --------------------------------------------------------------------------------
 function transform_fhir_to_provider(fhir_practitioner, fhir_practitioner_roles) {
   const r = fhir_practitioner;
 
   const pid = 'Practitioner/' + r.id;
-  const match = fhir_practitioner_roles.find(e => e.practitioner.reference === pid);
   const provider = {
     provider_id: r.id,
     provider_name: r.name[0].text,
     provider_phone: r.telecom[0].value,
-    provider_on_call: match ? true : false,
+    provider_on_call: fhir_practitioner_roles.some(e => e.practitioner.reference === pid),
   };
   return provider;
 }
@@ -64,27 +52,24 @@ exports.handler = async function(context, event, callback) {
     switch (action) {
 
       case 'USAGE': {
-        const openFile = Runtime.getAssets()[PROTOTYPE].open;
-        const prototype = JSON.parse(openFile());
-
         const usage = {
-          action: 'valid values for providers function',
+          action: 'usage for providers function',
           USAGE: {
             description: 'returns function signature, default action',
             parameters: {},
           },
           SCHEMA: {
-            description: 'returns json schema for provider',
+            description: 'returns json schema for provider in telehealth',
             parameters: {},
           },
           PROTOTYPE: {
-            description: 'returns prototype of provider',
+            description: 'returns prototype of provider in telehealth',
             parameters: {},
           },
           GET: {
             description: 'returns array of provider',
             parameters: {
-              provider_id: 'optional, filters for specified provider',
+              provider_id: 'optional, filters for specified provider. will return zero or one',
             },
           },
         };
@@ -105,18 +90,16 @@ exports.handler = async function(context, event, callback) {
         break;
 
       case 'GET': {
-        const resources = await read_fhir(context, FHIR_PRACTITIONER);
-        const practitioner_roles = await read_fhir(context, FHIR_PRACTITIONER_ROLE);
+        const TWILIO_SYNC_SID = await getParam(context, 'TWILIO_SYNC_SID');
 
-        let filtered = null;
-        if (event.provider_id)
-          filtered = resources.filter(r => r.id === event.provider_id);
-        else
-          filtered = resources;
+        let resources = await read_fhir(context, TWILIO_SYNC_SID, FHIR_PRACTITIONER);
+        const practitioner_roles = await read_fhir(context, TWILIO_SYNC_SID, FHIR_PRACTITIONER_ROLE);
 
-        const providers = filtered.map(r => {
-          return transform_fhir_to_provider(r, practitioner_roles);
-        });
+        resources = event.provider_id
+          ? resources.filter(r => r.id === event.provider_id)
+          : resources;
+
+        const providers = resources.map(r => transform_fhir_to_provider(r, practitioner_roles));
 
         console.log(THIS, `retrieved ${providers.length} providers`);
         return callback(null, providers);

@@ -72,15 +72,22 @@
         <br/>
 
         <table class="input">
-          <td class="input-label">
-            Patient Phone Number (<a href="https://www.twilio.com/docs/glossary/what-e164">E.164</a> format):
-          </td>
-          <td class="input-value">
-            <input id="phone-scheduled-patient" class="input" type="text" name="patient-phone">
-          </td>
-          <td class="input-action">
-            <a id="send-scheduled-patient-link" class="button" onclick="sendScheduledPatientLink(event);" enabled>Send SMS</a>
-          </td>
+          <tr>
+            <td class="input-label">
+              Patient Phone Number (<a href="https://www.twilio.com/docs/glossary/what-e164">E.164</a> format):
+            </td>
+            <td class="input-value">
+              <input id="phone-scheduled-patient" class="input" type="text" name="patient-phone">
+            </td>
+            <td class="input-action">
+              <a id="send-scheduled-patient-link" class="button" onclick="sendScheduledPatientLink(event);" enabled>Send SMS</a>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <p id="scheduled-patient-link"></p>
+            </td>
+          </tr>
         </table>
         <br/>
       </section>
@@ -95,15 +102,22 @@
         <br/>
 
         <table class="input">
-          <td class="input-label">
-            Patient Phone Number (<a href="https://www.twilio.com/docs/glossary/what-e164">E.164</a> format):
-          </td>
-          <td class="input-value">
-            <input id="phone-ondemand-patient" class="input" type="text" name="patient-phone">
-          </td>
-          <td class="input-action">
-            <a id="send-ondemand-patient-link" class="button" onclick="sendOnDemandPatientLink();" enabled>Send SMS</a>
-          </td>
+          <tr>
+            <td class="input-label">
+              Patient Phone Number (<a href="https://www.twilio.com/docs/glossary/what-e164">E.164</a> format):
+            </td>
+            <td class="input-value">
+              <input id="phone-ondemand-patient" class="input" type="text" name="patient-phone">
+            </td>
+            <td class="input-action">
+              <a id="send-ondemand-patient-link" class="button" onclick="sendOnDemandPatientLink();" enabled>Send SMS</a>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <p id="ondemad-patient-link"></p>
+            </td>
+          </tr>
         </table>
         <br/>
       </section>
@@ -119,15 +133,22 @@
         <br/>
 
         <table class="input">
-          <td class="input-label">
-            Provider Phone Number (<a href="https://www.twilio.com/docs/glossary/what-e164">E.164</a> format):
-          </td>
-          <td class="input-value">
-            <input id="phone-provider" class="input" type="text" name="patient-phone">
-          </td>
-          <td class="input-action">
-            <a id="send-provider-link" class="button" onclick="sendProviderLink();" enabled>Send SMS</a>
-          </td>
+          <tr>
+            <td class="input-label">
+              Provider Phone Number (<a href="https://www.twilio.com/docs/glossary/what-e164">E.164</a> format):
+            </td>
+            <td class="input-value">
+              <input id="phone-provider" class="input" type="text" name="patient-phone">
+            </td>
+            <td class="input-action">
+              <a id="send-provider-link" class="button" onclick="sendProviderLink();" enabled>Send SMS</a>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <p id="provider-link"></p>
+            </td>
+          </tr>
         </table>
         <br/>
       </section>

@@ -10,52 +10,21 @@
 const SCHEMA = '/datastore/content-schema.json';
 const PROTOTYPE = '/datastore/content-prototype.json';
 const FHIR_DOCUMENT_REFERENCE = 'DocumentReferences';
+const FHIR_APPOINTMENT = 'Appointments';
 
 const assert = require("assert");
 const { getParam, fetchPublicJsonAsset } = require(Runtime.getFunctions()['helpers'].path);
-const { selectSyncDocument, upsertSyncDocument } = require(Runtime.getFunctions()['datastore/datastore-helpers'].path);
-
-// --------------------------------------------------------------------------------
-async function read_fhir(context, resourceType, simulate = true) {
-  if (!simulate) throw new Error('live retrieval from EHR/CMS not implemented');
-  const TWILIO_SYNC_SID = await getParam(context, 'TWILIO_SYNC_SID');
-
-  const bundle = await selectSyncDocument(context, TWILIO_SYNC_SID, resourceType);
-  assert(bundle.total === bundle.entry.length, 'bundle checksum error!!!');
-
-  return bundle.entry;
-}
-
-// --------------------------------------------------------------------------------
-async function save_fhir(context, resourceType, resources, simulate = true) {
-  if (!simulate) throw new Error('live saving to EHR/CMS not implemented');
-  const TWILIO_SYNC_SID = await getParam(context, 'TWILIO_SYNC_SID');
-
-  const bundle = {
-    resourceType: 'Bundle',
-    type: 'searchset',
-    total: resources.length,
-    entry: resources,
-  }
-  const document = await upsertSyncDocument(context, TWILIO_SYNC_SID, resourceType, bundle);
-
-  return document ? document.sid : null;
-}
+const { read_fhir, save_fhir } = require(Runtime.getFunctions()['datastore/datastore-helpers'].path);
 
 // --------------------------------------------------------------------------------
 function transform_fhir_to_content(fhir_document_reference, provider_id) {
   const r = fhir_document_reference;
-  const providers = provider_id
-    ? [provider_id]
-    : r.context.related
-      ? r.context.related.map(e => e.reference.replace('Practitioner/', ''))
-      : [];
   const content = {
     content_id: r.id,
     content_title: r.content[0].attachment.title,
-    content_description: r.description,
+    ...(r.description && { content_description: r.description }),
     content_video_url: r.content[0].attachment.url,
-    providers: providers,
+    providers: r.context.related.map(e => e.reference.replace('Practitioner/', '')),
   };
   return content;
 }
@@ -107,27 +76,28 @@ exports.handler = async function(context, event, callback) {
     switch (action) {
 
       case 'USAGE': {
-        const openFile = Runtime.getAssets()[PROTOTYPE].open;
-        const prototype = JSON.parse(openFile());
+        // json prototype for ADD
+        const prototype = await fetchPublicJsonAsset(context, PROTOTYPE);
         delete prototype.providers;
 
         const usage = {
-          action: 'valid values for contents function',
+          action: 'usage for contents function',
           USAGE: {
             description: 'returns function signature, default action',
             parameters: {},
           },
           SCHEMA: {
-            description: 'returns json schema for content',
+            description: 'returns json schema for content in telehealth',
             parameters: {},
           },
           PROTOTYPE: {
-            description: 'returns prototype of content',
+            description: 'returns prototype of content in telehealth',
             parameters: {},
           },
           GET: {
             description: 'returns array of content',
             parameters: {
+              content_id: 'optional, filters for specified content_id. will return zero or one',
               provider_id: 'optional, filters for specified provider_id',
             }
           },
@@ -144,29 +114,22 @@ exports.handler = async function(context, event, callback) {
             },
           },
           ASSIGN: {
-            description: 'assign content to a provider',
+            description: 'assign content to a provider, unassigning any previous content',
             parameters: {
               content_id: 'required, content_id to assign provider',
               provider_id: 'required, provider to assign content to'
             },
           },
-          UNASSIGN: {
-            description: 'assign content to a provider',
-            parameters: {
-              content_id: 'required, content_id to unassign provider',
-              provider_id: 'required, provider to unassign content from'
-            },
-          },
         };
         return callback(null, usage);
+        break;
       }
-      break;
 
       case 'SCHEMA': {
         const schema = await fetchPublicJsonAsset(context, SCHEMA);
         return callback(null, schema);
       }
-      break;
+        break;
 
       case 'PROTOTYPE': {
         const prototype = await fetchPublicJsonAsset(context, PROTOTYPE);
@@ -175,19 +138,18 @@ exports.handler = async function(context, event, callback) {
       break;
 
       case 'GET': {
-        const resources = await read_fhir(context, FHIR_DOCUMENT_REFERENCE);
+        const TWILIO_SYNC_SID = await getParam(context, 'TWILIO_SYNC_SID');
+        let resources = await read_fhir(context, TWILIO_SYNC_SID, FHIR_DOCUMENT_REFERENCE);
 
-        let filtered_resources = null;
-        if (event.provider_id) {
-          const pid = 'Practitioner/' + event.provider_id;
-          filtered_resources = resources.filter(r => r.context.related.find(e => e.reference === (pid)));
-        } else {
-          filtered_resources = resources;
-        }
+        resources = event.content_id
+          ? resources.filter(r => r.id === event.content_id)
+          : resources;
 
-        const contents = filtered_resources.map(r => {
-          return transform_fhir_to_content(r, event.provider_id);
-        });
+        resources = event.provider_id
+          ? resources.filter(r => r.context.related.find(e => e.reference === ('Practitioner/' + event.provider_id)))
+          : resources;
+
+        const contents = resources.map(r => transform_fhir_to_content(r, event.provider_id));
 
         console.log(THIS, `retrieved ${contents.length} contents for ${event.provider_id ? event.provider_id : " all providers"}`);
         return callback(null, contents);
@@ -200,13 +162,14 @@ exports.handler = async function(context, event, callback) {
         assert(content.content_id, 'Mssing content_id!!!');
         assert(content.content_title, 'Mssing content_title!!!');
         assert(content.content_video_url, 'Mssing content_video_url!!!');
+        const TWILIO_SYNC_SID = await getParam(context, 'TWILIO_SYNC_SID');
 
         const fhir_document_reference = transform_content_to_fhir(content);
 
-        const resources = await read_fhir(context, FHIR_DOCUMENT_REFERENCE);
+        const resources = await read_fhir(context, TWILIO_SYNC_SID, FHIR_DOCUMENT_REFERENCE);
         resources.push(fhir_document_reference);
 
-        await save_fhir(context, FHIR_DOCUMENT_REFERENCE, resources);
+        await save_fhir(context, TWILIO_SYNC_SID, FHIR_DOCUMENT_REFERENCE, resources);
 
         console.log(THIS, `added content ${content.content_id}`);
         return callback(null, { content_id : content.content_id });
@@ -214,11 +177,12 @@ exports.handler = async function(context, event, callback) {
       break;
 
       case 'REMOVE': {
-        assert(event.content_id, 'Mssing event.content_id!!!');
+        assert(event.content_id, 'Missing event.content_id!!!');
+        const TWILIO_SYNC_SID = await getParam(context, 'TWILIO_SYNC_SID');
 
-        const resources = await read_fhir(context, FHIR_DOCUMENT_REFERENCE);
-        const remainder = resources.filter(r => r.id != event.content_id);
-        await save_fhir(context, FHIR_DOCUMENT_REFERENCE, remainder);
+        const resources = await read_fhir(context, TWILIO_SYNC_SID, FHIR_DOCUMENT_REFERENCE);
+        const remainder = resources.filter(r => r.id !== event.content_id);
+        await save_fhir(context, TWILIO_SYNC_SID, FHIR_DOCUMENT_REFERENCE, remainder);
 
         console.log(THIS, `removed content ${event.content_id}`);
         return callback(null, { content_id : event.content_id });
@@ -228,17 +192,33 @@ exports.handler = async function(context, event, callback) {
       case 'ASSIGN': {
         assert(event.content_id, 'Mssing event.content_id!!!');
         assert(event.provider_id, 'Mssing event.provider_id!!!');
+        const TWILIO_SYNC_SID = await getParam(context, 'TWILIO_SYNC_SID');
 
-        const resources = await read_fhir(context, FHIR_DOCUMENT_REFERENCE);
-        const i = resources.findIndex(r => r.id === event.content_id);
-        if (i > -1) {
-          resources[i].context.related.push({reference: 'Practitioner/' + event.provider_id});
-          await save_fhir(context, FHIR_DOCUMENT_REFERENCE, resources);
+        const resources = await read_fhir(context, TWILIO_SYNC_SID, FHIR_DOCUMENT_REFERENCE);
 
-          console.log(THIS, `assigned content ${event.content_id} provider ${event.provider_id}`);
-        } else {
-          console.log(THIS, `no  content ${event.content_id}`);
+        const pid = 'Practitioner/' + event.provider_id;
+        {
+          // ---------- remove previous assignment if any
+          // find index of content assigned provider_id
+          const i = resources.findIndex(r => r.context.related.find(e => e.reference === pid));
+          if (i > -1) {
+            // find index of providers in content
+            const j = resources[i].context.related.findIndex(e => e.reference === pid);
+            resources[i].context.related.splice(j, 1);
+          }
         }
+
+        {
+          // ---------- assign
+          // find index of content_id
+          const c = resources.findIndex(r => r.id === event.content_id);
+          assert(c > -1, `Unable to find content: ${event.content_id}`);
+          resources[c].context.related.push({reference: pid});
+        }
+
+        await save_fhir(context, TWILIO_SYNC_SID, FHIR_DOCUMENT_REFERENCE, resources);
+
+        console.log(THIS, `assigned content ${event.content_id} provider ${event.provider_id}`);
 
         return callback(null, {
           content_id : event.content_id,
@@ -246,29 +226,6 @@ exports.handler = async function(context, event, callback) {
         });
       }
       break;
-
-      case 'UNASSIGN': {
-        assert(event.content_id, 'Mssing event.content_id!!!');
-        assert(event.provider_id, 'Mssing event.provider_id!!!');
-
-        const resources = await read_fhir(context, FHIR_DOCUMENT_REFERENCE);
-        const i = resources.findIndex(r => r.id === event.content_id);
-        if (i > -1) {
-          const providers = resources[i].context.related.filter(e => e.reference !== 'Practitioner/' + event.provider_id);
-          resources[i].context.related = providers;
-          await save_fhir(context, FHIR_DOCUMENT_REFERENCE, resources);
-
-          console.log(THIS, `unassigned content ${event.content_id} provider ${event.provider_id}`);
-        } else {
-          console.log(THIS, `no content ${event.content_id}`);
-        }
-
-        return callback(null, {
-          content_id : event.content_id,
-          provider_id: event.provider_id,
-        });
-      }
-        break;
 
       default: // unknown action
         throw Error(`Unknown action: ${action}!!!`);

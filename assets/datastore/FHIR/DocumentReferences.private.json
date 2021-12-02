@@ -1,7 +1,7 @@
 {
   "resourceType": "Bundle",
   "type": "searchset",
-  "total": 2,
+  "total": 3,
   "entry": [
     {
       "resourceType": "DocumentReference",
@@ -20,9 +20,6 @@
         "related": [
           {
             "reference": "Practitioner/d1000"
-          },
-          {
-            "reference": "Practitioner/d2000"
           }
         ]
       }
@@ -43,9 +40,25 @@
       "context": {
         "related": [
           {
-            "reference": "Practitioner/d1000"
+            "reference": "Practitioner/d2000"
           }
         ]
+      }
+    },
+    {
+      "resourceType": "DocumentReference",
+      "id": "dr3000",
+      "status": "current",
+      "content": [
+        {
+          "attachment": {
+            "url": "https://www.youtube.com/embed/8Z6X3PxXs2I",
+            "title": "Covid+Flu Vaccine"
+          }
+        }
+      ],
+      "context": {
+        "related": []
       }
     }
   ]
