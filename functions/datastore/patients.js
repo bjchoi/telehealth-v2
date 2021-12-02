@@ -14,8 +14,8 @@ const FHIR_MEDICATION_STATEMENT = 'MedicationStatements';
 const FHIR_CONDITION = 'Conditions';
 
 const assert = require("assert");
-const { getParam, fetchPublicJsonAsset } = require(Runtime.getFunctions()['helpers'].path);
-const { read_fhir, save_fhir } = require(Runtime.getFunctions()['datastore/datastore-helpers'].path);
+const { getParam } = require(Runtime.getFunctions()['helpers'].path);
+const { read_fhir, save_fhir, fetchPublicJsonAsset } = require(Runtime.getFunctions()['datastore/datastore-helpers'].path);
 
 // --------------------------------------------------------------------------------
 function transform_fhir_to_patient(fhir_patient, fhir_medication_statements, fhir_conditions) {
