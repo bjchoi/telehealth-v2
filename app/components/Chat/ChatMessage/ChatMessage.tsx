@@ -14,7 +14,7 @@ export const ChatMessage = ({
   name,
 }: ChatMessageProps) => {
   return (
-    <div className={joinClasses('mb-5', !isSelf && 'text-right')}>
+    <div className={joinClasses('mb-1', !isSelf && 'text-right')}>
       <div className="text-sm text-secondary mb-3">{name}</div>
       
       <span

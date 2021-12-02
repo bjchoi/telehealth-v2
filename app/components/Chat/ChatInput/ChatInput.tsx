@@ -2,6 +2,7 @@ import { Button } from '../../Button';
 import React, { useRef, useState, useEffect } from 'react';
 import { Conversation } from '@twilio/conversations';
 import { isMobile } from '../../../utils';
+import { ALLOWED_FILE_TYPES } from '../../../constants';
 
 interface ChatInputProps {
   conversation: Conversation;
@@ -12,6 +13,8 @@ interface ChatInputProps {
 export default function ChatInput({ conversation, inputPlaceholder, isChatWindowOpen }: ChatInputProps) {
 
   const [messageBody, setMessageBody] = useState<string>('');
+  const [isFileSending, setIsFileSending] = useState<boolean>(false);
+  const [fileUploadError, setFileUploadError] = useState<string | null>(null);
   const isValidMessage = /\S/.test(messageBody);
   const fileInputRef = useRef(null);
   const chatInputRef = useRef<HTMLInputElement>(null);
@@ -20,7 +23,7 @@ export default function ChatInput({ conversation, inputPlaceholder, isChatWindow
     if (isChatWindowOpen) {
       chatInputRef.current?.focus();
     }
-  }, [chatInputRef])
+  }, [chatInputRef]);
 
   function handleSendMessage(message: string) {
     if (isValidMessage) {
@@ -36,6 +39,28 @@ export default function ChatInput({ conversation, inputPlaceholder, isChatWindow
     }
   }
 
+  function handleFileUpload(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    console.log(file);
+    if (file) {
+      let formData = new FormData();
+      // Key value store for the file.
+      formData.append('userfile', file);
+      setIsFileSending(true);
+      setFileUploadError(null);
+      conversation.sendMessage(formData)
+        .catch((err: Error) => {
+          err.code === 413 ? 
+          setFileUploadError('File was too large.  Upload a file less than 150MB.') :
+          setFileUploadError('There was a problem uploading the file.');
+          console.log('File failed to send: ', err);
+        }).finally(() => {
+          setIsFileSending(false);
+        });
+
+    }
+  }
+
   return (
     <div className="absolute bottom-0 bg-white w-full p-3 flex">
       <form
@@ -48,8 +73,15 @@ export default function ChatInput({ conversation, inputPlaceholder, isChatWindow
             icon="file_upload"
             iconType="outline"
             onClick={() => fileInputRef?.current?.click()}
+            disabled={isFileSending}
           />
-          <input ref={fileInputRef} className="hidden" type="file" />
+          <input 
+            ref={fileInputRef} 
+            style={{ display: 'none'}}
+            onChange={handleFileUpload}
+            value={''}
+            type="file"
+            accept={ALLOWED_FILE_TYPES} />
         </div>
         <div className="flex">
           <input

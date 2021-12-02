@@ -4,6 +4,7 @@ import { Button } from '../Button';
 import { Icon } from '../Icon';
 import { ChatMessage } from './ChatMessage/ChatMessage';
 import ChatInput from './ChatInput/ChatInput';
+import MediaMessage from './ChatMediaMessage/ChatMediaMessage';
 
 export interface ChatProps {
   close?: () => void;
@@ -47,14 +48,22 @@ export const Chat = ({ inputPlaceholder, showHeader, userName, userRole }: ChatP
         )}
         <div className="bg-white flex-grow w-full p-3 overflow-auto pb-16">
           {messages.map((message, i) => {
-            //console.log(message, userRole);
-            if (message.body) {
+            // console.log(message, userRole);
+            if (message.type === 'text') {
               return <ChatMessage 
-                key={i} 
-                isSelf={message.author === userRole ? true : false} 
-                name={message.author ===  userRole ? userName : message.author} 
-                content={message.body}
-              />
+                        key={i} 
+                        isSelf={message.author === userRole ? true : false} 
+                        name={message.author ===  userRole ? userName : message.author} 
+                        content={message.body}
+                    />
+            }
+            if (message.type === 'media') {
+              return <MediaMessage
+                      key={i} 
+                      media={message.attachedMedia}
+                      isSelf={message.author === userRole ? true : false}
+                      name={message.author ===  userRole ? userName : message.author}
+                    />
             }
           })}
           <div className="bottom-scroll" ref={messageListRef} />
