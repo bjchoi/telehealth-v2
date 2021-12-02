@@ -12,36 +12,8 @@ const PROTOTYPE = '/datastore/appointment-prototype.json';
 const FHIR_APPOINTMENT = 'Appointments';
 
 const assert = require("assert");
-const fs = require("fs");
 const { getParam, fetchPublicJsonAsset } = require(Runtime.getFunctions()['helpers'].path);
-const { selectSyncDocument, upsertSyncDocument } = require(Runtime.getFunctions()['datastore/datastore-helpers'].path);
-
-// --------------------------------------------------------------------------------
-async function read_fhir(context, resourceType, simulate = true) {
-  if (!simulate) throw new Error('live retrieval from EHR not implemented');
-  const TWILIO_SYNC_SID = await getParam(context, 'TWILIO_SYNC_SID');
-
-  const bundle = await selectSyncDocument(context, TWILIO_SYNC_SID, resourceType);
-  assert(bundle.total === bundle.entry.length, 'bundle checksum error!!!');
-
-  return bundle.entry;
-}
-
-// --------------------------------------------------------------------------------
-async function save_fhir(context, resourceType, resources, simulate = true) {
-  if (!simulate) throw new Error('live saving to EHR not implemented');
-  const TWILIO_SYNC_SID = await getParam(context, 'TWILIO_SYNC_SID');
-
-  const bundle = {
-    resourceType: 'Bundle',
-    type: 'searchset',
-    total: resources.length,
-    entry: resources,
-  }
-  const document = await upsertSyncDocument(context, TWILIO_SYNC_SID, resourceType, bundle);
-
-  return document ? document.sid : null;
-}
+const { read_fhir, save_fhir } = require(Runtime.getFunctions()['datastore/datastore-helpers'].path);
 
 // --------------------------------------------------------------------------------
 function transform_fhir_to_appointment(fhir_appointment) {
@@ -51,7 +23,7 @@ function transform_fhir_to_appointment(fhir_appointment) {
     appointment_type: r.appointmentType.coding[0].code,
     appointment_start_datetime_utc: r.start,
     appointment_end_datetime_utc: r.end,
-    appointment_reason: r.reasonCode.length === 1 ? r.reasonCode[0].text : null,
+    ...(r.reasonCode.length === 1 && { appointment_reason: r.reasonCode[0].text }),
     appointment_references: r.supportingInformation.map(r => r.reference),
     patient_id: r.participant.find(e => e.actor.reference.startsWith('Patient/'))
       .actor.reference.replace('Patient/', ''),
@@ -109,6 +81,7 @@ function transform_appointment_to_fhir(appointment) {
   return fhir_appointment;
 }
 
+
 // --------------------------------------------------------------------------------
 exports.handler = async function(context, event, callback) {
   const THIS = 'appointments:';
@@ -130,29 +103,30 @@ exports.handler = async function(context, event, callback) {
     switch (action) {
 
       case 'USAGE': {
-        const openFile = Runtime.getAssets()[PROTOTYPE].open;
-        const prototype = JSON.parse(openFile());
+        // json prototype for ADD
+        const prototype = await fetchPublicJsonAsset(context, PROTOTYPE);
         delete prototype.appointment_type;
         delete prototype.appointment_start_datetime_utc;
         delete prototype.appointment_end_datetime_utc;
 
         const usage = {
-          action: 'valid values for appointments function',
+          action: 'usage for appointments function',
           USAGE: {
             description: 'returns function signature, default action',
             parameters: {},
           },
           SCHEMA: {
-            description: 'returns json schema for appointment',
+            description: 'returns json schema for appointment in telehealth',
             parameters: {},
           },
           PROTOTYPE: {
-            description: 'returns prototype of appointment',
+            description: 'returns prototype of appointment in telehealth',
             parameters: {},
           },
           GET: {
             description: 'returns array of appointment',
             parameters: {
+              appointment_id: 'optional, filters for specified appointment. will return zero or one',
               patient_id: 'optional, filters for specified patient',
               provider_id: 'optional, filters for specified provider',
             }
@@ -182,28 +156,23 @@ exports.handler = async function(context, event, callback) {
         break;
 
       case 'GET': {
-        const resources = await read_fhir(context, FHIR_APPOINTMENT);
+        const TWILIO_SYNC_SID = await getParam(context, 'TWILIO_SYNC_SID');
 
-        let by_patient = null;
-        if (event.patient_id) {
-          const pid = 'Patient/' + event.patient_id;
-          by_patient = resources.filter(r => r.participant.find(e => e.actor.reference === pid));
-        } else {
-          by_patient = resources;
-        }
+        let resources = await read_fhir(context, TWILIO_SYNC_SID, FHIR_APPOINTMENT);
 
-        let by_provider = null;
-        if (event.provider_id) {
-          const pid = 'Practitioner/' + event.provider_id;
-          by_provider = by_patient.filter(r => r.participant.find(e => e.actor.reference === pid));
-        } else {
-          by_provider = by_patient;
-        }
-        filtered = by_provider;
+        resources = event.appointment_id
+          ? resources.filter(r => r.id === event.appointment_id)
+          : resources;
 
-        const appointments = filtered.map(r => {
-          return transform_fhir_to_appointment(r);
-        });
+        resources = event.patient_id
+          ? resources.filter(r => r.participant.find(e => e.actor.reference === ('Patient/' + event.patient_id)))
+          : resources;
+
+        resources = event.provider_id
+          ? resources.filter(r => r.participant.find(e => e.actor.reference === ('Practitioner/' + event.provider_id)))
+          : resources;
+
+        const appointments = resources.map(r => transform_fhir_to_appointment(r));
 
         console.log(THIS, `retrieved ${appointments.length} appointments for ${event.provider_id ? event.provider_id : " all providers"}`);
 
@@ -226,26 +195,6 @@ exports.handler = async function(context, event, callback) {
       }
         break;
 
-      case 'GET': {
-        const resources = await read_fhir(context, FHIR_APPOINTMENT);
-
-        let filtered_resources = null;
-        if (event.provider_id) {
-          const pid = 'Practitioner/' + event.provider_id;
-          filtered_resources = resources.filter(r => r.context.related.find(e => e.reference === (pid)));
-        } else {
-          filtered_resources = resources;
-        }
-
-        const appointments = filtered_resources.map(r => {
-          return transform_fhir_to_appointment(r, event.provider_id);
-        });
-
-        console.log(THIS, `retrieved ${appointments.length} appointments for ${event.provider_id ? event.provider_id : " all providers"}`);
-        return callback(null, appointments);
-      }
-        break;
-
       case 'ADD': {
         assert(event.appointment, 'Mssing event.appointment!!!');
         const appointment = JSON.parse(event.appointment);
@@ -254,6 +203,7 @@ exports.handler = async function(context, event, callback) {
         assert(appointment.appointment_references, 'Mssing appointment_references!!!');
         assert(appointment.patient_id, 'Mssing patient_id!!!');
         assert(appointment.provider_id, 'Mssing provider_id!!!');
+        const TWILIO_SYNC_SID = await getParam(context, 'TWILIO_SYNC_SID');
 
         appointment.appointment_type = 'WALKIN';
         const now = new Date();
@@ -262,10 +212,10 @@ exports.handler = async function(context, event, callback) {
 
         const fhir_appointment = transform_appointment_to_fhir(appointment);
 
-        const resources = await read_fhir(context, FHIR_APPOINTMENT);
+        const resources = await read_fhir(context, TWILIO_SYNC_SID, FHIR_APPOINTMENT);
         resources.push(fhir_appointment);
 
-        await save_fhir(context, FHIR_APPOINTMENT, resources);
+        await save_fhir(context, TWILIO_SYNC_SID, FHIR_APPOINTMENT, resources);
 
         console.log(THIS, `added appointment ${appointment.appointment_id}`);
         return callback(null, { appointment_id : appointment.appointment_id });
@@ -274,10 +224,11 @@ exports.handler = async function(context, event, callback) {
 
       case 'REMOVE': {
         assert(event.appointment_id, 'Mssing event.appointment_id!!!');
+        const TWILIO_SYNC_SID = await getParam(context, 'TWILIO_SYNC_SID');
 
-        const resources = await read_fhir(context, FHIR_APPOINTMENT);
-        const remainder = resources.filter(r => r.id != event.appointment_id);
-        await save_fhir(context, FHIR_APPOINTMENT, remainder);
+        const resources = await read_fhir(context, TWILIO_SYNC_SID, FHIR_APPOINTMENT);
+        const remainder = resources.filter(r => r.id !== event.appointment_id);
+        await save_fhir(context, TWILIO_SYNC_SID, FHIR_APPOINTMENT, remainder);
 
         console.log(THIS, `removed appointment ${event.appointment_id}`);
         return callback(null, { appointment_id : event.appointment_id });
@@ -295,4 +246,3 @@ exports.handler = async function(context, event, callback) {
     console.timeEnd(THIS);
   }
 }
-

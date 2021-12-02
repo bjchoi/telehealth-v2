@@ -133,8 +133,59 @@ async function deleteSyncDocument(context, syncServiceSid, syncDocumentName) {
 }
 
 
+/*
+ * ----------------------------------------------------------------------------------------------------
+ * reads FHIR resources stored as Sync document
+ *
+ * resources are stored as FHIR Bundle resource of type=searchset
+ *
+ * parameters
+ * - context: Twilio runtime context
+ * - resourceType: FHIR resource type in plural (e.g., Patients)
+ *
+ * returns: array of requested FHIR resources
+ * ----------------------------------------------------------------------------------------------------
+ */
+async function read_fhir(context, syncServiceSid, resourceType) {
+
+  const bundle = await selectSyncDocument(context, syncServiceSid, resourceType);
+  assert(bundle.total === bundle.entry.length, 'bundle checksum error!!!');
+
+  return bundle.entry;
+}
+
+
+/*
+ * ----------------------------------------------------------------------------------------------------
+ * saves FHIR resources stored as Sync document, effectively over-writing previous
+ *
+ * resources are stored as FHIR Bundle resource of type=searchset
+ *
+ * parameters
+ * - context: Twilio runtime context
+ * - resourceType: FHIR resource type in plural (e.g., Patients)
+ * - resources: array of FHIR resources to save
+ *
+ * returns: Sync document
+ * ----------------------------------------------------------------------------------------------------
+ */
+async function save_fhir(context, syncServiceSid, resourceType, resources) {
+
+  const bundle = {
+    resourceType: 'Bundle',
+    type: 'searchset',
+    total: resources.length,
+    entry: resources,
+  }
+  const document = await upsertSyncDocument(context, syncServiceSid, resourceType, bundle);
+
+  return document ? document.sid : null;
+}
+
 // --------------------------------------------------------------------------------
 module.exports = {
+  read_fhir,
+  save_fhir,
   selectSyncDocument,
   upsertSyncDocument,
   deleteSyncDocument,

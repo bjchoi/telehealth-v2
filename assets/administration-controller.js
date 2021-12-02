@@ -46,6 +46,7 @@ async function sendScheduledPatientLink(e) {
 
     console.log(THIS, `${s++}. send link to patient waiting room via SMS`);
     const link = `${location.origin}/patient/index.html?token=${patient_token}`
+    $('#scheduled-patient-link').text(link);
     console.log(THIS, link);
 
     const response1 = await fetch('/send-sms', {
@@ -358,7 +359,7 @@ async function populateProviderContents() {
       const is_assigned = row.providers.find(e => e === provider_id) ? 'checked' : '';
       const id = row.content_id + '-assigned';
       $(UI.provider_contents).append(`<tr>
-      <td><input type="checkbox" ${is_assigned} id="${id}" onclick="assignContent2Provider('#${id}', '${row.content_id}');"></td>
+      <td><input type="radio" name="content-assignment "${is_assigned} id="${id}" onclick="assignContent2Provider('#${id}', '${row.content_id}');"></td>
       <td>${row.content_title}</td>
       <td><a class="button" href="${row.content_video_url}" target="_blank">Watch Video</a></td>
       </tr>`);
