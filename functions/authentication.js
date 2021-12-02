@@ -65,7 +65,7 @@ function mfa(context, event, callback) {
         .then((verificationCheck) => {
             if (verificationCheck.status === 'approved') {
                 response.setBody({
-                    accessToken: createAppToken('mfa', context),
+                    accessToken: createAppToken(context),
                     refreshToken: createRefreshToken('mfa', context)
                 });
                 return callback(null, response);
@@ -93,7 +93,7 @@ function login(context, event, callback) {
     if(checkDisableAuthForLocalhost(context)){
         response.setStatusCode(200);
         response.setBody({
-            accessToken: createAppToken('login', context),
+            accessToken: createAppToken(context),
             refreshToken: createRefreshToken('login', context),
         });
         return callback(null, response);
@@ -187,7 +187,7 @@ async function refresh(context, event, callback) {
     const response = new Twilio.Response();
     response.appendHeader('Content-Type', 'application/json');
     response.setBody({
-        accessToken: createAppToken('refresh', context),
+        accessToken: createAppToken(context),
     });
     callback(null, response);
 };

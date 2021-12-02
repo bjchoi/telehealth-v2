@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import VideoContextLayout from '../../components/Base/VideoProvider';
 import { Button, ButtonVariant } from '../../components/Button';
 import { DateTime } from '../../components/DateTime';
 import { Heading } from '../../components/Heading';
 import { Layout } from '../../components/Patient';
 import { TechnicalCheck } from '../../components/TechnicalCheck';
 import { TwilioPage } from '../../types';
+import PatientVideoContextLayout from '../../components/Patient/PatientLayout';
 
 const data = {
   date: new Date(),
@@ -28,5 +28,5 @@ const TechnicalCheckPage: TwilioPage = () => {
   );
 };
 
-TechnicalCheckPage.Layout = VideoContextLayout;
+TechnicalCheckPage.Layout = PatientVideoContextLayout;
 export default TechnicalCheckPage;

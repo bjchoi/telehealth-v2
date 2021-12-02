@@ -132,6 +132,43 @@ async function deleteSyncDocument(context, syncServiceSid, syncDocumentName) {
   }
 }
 
+function __ensureSyncMapCreated(client, syncServiceSid, syncMapName) {
+  return client.sync
+    .services(syncServiceSid)
+    .syncMaps(syncMapName)
+    .fetch()
+    .catch(err => {
+      console.log(err);
+      if(err.status === 404) {
+        return client.sync
+        .services(syncServiceSid)
+        .syncMaps
+        .create({uniqueName: syncMapName});
+      }
+
+      return Promise.resolve();
+    });
+}
+
+async function fetchSyncMapItem(client, syncServiceSid, syncMapName, syncMapItemKey) {
+  return await __ensureSyncMapCreated(client, syncServiceSid, syncMapName)
+    .then(() => client.sync
+      .services(syncServiceSid)
+      .syncMaps(syncMapName)
+      .syncMapItems(syncMapItemKey)
+      .fetch());
+}
+
+async function insertSyncMapItem(client, syncServiceSid, syncMapName, syncMapItemKey, data) {
+  await __ensureSyncMapCreated(client, syncServiceSid, syncMapName)
+  .then(() => client.sync
+    .services(syncServiceSid)
+    .syncMaps(syncMapName)
+    .syncMapItems
+    .create({key: syncMapItemKey, data })
+    .then(mapItem => console.log(mapItem.key)));
+}
+
 
 /*
  * ----------------------------------------------------------------------------------------------------
@@ -189,4 +226,6 @@ module.exports = {
   selectSyncDocument,
   upsertSyncDocument,
   deleteSyncDocument,
+  fetchSyncMapItem,
+  insertSyncMapItem
 };
