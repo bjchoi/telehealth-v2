@@ -15,8 +15,6 @@ export function formatFileSize(bytes: number, suffixIndex = 0): string {
 }
 
 export default function MediaMessage({ media, isSelf, name }: MediaMessageProps) {
-  console.log(media[0].getContentTemporaryUrl().then(url =>  ( url )));
-
   const [imageUrl, setImageUrl] = useState<string>('');
   
   function handleClick() {
@@ -44,7 +42,7 @@ export default function MediaMessage({ media, isSelf, name }: MediaMessageProps)
 
   return (
     <>
-    <div className={joinClasses('text-sm text-secondary mb-1', !isSelf && 'text-right')}>{name}</div>
+    <div className={joinClasses('text-sm text-secondary mb-1', !isSelf ? 'text-right' : '')}>{name}</div>
     <div className={!isSelf && 'text-right flex justify-end'}>
       <div 
         className={'mb-5 flex items-center w-40 h-40 border rounded-2xl max-w-sm border-gray-300 cursor-pointer'} 
