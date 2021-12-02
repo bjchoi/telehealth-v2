@@ -19,6 +19,9 @@ export const STORAGE_USER_KEY = 'TelehealthUser';
 export const STORAGE_VISIT_KEY = 'TelehealthVisit';
 export const CURRENT_VISIT_ID = 'CurrentVisitId';
 
+export const ALLOWED_FILE_TYPES =
+'audio/*, image/*, text/*, video/*, application/msword, application/vnd.openxmlformats-officedocument.wordprocessingml.document .xslx, .ppt, .pdf, .key, .svg, .csv';
+
 export const initialSettings: Settings = {
   trackSwitchOffMode: undefined,
   dominantSpeakerPriority: 'standard',
