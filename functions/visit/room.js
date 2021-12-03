@@ -7,7 +7,7 @@ const ChatGrant = AccessToken.ChatGrant;
 const MAX_ALLOWED_SESSION_DURATION = 14400;
 
 module.exports.handler = async (context, event, callback) => {
-  const { ACCOUNT_SID, TWILIO_API_KEY_SID, TWILIO_API_KEY_SECRET, ROOM_TYPE, CONVERSATIONS_SERVICE_SID } = context;
+  const { ACCOUNT_SID, TWILIO_API_KEY_SID, TWILIO_API_KEY_SECRET, ROOM_TYPE, TWILIO_CONVERSATIONS_SID } = context;
 
   // TODO: Add Patient Auth Handler
   const { validateAndDecodeAppToken } = require(Runtime.getFunctions()['authentication-helper'].path);
@@ -16,7 +16,7 @@ module.exports.handler = async (context, event, callback) => {
   if(tokenValidationResult.response) {
     return callback(null, tokenValidationResult.response);
   }
-  console.log("Auth result");
+  
   console.log(tokenValidationResult);
 
   const { room_name } = event;
@@ -76,7 +76,7 @@ module.exports.handler = async (context, event, callback) => {
     if (room) {
       responseBody.roomSid = room.sid;
       responseBody.roomAvailable = true;
-      const conversationsClient = client.conversations.services(CONVERSATIONS_SERVICE_SID);
+      const conversationsClient = client.conversations.services(TWILIO_CONVERSATIONS_SID);
       try {
         // See if conversation already exists
         await conversationsClient.conversations(room.sid).fetch();
@@ -104,7 +104,7 @@ module.exports.handler = async (context, event, callback) => {
   token.addGrant(videoGrant);
 
   // Add chat grant to token
-  const chatGrant = new ChatGrant({ serviceSid: CONVERSATIONS_SERVICE_SID });
+  const chatGrant = new ChatGrant({ serviceSid: TWILIO_CONVERSATIONS_SID });
   token.addGrant(chatGrant);
 
   // Return token
