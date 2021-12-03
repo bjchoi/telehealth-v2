@@ -16,7 +16,8 @@ export const DisconnectedAlert = () => {
     clientStorage.getFromStorage<TelehealthUser>(STORAGE_USER_KEY)
         .then(user => setUserRole(user.role))
         .catch(error => {
-          new Error("Error getting Telehealth User from Storage: ", error);
+          console.log(error);
+          new Error("Error getting Telehealth User from Storage!");
         });
   }, []);
 
