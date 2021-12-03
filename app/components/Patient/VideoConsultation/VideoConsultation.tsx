@@ -11,14 +11,15 @@ import { InviteParticipantModal } from '../../InviteParticipantModal';
 import { PoweredByTwilio } from '../../PoweredByTwilio';
 import { VideoControls } from '../../VideoControls';
 import { VideoParticipant } from './VideoParticipant';
-import { LocalAudioTrackPublication, LocalVideoTrackPublication } from 'twilio-video';
 import useChatContext from '../../Base/ChatProvider/useChatContext/useChatContext';
+import useLocalAudioToggle from '../../Base/VideoProvider/useLocalAudioToggle/useLocalAudioToggle';
+import useLocalVideoToggle from '../../Base/VideoProvider/useLocalVideoToggle/useLocalVideoToggle';
 
 export interface VideoConsultationProps {}
 
 export const VideoConsultation = ({}: VideoConsultationProps) => {
-  const [hasAudio, setHasAudio] = useState(true);
-  const [hasVideo, setHasVideo] = useState(true);
+  const [isAudioEnabled, toggleAudioEnabled] = useLocalAudioToggle();
+  const [isVideoEnabled, toggleVideoEnabled] = useLocalVideoToggle();
   const [inviteModalVisible, setInviteModalVisible] = useState(false);
   const [connectionIssueModalVisible, setConnectionIssueModalVisible] = useState(false);
   const roomState = useRoomState();
@@ -43,25 +44,7 @@ export const VideoConsultation = ({}: VideoConsultationProps) => {
         }
       })
     }
-  }, [participants, room])
-
-  useEffect(() => {
-    if (callState.patientParticipant) {
-      const videoTracks = callState.patientParticipant.videoTracks;
-      videoTracks.forEach((item: LocalVideoTrackPublication) => {
-        hasVideo ? item.track.enable() : item.track.disable()
-      })
-    }
-  }, [hasVideo]);
-
-  useEffect(() => {
-    if (callState.patientParticipant) {
-      const audioTracks = callState.patientParticipant.audioTracks;
-      audioTracks.forEach((item: LocalAudioTrackPublication) => {
-        hasAudio ? item.track.enable() : item.track.disable()
-      })
-    }
-  }, [hasAudio]);
+  }, [participants, room]);
 
   function toggleInviteModal() {
     setInviteModalVisible(!inviteModalVisible);
@@ -89,8 +72,8 @@ export const VideoConsultation = ({}: VideoConsultationProps) => {
                 <div className="absolute top-1 right-1">
                 {callState.patientParticipant && <VideoParticipant
                     name={visit.patientName}
-                    hasAudio={hasAudio}
-                    hasVideo={hasVideo}
+                    hasAudio={isAudioEnabled}
+                    hasVideo={isVideoEnabled}
                     isOverlap
                     isSelf
                     participant={callState.patientParticipant}
@@ -119,8 +102,8 @@ export const VideoConsultation = ({}: VideoConsultationProps) => {
               <div className="flex flex-col justify-evenly h-full">
               {callState.patientParticipant && <VideoParticipant
                   name={visit.patientName}
-                  hasAudio={hasAudio}
-                  hasVideo={hasVideo}
+                  hasAudio={isAudioEnabled}
+                  hasVideo={isVideoEnabled}
                   isSelf={true}
                   isProvider={false}
                   participant={callState.patientParticipant}
@@ -145,9 +128,9 @@ export const VideoConsultation = ({}: VideoConsultationProps) => {
               containerClass="mb-5 bg-[#FFFFFF4A] rounded-lg"
               addParticipant={toggleInviteModal}
               flipCamera={() => setConnectionIssueModalVisible(true)}
-              toggleAudio={() => setHasAudio(!hasAudio)}
+              toggleAudio={toggleAudioEnabled}
               toggleChat={() => setIsChatWindowOpen(!isChatWindowOpen)}
-              toggleVideo={() => setHasVideo(!hasVideo)}
+              toggleVideo={toggleVideoEnabled}
             />
           </>
         )):(<></>)}

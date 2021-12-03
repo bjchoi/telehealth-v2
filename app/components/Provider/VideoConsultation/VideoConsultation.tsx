@@ -10,17 +10,18 @@ import { InviteParticipantPopover } from './InviteParticipantPopover';
 import { SettingsPopover } from './SettingsPopover';
 import { VideoParticipant } from './VideoParticipant';
 import { ProviderRoomState } from '../../../constants';
-import { LocalAudioTrackPublication, LocalVideoTrackPublication } from 'twilio-video';
 import useChatContext from '../../Base/ChatProvider/useChatContext/useChatContext';
 import { useVisitContext } from '../../../state/VisitContext';
+import useLocalAudioToggle from '../../Base/VideoProvider/useLocalAudioToggle/useLocalAudioToggle';
+import useLocalVideoToggle from '../../Base/VideoProvider/useLocalVideoToggle/useLocalVideoToggle';
 
 export interface VideoConsultationProps {}
 
 const providerName = 'Dr. Josefina Santos';
 
 export const VideoConsultation = ({}: VideoConsultationProps) => {
-  const [hasAudio, setHasAudio] = useState(true);
-  const [hasVideo, setHasVideo] = useState(true);
+  const [isAudioEnabled, toggleAudioEnabled] = useLocalAudioToggle();
+  const [isVideoEnabled, toggleVideoEnabled] = useLocalVideoToggle();
   const [isRecording, setIsRecording] = useState(false);
   const [inviteModalRef, setInviteModalRef] = useState(null);
   const [settingsModalRef, setSettingsModalRef] = useState(null);
@@ -46,25 +47,7 @@ export const VideoConsultation = ({}: VideoConsultationProps) => {
         }
       })
     }
-  }, [participants, room])
-
-  useEffect(() => {
-    if (callState.providerParticipant) {
-      const videoTracks = callState.providerParticipant.videoTracks;
-      videoTracks.forEach((item: LocalVideoTrackPublication) => {
-        hasVideo ? item.track.enable() : item.track.disable()
-      })
-    }
-  }, [hasVideo]);
-
-  useEffect(() => {
-    if (callState.providerParticipant) {
-      const audioTracks = callState.providerParticipant.audioTracks;
-      audioTracks.forEach((item: LocalAudioTrackPublication) => {
-        hasAudio ? item.track.enable() : item.track.disable()
-      })
-    }
-  }, [hasAudio]);
+  }, [participants, room]);
 
   return (
     <div className="relative h-full">
@@ -91,8 +74,8 @@ export const VideoConsultation = ({}: VideoConsultationProps) => {
               {callState.providerParticipant && 
                 <VideoParticipant
                   name={providerName}
-                  hasAudio={hasAudio}
-                  hasVideo={hasVideo}
+                  hasAudio={isAudioEnabled}
+                  hasVideo={isVideoEnabled}
                   isProvider
                   isSelf
                   participant={callState.providerParticipant}
@@ -105,13 +88,13 @@ export const VideoConsultation = ({}: VideoConsultationProps) => {
           addParticipant={(event) =>
             setInviteModalRef(inviteModalRef ? null : event?.target)
           }
-          toggleAudio={() => setHasAudio(!hasAudio)}
+          toggleAudio={toggleAudioEnabled}
           toggleChat={() => setIsChatWindowOpen(!isChatWindowOpen)}
           toggleScreenShare={() => {}}
           toggleSettings={(event) =>
             setSettingsModalRef(settingsModalRef ? null : event?.target)
           }
-          toggleVideo={() => setHasVideo(!hasVideo)}
+          toggleVideo={toggleVideoEnabled}
         />
         <div className="mt-1 mb-3">
           <PoweredByTwilio inverted />
