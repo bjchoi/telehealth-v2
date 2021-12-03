@@ -194,8 +194,6 @@ function validateAndDecodeAppToken(context, event, roles) {
         }
     }
 
-    console.log("Decoded Token");
-    console.log(decoded);
     return { decoded };
 }
 

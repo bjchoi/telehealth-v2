@@ -1,5 +1,4 @@
 import { Media } from "@twilio/conversations";
-import { joinClasses } from '../../../utils';
 import { useState, useEffect } from 'react';
 
 interface MediaMessageProps {
@@ -42,8 +41,8 @@ export default function MediaMessage({ media, isSelf, name }: MediaMessageProps)
 
   return (
     <>
-    <div className={joinClasses('text-sm text-secondary mb-1', !isSelf ? 'text-right' : '')}>{name}</div>
-    <div className={!isSelf && 'text-right flex justify-end'}>
+    <div className={'text-sm text-secondary mb-1 mt-3'}>{name}</div>
+    <div className={!isSelf ? 'text-right flex justify-end' : ''}>
       <div 
         className={'mb-5 flex items-center w-40 h-40 border rounded-2xl max-w-sm border-gray-300 cursor-pointer'} 
         onClick={handleClick}>

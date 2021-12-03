@@ -163,7 +163,7 @@ async function deploy(twilioClient, installationInfo, appInfo) {
       API_PASSCODE: pin,
       API_PASSCODE_EXPIRY: expiryTime,
       // ROOM_TYPE: this.flags['room-type'],
-      CONVERSATIONS_SERVICE_SID: conversationServiceSid,
+      TWILIO_CONVERSATIONS_SID: conversationServiceSid,
       ...installationInfo
     },
     pkgJson: {
