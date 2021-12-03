@@ -169,16 +169,14 @@ async function getParam(context, key) {
 
       case 'TWILIO_SYNC_SID': {
         const services = await client.sync.services.list();
-        const service = services.find(s => s.friendlyName === context.CUSTOMER_NAME);
+        const service = services.find(s => s.friendlyName === context.APPLICATION_NAME);
         if (service) return service.sid;
 
         console.log('Sync service not found so creating a new sync service...');
         let sync_sid = null;
         await client.sync.services
-          .create({ friendlyName: context.CUSTOMER_NAME })
+          .create({ friendlyName: context.APPLICATION_NAME })
           .then((result) => {
-            console.log(result);
-            console.log(result.sid);
             sync_sid = result.sid;
           });
         if (sync_sid) return sync_sid;
@@ -188,11 +186,12 @@ async function getParam(context, key) {
       }
 
       default:
-        throw new Error(`Undefined variable ${key} !!!`);
+        throw new Error(`Undefined variable ${key}!!!`);
     }
   } catch (err) {
-    console.log(`Unexpected error in getParam for ${key} ... returning null`);
-    return null;
+    console.log(err);
+    console.log(`Unexpected error in getParam for ${key}!!!`);
+    throw err;
   }
 }
 
