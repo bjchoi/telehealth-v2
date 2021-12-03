@@ -6,6 +6,7 @@ export interface ChatMessageProps {
   isSelf?: boolean;
   name?: string;
   mess?: Message;
+  role?: string;
 }
 
 export const ChatMessage = ({
@@ -14,7 +15,7 @@ export const ChatMessage = ({
   name,
 }: ChatMessageProps) => {
   return (
-    <div className={joinClasses('mb-1', !isSelf && 'text-right')}>
+    <div className={joinClasses('mb-1 mt-3', !isSelf && 'text-right')}>
       <div className="text-sm text-secondary mb-3">{name}</div>
       
       <span

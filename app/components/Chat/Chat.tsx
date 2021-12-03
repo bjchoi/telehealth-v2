@@ -1,6 +1,5 @@
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import useChatContext from '../Base/ChatProvider/useChatContext/useChatContext';
-import { Button } from '../Button';
 import { Icon } from '../Icon';
 import { ChatMessage } from './ChatMessage/ChatMessage';
 import ChatInput from './ChatInput/ChatInput';
@@ -18,9 +17,10 @@ const providerName = 'Dr. Josefina Santos';
 const patientName = 'Sarah Cooper';
 
 export const Chat = ({ inputPlaceholder, showHeader, userName, userRole }: ChatProps) => {
-  const fileInputRef = useRef(null);
+
   const messageListRef = useRef(null);
   const { messages, isChatWindowOpen, setIsChatWindowOpen, conversation } = useChatContext();
+  //const [prevAuthor, setPrevAuthor] = useState<string>('');
 
   // Scrolls to the bottom of the dummy div in chat
   useEffect(() => {
@@ -48,21 +48,21 @@ export const Chat = ({ inputPlaceholder, showHeader, userName, userRole }: ChatP
         )}
         <div className="bg-white flex-grow w-full p-3 overflow-auto pb-16">
           {messages.map((message, i) => {
-            // console.log(message, userRole);
             if (message.type === 'text') {
               return <ChatMessage 
                         key={i} 
-                        isSelf={message.author === userRole ? true : false} 
-                        name={message.author ===  userRole ? userName : message.author} 
+                        isSelf={message.author === userName ? true : false} 
+                        name={message.author ===  userName ? userName : message.author} 
                         content={message.body}
+                        role={userRole}
                     />
             }
             if (message.type === 'media') {
               return <MediaMessage
                       key={i} 
                       media={message.attachedMedia}
-                      isSelf={message.author === userRole ? true : false}
-                      name={message.author ===  userRole ? userName : message.author}
+                      isSelf={message.author === userName ? true : false}
+                      name={message.author ===  userName ? userName : message.author}
                     />
             }
           })}
