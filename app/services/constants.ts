@@ -9,9 +9,11 @@ export const Uris = {
     list: '/visits',
     get: '/visits/{id}',
     token: '/visit/token',
+    invite: '/visit/invite',
     patientRoomToken: '/visit/room',
-    providerRoomToken: '/visit/provider-room',
+    providerRoomToken: '/visit/provider-room'
   },
+  sms: '/send-sms',
 
   get: (endpoint: string): string => {
     return `${Uris.backendRoot}${endpoint}`;

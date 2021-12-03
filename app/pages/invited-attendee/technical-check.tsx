@@ -1,11 +1,14 @@
-import React, { useState } from 'react';
-import { Button, ButtonVariant } from '../../components/Button';
-import { DateTime } from '../../components/DateTime';
+import React, { useEffect, useState } from 'react';
+import { Button } from '../../components/Button';
 import { Heading } from '../../components/Heading';
 import { Layout } from '../../components/Patient';
 import { TechnicalCheck } from '../../components/TechnicalCheck';
-import { TwilioPage } from '../../types';
+import { PatientUser, TwilioPage } from '../../types';
 import PatientVideoContextLayout from '../../components/Patient/PatientLayout';
+import { roomService } from '../../services/roomService';
+import { useRouter } from 'next/router';
+import useVideoContext from '../../components/Base/VideoProvider/useVideoContext/useVideoContext';
+import { useVisitContext } from '../../state/VisitContext';
 
 const data = {
   date: new Date(),
@@ -13,6 +16,32 @@ const data = {
 };
 
 const TechnicalCheckPage: TwilioPage = () => {
+  const { visit, user } = useVisitContext();
+  const { getAudioAndVideoTracks } = useVideoContext();
+  const [mediaError, setMediaError] = useState<Error>();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!mediaError) {
+      getAudioAndVideoTracks().catch(error => {
+        console.log('Error acquiring local media:');
+        console.dir(error);
+        setMediaError(error);
+      });
+    }
+  }, [getAudioAndVideoTracks, mediaError]);
+
+  useEffect(() => {
+    if(user && visit) {
+      const interval = setInterval(() => roomService.checkRoom(user as PatientUser, visit.roomName)
+      .then(room => {
+        if(room.roomAvailable) {
+          router.push("/patient/video/")
+        }
+      }), 5000);
+      return () => clearInterval(interval);
+    }
+  }, [router, visit, user]);
   return (
     <Layout>
       <div className="my-4 flex flex-col items-center justify-center">
