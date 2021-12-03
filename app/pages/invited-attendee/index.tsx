@@ -7,26 +7,26 @@ import { Layout } from '../../components/Patient';
 import { Select } from '../../components/Select';
 import { STORAGE_USER_KEY, STORAGE_VISIT_KEY } from '../../constants';
 import clientStorage from '../../services/clientStorage';
-import visitorAuth from '../../services/visitorAuthService';
+//import visitorAuth from '../../services/visitorAuthService';
 import visitService from '../../services/visitService';
 
 const InvitedAttendeePage = () => {
   const router = useRouter();
-  useEffect(() => {
-    var token = router.query.token as string;
-    if(token) {
-      visitorAuth.authenticateVisitor(token)
-      .then(u => {
-        clientStorage.saveToStorage(STORAGE_USER_KEY, u);
-        return visitService.getVisitForPatient(u);
-      }).then(v => {
-        if(v) {
-          clientStorage.saveToStorage(STORAGE_VISIT_KEY, v);
-        }
-      });
-      // TODO: Implement CATCH
-    }
-  }, [router]);
+  // useEffect(() => {
+  //   var token = router.query.token as string;
+  //   if(token) {
+  //     visitorAuth.authenticateVisitor(token)
+  //     .then(u => {
+  //       clientStorage.saveToStorage(STORAGE_USER_KEY, u);
+  //       return visitService.getVisitForPatient(u);
+  //     }).then(v => {
+  //       if(v) {
+  //         clientStorage.saveToStorage(STORAGE_VISIT_KEY, v);
+  //       }
+  //     });
+  //     // TODO: Implement CATCH
+  //   }
+  // }, [router]);
 
 
   return (
