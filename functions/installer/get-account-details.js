@@ -27,12 +27,13 @@ exports.handler = function(context, event, callback) {
 // -----------------------------------------------------------------------------
 
 async function getAccountDetails(context) {
-    const accountSid = process.env.ACCOUNT_SID;
-    const authToken = process.env.AUTH_TOKEN;
-    const client = require('twilio')(accountSid, authToken);
-    const account = await client.api.accounts(accountSid).fetch();
+//     const accountSid = process.env.ACCOUNT_SID;
+//     const authToken = process.env.AUTH_TOKEN;
+//     const client = require('twilio')(accountSid, authToken);
+    const client = context.getTwilioClient();
+    const account = await client.api.accounts(process.env.ACCOUNT_SID).fetch();
     account_name = account.friendlyName;
-    const phoneNumberList = await client.api.accounts(accountSid).incomingPhoneNumbers.list();
+    const phoneNumberList = await client.api.accounts(process.env.ACCOUNT_SID).incomingPhoneNumbers.list();
     const phoneList = phoneNumberList.map(phone =>  phone["phoneNumber"]+ ":" + phone['friendlyName']);
     return {
         account_name,
