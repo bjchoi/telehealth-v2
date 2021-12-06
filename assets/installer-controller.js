@@ -7,6 +7,7 @@ $(document).ready(function () {
     })
     getAccountDetails();
     getEnvParams();
+    checkApplication();
 
 });
 
@@ -126,6 +127,9 @@ async function selectPhone() {
 
 // ----------------------------------------------------------------------------
 async function formSubmit(e) {
+    const THIS = formSubmit.name;
+    console.log(THIS);
+
     e.preventDefault();
 
     $(".configure-error").text("");
@@ -149,14 +153,17 @@ async function formSubmit(e) {
         }
 
         if (field['format'] === "phone_number" && value !== undefined && value !== "") {
-            validPhone = await validateAdministratorPhone(field["key"], value);
+            validPhone = true; // await validateAdministratorPhone(field["key"], value);
             if (!validPhone){
                 validationOk = false;
             }
         }
     }
-    if (validationOk){
-        displayFormFields();
+    console.log(THIS, 'validationOK=', validationOk);
+    if (true){
+//    if (validationOk){
+//        displayFormFields();
+        await deployApplication(e);
     }
 }
 
@@ -208,34 +215,29 @@ function displayFormFields() {
  * check deployment of Service (by uniqueName)
  * --------------------------------------------------------------------------------
  */
-function checkService() {
-    const THIS = checkService.name;
+function checkApplication() {
+    const THIS = checkApplication.name;
     try {
-         fetch('/installer/check-service', {
-            method: 'POST',
+         fetch('/installer/check-application', {
+            method: 'GET',
             headers: {
                 Accept: 'application/json',
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({}),
         })
-           .then((response) => response.text())
-           .then((service_sid) => {
-               console.log(THIS, 'server returned:', service_sid);
+           .then((response) => response.json())
+           .then((response) => {
+               console.log(THIS, 'server returned:', response);
                $('#service-deploy .button').removeClass('loading');
                $('.service-loader').hide();
-               if (service_sid === 'NOT-DEPLOYED') {
+               if (response.deploy_state === 'NOT-DEPLOYED') {
                    $('#service-deploy').show();
-               } else if (service_sid === 'DEPLOYING') {
-                   $('#service-deploy').hide();
-                   $('#service-deploying').show();
-                   setTimeout(checkService, 5000);
-               } else if (service_sid === 'DEPLOY-FAILED') {
-                   throw new Error(response);
-               } else {
+               } else if (response.deploy_state === 'DEPLOYED') {
                    $('#service-deploying').hide();
                    $('#service-deployed').show();
-                   $('#service-open').attr('href', `https://www.twilio.com/console/functions/api/start/${service_sid}`);
+                   $('#service-open').attr('href', `https://www.twilio.com/console/functions/api/start/${response.service_sid}`);
+               } else {
+                   throw new Error(response);
                }
            });
     } catch (err) {
@@ -247,13 +249,13 @@ function checkService() {
  * check deployment of Service (by uniqueName)
  * --------------------------------------------------------------------------------
  */
-function deployService(e) {
-    const THIS = deployService.name;
+function deployApplication(e) {
+    const THIS = deployApplication.name;
     e.preventDefault();
     $('#service-deploy .button').addClass('loading');
     $('.service-loader.button-loader').show();
 
-    fetch('/installer/deploy-service', {
+    fetch('/installer/deploy-application', {
         method: 'POST',
         headers: {
             Accept: 'application/json',
@@ -263,7 +265,7 @@ function deployService(e) {
     })
       .then(() => {
           console.log(THIS, 'successfully started deployment');
-          checkService();
+          checkApplication();
       })
       .catch ((err) => {
           console.log(THIS, err);
@@ -272,8 +274,3 @@ function deployService(e) {
       });
 }
 
-/* --------------------------------------------------------------------------------
- * initial execution on-load
- * --------------------------------------------------------------------------------
- */
-checkService();

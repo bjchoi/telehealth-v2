@@ -23,6 +23,7 @@ async function getAssets() {
     functionsFolderNames: [],
     assetsFolderNames: ["assets"],
   });
+  //console.log('asset count:', assets.length);
 
   const indexHTMLs = assets.filter(asset => asset.name.includes('index.html'));
   // Set indext.html as a default document
@@ -31,7 +32,7 @@ async function getAssets() {
       path: ih.name.replace("index.html", ""),
       name: ih.name.replace("index.html", ""),
     })));
-  // console.log(allAssets);
+  //console.log(allAssets);
   return allAssets;
 }
 

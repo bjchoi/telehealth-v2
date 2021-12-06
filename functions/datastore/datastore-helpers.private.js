@@ -70,7 +70,7 @@ async function selectSyncDocument(context, syncServiceSid, syncDocumentName) {
  * - syncDocumentName: unique Sync document name
  * - documentData: document data object
  *
- * returns: document SID if successful
+ * returns: document if successful
  * ----------------------------------------------------------------------------------------------------
  */
 async function upsertSyncDocument(context, syncServiceSid, syncDocumentName, syncDocumentData) {
@@ -100,7 +100,7 @@ async function upsertSyncDocument(context, syncServiceSid, syncDocumentName, syn
         uniqueName: syncDocumentName,
       });
   }
-  return document.sid;
+  return document;
 }
 
 /*
@@ -112,7 +112,7 @@ async function upsertSyncDocument(context, syncServiceSid, syncDocumentName, syn
  * - syncServiceSid: Sync service SID
  * - syncDocumentName: unique Sync document name
  *
- * returns: document SID if successful, null if nothing was delete
+ * returns: document if successful, null if nothing was delete
  * ----------------------------------------------------------------------------------------------------
  */
 async function deleteSyncDocument(context, syncServiceSid, syncDocumentName) {
@@ -128,7 +128,7 @@ async function deleteSyncDocument(context, syncServiceSid, syncDocumentName) {
     await client.sync
       .services(syncServiceSid)
       .documents(document.sid).remove();
-    return document.sid;
+    return document;
   } else {
     return null;
   }

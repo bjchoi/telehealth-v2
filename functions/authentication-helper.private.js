@@ -30,7 +30,7 @@ const AUTH_HEADER_TYPE = "Bearer";
 
 function isValidPassword(password, context) {
     return (checkDisableAuthForLocalhost(context) ||
-        password === context.APPLICATION_PASSWORD);
+        password === context.ADMINISTRATOR_PASSWORD);
 }
 
 // --------------------------------------------------------
@@ -58,59 +58,47 @@ function createMfaToken(issuer, context) {
 
 // --------------------------------------------------------
 function checkDisableAuthForLocalhost(context) {
-    return (
-        context.DOMAIN_NAME &&
-        context.DOMAIN_NAME.startsWith('localhost') &&
-        context.DISABLE_AUTH_FOR_LOCALHOST &&
-        context.DISABLE_AUTH_FOR_LOCALHOST === 'true'
-    );
+  return (
+    context.DOMAIN_NAME &&
+    context.DOMAIN_NAME.startsWith('localhost:') &&
+    context.DISABLE_AUTH_FOR_LOCALHOST &&
+    context.DISABLE_AUTH_FOR_LOCALHOST === 'true'
+  );
 }
 
 /* -----------------------------------------------------------------------
- * This function returns Verify Service SID that matches VERIFY_SERVICE_NAME.
- * If does not exists it creates a new service.
-
- * VERIFY_SERVICE_NAME is included in the text message to identify the sender.
- * It is recommended that the customer use their name as VERIFY_SERVICE_NAME
+ * This function returns Verify Service SID from context.
+ *
+ * TWILIO_VERIFY_SID environment variable MUST be set during service deployment
  */
 async function getVerifyServiceId(context) {
-    const client = context.getTwilioClient();
-    if (!context.VERIFY_SERVICE_NAME) {
-        context.VERIFY_SERVICE_NAME = context.CUSTOMER_NAME;
-        console.log("using CUSTOMER_NAME for VERIFY_SERVICE_NAME");
-    }
-    const services = await client.verify.services.list();
-    const service = services.find(s => s.friendlyName === context.VERIFY_SERVICE_NAME);
-    if (service) return service.sid;
-
-    console.log(`create verfiy service named: ${context.VERIFY_SERVICE_NAME}`);
-    const si = await client.verify.services.create({friendlyName: context.VERIFY_SERVICE_NAME});
-    if (si) return si.sid;
+  if ('TWILIO_VERIFY_SID' in context && context.TWILIO_VERIFY_SID) return context.TWILIO_VERIFY_SID;
+  throw new Error('getVerifyServiceId: TWILIO_VERIFY_SID environment varialbe must be set!!!');
 }
 // -----------------------------------------------------
 
 function isValidMfaToken(token, context) {
-    try {
-        return (
-            checkDisableAuthForLocalhost(context) ||
-            jwt.verify(token, context.TWILIO_API_KEY_SECRET, { audience: 'mfa' })
-        );
-    } catch (err) {
-        return false;
-    }
+  try {
+    return (
+      checkDisableAuthForLocalhost(context) ||
+      jwt.verify(token, context.TWILIO_API_KEY_SECRET, { audience: 'mfa' })
+    );
+  } catch (err) {
+    return false;
+  }
 }
 
 // ---------------------------------------------------------
 function isValidAppToken(token, context) {
-    try {
-        return (
-            checkDisableAuthForLocalhost(context) ||
-            jwt.verify(token, context.TWILIO_API_KEY_SECRET, { audience: 'app' })
-        );
-    } catch (err) {
-        console.log(err);
-        return false;
-    }
+  try {
+    return (
+      checkDisableAuthForLocalhost(context) ||
+      jwt.verify(token, context.TWILIO_API_KEY_SECRET, { audience: 'app' })
+    );
+  } catch (err) {
+    console.log(err);
+    return false;
+  }
 }
 
 // ---------------------------------------------------------
