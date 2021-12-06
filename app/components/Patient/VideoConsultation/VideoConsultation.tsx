@@ -66,7 +66,6 @@ export const VideoConsultation = ({}: VideoConsultationProps) => {
                   name={visit.providerName}
                   hasAudio
                   hasVideo
-                  isProvider
                   participant={callState.providerParticipant}
                 />}
                 <div className="absolute top-1 right-1">
@@ -128,9 +127,9 @@ export const VideoConsultation = ({}: VideoConsultationProps) => {
               containerClass="mb-5 bg-[#FFFFFF4A] rounded-lg"
               addParticipant={toggleInviteModal}
               flipCamera={() => setConnectionIssueModalVisible(true)}
-              toggleAudio={toggleAudioEnabled}
               toggleChat={() => setIsChatWindowOpen(!isChatWindowOpen)}
               toggleVideo={toggleVideoEnabled}
+              toggleAudio={toggleAudioEnabled}
             />
           </>
         )):(<></>)}

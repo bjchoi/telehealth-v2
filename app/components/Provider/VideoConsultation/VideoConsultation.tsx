@@ -14,6 +14,8 @@ import useChatContext from '../../Base/ChatProvider/useChatContext/useChatContex
 import { useVisitContext } from '../../../state/VisitContext';
 import useLocalAudioToggle from '../../Base/VideoProvider/useLocalAudioToggle/useLocalAudioToggle';
 import useLocalVideoToggle from '../../Base/VideoProvider/useLocalVideoToggle/useLocalVideoToggle';
+import useRemoteAudio from '../../Base/VideoProvider/useRemoteAudio/useRemoteAudio';
+import usePublications from '../../Base/ParticipantTracks/usePublications/usePublications';
 
 export interface VideoConsultationProps {}
 
@@ -36,6 +38,29 @@ export const VideoConsultation = ({}: VideoConsultationProps) => {
     patientParticipant: null,
     providerParticipant: null
   });
+  
+
+  // useEffect(() => {
+  //   // participant -> publications -> tracks
+  //   //console.log(hasPatientAudio);
+  //   participants.forEach(participant => {
+  //     participant.tracks.forEach(publication => {
+  //       //console.log("publications", publication);
+  //       //console.log("paticipant tracks (publications)" , participant.tracks);
+  //       if (publication.isSubscribed) {
+  //         const track = publication.track;
+  //         const setEnabled = () => setHasPatientAudio(true);
+  //         const setDisabled = () => setHasPatientAudio(false);
+  //         track.on('disabled', setDisabled);
+  //         track.on('enabled', setEnabled);
+  //         return () => {
+  //           track.off('disabled', () => setDisabled);
+  //           track.off('enabled', () => setEnabled);
+  //         }
+  //       }
+  //     });
+  //   })
+  // }, [participants, room]);
 
   useEffect(() => {
     if (room) {
@@ -65,9 +90,10 @@ export const VideoConsultation = ({}: VideoConsultationProps) => {
             {callState.patientParticipant && 
               <VideoParticipant 
                 name="Sarah Coopers" 
-                hasAudio 
+                hasAudio
                 hasVideo 
                 participant={callState.patientParticipant}
+                isSelf={false}
               />
             }
             <div className="absolute top-20 right-10">

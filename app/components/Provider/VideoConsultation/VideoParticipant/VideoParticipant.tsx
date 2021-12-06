@@ -1,7 +1,10 @@
 import { useEffect, useState } from 'react';
-import { LocalParticipant, RemoteParticipant } from 'twilio-video';
+import { LocalAudioTrack, LocalParticipant, RemoteAudioTrack, RemoteParticipant } from 'twilio-video';
 import { joinClasses } from '../../../../utils';
 import ParticipantTracks from '../../../Base/ParticipantTracks/ParticipantTracks';
+import useTrack from '../../../Base/ParticipantTracks/Publication/useTrack/useTrack';
+import usePublications from '../../../Base/ParticipantTracks/usePublications/usePublications';
+import useIsTrackEnabled from '../../../Base/VideoProvider/useIsTrackEnabled/useIsTrackEnabled';
 import { Icon } from '../../../Icon';
 import { Popover } from '../Popover';
 
@@ -25,11 +28,43 @@ export const VideoParticipant = ({
   const [showMutedBanner, setShowMutedBanner] = useState(null);
   const [showMenuRef, setShowMenuRef] = useState(null);
   const [isPinned, setIsPinned] = useState(false);
-  const [muted, setMuted] = useState(!hasAudio);
+  const [muted, setMuted] = useState(false);
   const [showVideo, setShowVideo] = useState(hasVideo);
   // TODO - move to tailwind config
   const widthClass = isProvider ? 'w-[405px]' : 'w-[685px]';
   const heightClass = isProvider ? 'h-[234px]' : 'max-h-100%';
+  
+  const publications = usePublications(participant);
+  const videoPublication = publications.find(p => !p.trackName.includes('screen') && p.kind === 'video');
+
+  const videoTrack = useTrack(videoPublication);
+  const isVideoEnabled = Boolean(videoTrack);
+
+  const audioPublication = publications.find(p => p.kind === 'audio');
+  
+  const audioTrack = useTrack(audioPublication) as LocalAudioTrack | RemoteAudioTrack | undefined;
+
+  const isTrackEnabled = useIsTrackEnabled(audioTrack as LocalAudioTrack | RemoteAudioTrack);
+
+  // Muting non-self Participants useEffect
+  // Will need to account for 3rd party later on
+  useEffect(() => {
+    
+    if (!isTrackEnabled) { 
+      setMuted(true);
+    } else {
+      setMuted(false);
+    }
+  }, [isTrackEnabled]);
+
+  // Video disabling effect
+  useEffect(() => {
+    if (!isVideoEnabled) { 
+      setShowVideo(false);
+    } else {
+      setShowVideo(true);
+    }
+  }, [isVideoEnabled]);
 
   useEffect(() => {
     if (showMutedBanner !== null) {
