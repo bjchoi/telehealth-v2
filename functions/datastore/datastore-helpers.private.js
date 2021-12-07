@@ -9,6 +9,8 @@
  */
 
 const assert = require('assert');
+const http = require("http");
+const https = require("https");
 
 /*
  * ----------------------------------------------------------------------------------------------------
@@ -68,7 +70,7 @@ async function selectSyncDocument(context, syncServiceSid, syncDocumentName) {
  * - syncDocumentName: unique Sync document name
  * - documentData: document data object
  *
- * returns: document SID if successful
+ * returns: document if successful
  * ----------------------------------------------------------------------------------------------------
  */
 async function upsertSyncDocument(context, syncServiceSid, syncDocumentName, syncDocumentData) {
@@ -98,7 +100,7 @@ async function upsertSyncDocument(context, syncServiceSid, syncDocumentName, syn
         uniqueName: syncDocumentName,
       });
   }
-  return document.sid;
+  return document;
 }
 
 /*
@@ -110,7 +112,7 @@ async function upsertSyncDocument(context, syncServiceSid, syncDocumentName, syn
  * - syncServiceSid: Sync service SID
  * - syncDocumentName: unique Sync document name
  *
- * returns: document SID if successful, null if nothing was delete
+ * returns: document if successful, null if nothing was delete
  * ----------------------------------------------------------------------------------------------------
  */
 async function deleteSyncDocument(context, syncServiceSid, syncDocumentName) {
@@ -126,7 +128,7 @@ async function deleteSyncDocument(context, syncServiceSid, syncDocumentName) {
     await client.sync
       .services(syncServiceSid)
       .documents(document.sid).remove();
-    return document.sid;
+    return document;
   } else {
     return null;
   }
@@ -229,6 +231,48 @@ async function save_fhir(context, syncServiceSid, resourceType, resources) {
   return document ? document.sid : null;
 }
 
+
+/*
+ * ----------------------------------------------------------------------------------------------------
+ * fetches content of public json asset via https
+ *
+ * parameters
+ * - context: Twilio runtime context
+ * - assetPath: url path to asset
+ *
+ * returns: json content of asset
+ * ----------------------------------------------------------------------------------------------------
+ */
+async function fetchPublicJsonAsset(context, assetPath) {
+  const hostname = context.DOMAIN_NAME.split(':')[0];
+  const port = context.DOMAIN_NAME.split(':')[1];
+  const options = {
+    hostname: hostname,
+    port: port,
+    path: assetPath,
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  };
+  const http_protocol = (hostname === 'localhost') ? http : https;
+
+  return new Promise((resolve, reject) => {
+    const request = http_protocol.request(options, (response) => {
+      let data = '';
+      response.on('data', (chunk) => {
+        data += chunk;
+      });
+      response.on('end', () => {
+        resolve(JSON.parse(data));
+      });
+      response.on('error', (error) => {
+        reject(error);
+      });
+    });
+    request.end();
+  });
+}
+
+
 // --------------------------------------------------------------------------------
 module.exports = {
   read_fhir,
@@ -238,5 +282,6 @@ module.exports = {
   deleteSyncDocument,
   fetchSyncMapItem,
   insertSyncMapItem,
-  updateSyncMapItem
+  updateSyncMapItem,
+  fetchPublicJsonAsset,
 };

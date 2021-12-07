@@ -13,8 +13,8 @@ const FHIR_DOCUMENT_REFERENCE = 'DocumentReferences';
 const FHIR_APPOINTMENT = 'Appointments';
 
 const assert = require("assert");
-const { getParam, fetchPublicJsonAsset } = require(Runtime.getFunctions()['helpers'].path);
-const { read_fhir, save_fhir } = require(Runtime.getFunctions()['datastore/datastore-helpers'].path);
+const { getParam } = require(Runtime.getFunctions()['helpers'].path);
+const { read_fhir, save_fhir, fetchPublicJsonAsset } = require(Runtime.getFunctions()['datastore/datastore-helpers'].path);
 
 // --------------------------------------------------------------------------------
 function transform_fhir_to_content(fhir_document_reference, provider_id) {
