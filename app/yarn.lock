@@ -12296,7 +12296,7 @@
   "resolved" "https://registry.npmjs.org/tty-browserify/-/tty-browserify-0.0.1.tgz"
   "version" "0.0.1"
 
-"twilio-sync@^3.0.5":
+"twilio-sync@^3.0.5", "twilio-sync@3.0.6":
   "integrity" "sha512-mc9gjL1uGivDf171DjQmNJeD5UQX8KgpHa6jrUtgOnFuMrc4hcXRUNR2VEqElX9U4mOjOzKPJaNSaEz58YFNIg=="
   "resolved" "https://registry.npmjs.org/twilio-sync/-/twilio-sync-3.0.6.tgz"
   "version" "3.0.6"

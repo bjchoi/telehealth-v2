@@ -58,8 +58,6 @@ export const VideoParticipant = ({
   // Muting non-self Participants useEffect
   // Will need to account for 3rd party later on
   useEffect(() => {
-    console.log("isTrackEnabled", isTrackEnabled)
-    console.log("hasaudio", participant ,hasAudio);
     if (isTrackEnabled) { 
       setMuted(false);
     } else {
@@ -69,7 +67,6 @@ export const VideoParticipant = ({
 
   // Video disabling effect
   useEffect(() => {
-    console.log("isVideoEnabled", isVideoEnabled)
     if (!isVideoEnabled) { 
       setShowVideo(false);
     } else {

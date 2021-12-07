@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { LocalAudioTrack, LocalParticipant, RemoteAudioTrack, RemoteParticipant } from 'twilio-video';
+import Video from 'twilio-video';
 import { joinClasses } from '../../../../utils';
 import ParticipantTracks from '../../../Base/ParticipantTracks/ParticipantTracks';
 import useTrack from '../../../Base/ParticipantTracks/Publication/useTrack/useTrack';
@@ -45,6 +46,11 @@ export const VideoParticipant = ({
   const audioTrack = useTrack(audioPublication) as LocalAudioTrack | RemoteAudioTrack | undefined;
 
   const isTrackEnabled = useIsTrackEnabled(audioTrack as LocalAudioTrack | RemoteAudioTrack);
+
+  const handleMuteParticipant = () => {
+    setMuted(!muted);
+    console.log("muted");
+  }
 
   // Muting non-self Participants useEffect
   // Will need to account for 3rd party later on
@@ -129,7 +135,7 @@ export const VideoParticipant = ({
                   <button
                     className="w-full text-left"
                     type="button"
-                    onClick={() => setMuted(!muted)}
+                    onClick={handleMuteParticipant}
                   >
                     {muted ? 'Unmute' : 'Mute'} participant
                   </button>
