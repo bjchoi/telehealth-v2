@@ -1,3 +1,4 @@
+'use strict';
 /* --------------------------------------------------------------------------------
  * deploys application to target Twilio account.
  * - deploy services & makeEditable
@@ -33,15 +34,13 @@ exports.handler = async function(context, event, callback) {
 
   console.time(THIS);
   assertLocalhost(context);
-  console.log(process.env);
   try {
     const application_name = await getParam(context, 'APPLICATION_NAME');
 
+    console.log(THIS, 'event:', event);
     console.log(THIS, `Deploying Twilio service ... ${application_name}`);
-    const environmentVariables = {
-      V1: 'X',
-      V2: 'Y',
-    };
+    const environmentVariables = event.configuration ? event.configuration : {};
+    console.log(THIS, 'configuration:', environmentVariables);
     const service_sid = await deployService(context, environmentVariables);
     console.log(THIS, `Deployed: ${service_sid}`);
 
@@ -53,7 +52,7 @@ exports.handler = async function(context, event, callback) {
 
     console.log(THIS, 'Provisioning dependent Twilio services');
     const params = await getAllParams(context);
-    console.log(THIS, params);
+    //console.log(THIS, params);
 
     console.log(THIS, 'Seed application data');
     const summary = seedData(context);
@@ -83,18 +82,6 @@ exports.handler = async function(context, event, callback) {
  * --------------------------------------------------------------------------------
  */
 async function deployService(context, envrionmentVariables = {}) {
-  /*const appDirectory = process.env.APP_DIRECTORY;
-  if (appDirectory) {
-      try {
-        verifyAppDirectory(appDirectory);
-      } catch (err) {
-        console.log(err.message);
-        response.setStatusCode(500);
-        response.setBody({message: err});
-        return callback(null, response);
-      }
-  }*/
-
   const client = context.getTwilioClient();
 
   const assets = await getAssets();

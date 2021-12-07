@@ -2,7 +2,7 @@ exports.handler = async function(context, event, callback) {
     const client = context.getTwilioClient();
 
     const response = new Twilio.Response();
-    const to_phone = await client.lookups.v1.phoneNumbers(event.ADMINISTRATOR_PHONE)
+    const to_phone = await client.lookups.v1.phoneNumbers(event.PHONE)
         .fetch({countryCode: 'US'})
         .then(phone => {
             if (phone.hasOwnProperty("phoneNumber")) {
@@ -22,7 +22,6 @@ exports.handler = async function(context, event, callback) {
             response.setStatusCode(400);
             response.setBody({error: err})
             return callback(null,response);
-
         })
 }
 

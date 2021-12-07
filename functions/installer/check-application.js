@@ -1,3 +1,4 @@
+'use strict';
 /*
  * --------------------------------------------------------------------------------
  * checks deployment of service in target Twilio account.
