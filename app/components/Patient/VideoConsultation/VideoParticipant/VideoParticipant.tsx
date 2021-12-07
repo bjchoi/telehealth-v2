@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { LocalAudioTrack, LocalParticipant, RemoteAudioTrack, RemoteParticipant } from 'twilio-video';
+import { DataTrack, LocalAudioTrack, LocalParticipant, RemoteAudioTrack, RemoteDataTrack, RemoteParticipant } from 'twilio-video';
 import { joinClasses } from '../../../../utils';
 import ParticipantTracks from '../../../Base/ParticipantTracks/ParticipantTracks';
 import useTrack from '../../../Base/ParticipantTracks/Publication/useTrack/useTrack';
 import usePublications from '../../../Base/ParticipantTracks/usePublications/usePublications';
 import useIsTrackEnabled from '../../../Base/VideoProvider/useIsTrackEnabled/useIsTrackEnabled';
 import { Icon } from '../../../Icon';
-
+import useDataTrackMessage from '../../../Base/DataTracks/useDataTrack';
+import useLocalAudioToggle from '../../../Base/VideoProvider/useLocalAudioToggle/useLocalAudioToggle';
 export interface VideoParticipantProps {
   hasAudio?: boolean;
   hasVideo?: boolean;
@@ -28,9 +29,10 @@ export const VideoParticipant = ({
 }: VideoParticipantProps) => {
   const [showMutedBanner, setShowMutedBanner] = useState(null);
   const [isPinned, setIsPinned] = useState(false);
-  const [muted, setMuted] = useState(false);
+  const [muted, setMuted] = useState(hasAudio);
   const [showVideo, setShowVideo] = useState(hasVideo);
-
+  const [isAudioEnabled, toggleAudioEnabled] = useLocalAudioToggle();
+  
   // TODO - move to tailwind config
   const widthClass = isOverlap
     ? 'w-[92px]'
@@ -54,6 +56,17 @@ export const VideoParticipant = ({
   const audioTrack = useTrack(audioPublication) as LocalAudioTrack | RemoteAudioTrack | undefined;
 
   const isTrackEnabled = useIsTrackEnabled(audioTrack as LocalAudioTrack | RemoteAudioTrack);
+  
+  const dataPublication = publications.find(p => p.kind === 'data');
+  const dataTrack = useTrack(dataPublication) as DataTrack | undefined;
+
+  const amIMuted = useDataTrackMessage(dataTrack);
+
+  useEffect(() => {
+    // toggleAudioEnabled() only works for local user
+    // in this case the patient
+    toggleAudioEnabled();
+  }, [amIMuted]);
 
   // Muting non-self Participants useEffect
   // Will need to account for 3rd party later on

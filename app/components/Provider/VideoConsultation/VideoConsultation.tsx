@@ -68,7 +68,6 @@ export const VideoConsultation = ({}: VideoConsultationProps) => {
                 hasAudio
                 hasVideo 
                 participant={callState.patientParticipant}
-                isSelf={false}
               />
             }
             <div className="absolute top-20 right-10">

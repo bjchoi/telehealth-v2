@@ -8,6 +8,7 @@ import usePublications from '../../../Base/ParticipantTracks/usePublications/use
 import useIsTrackEnabled from '../../../Base/VideoProvider/useIsTrackEnabled/useIsTrackEnabled';
 import { Icon } from '../../../Icon';
 import { Popover } from '../Popover';
+import useVideoContext from '../../../Base/VideoProvider/useVideoContext/useVideoContext';
 
 export interface VideoParticipantProps {
   hasAudio?: boolean;
@@ -29,8 +30,10 @@ export const VideoParticipant = ({
   const [showMutedBanner, setShowMutedBanner] = useState(null);
   const [showMenuRef, setShowMenuRef] = useState(null);
   const [isPinned, setIsPinned] = useState(false);
-  const [muted, setMuted] = useState(false);
+  const [muted, setMuted] = useState(hasAudio);
   const [showVideo, setShowVideo] = useState(hasVideo);
+  const { room } = useVideoContext();
+
   // TODO - move to tailwind config
   const widthClass = isProvider ? 'w-[405px]' : 'w-[685px]';
   const heightClass = isProvider ? 'h-[234px]' : 'max-h-100%';
@@ -47,19 +50,25 @@ export const VideoParticipant = ({
 
   const isTrackEnabled = useIsTrackEnabled(audioTrack as LocalAudioTrack | RemoteAudioTrack);
 
+  // this function only visible for Patient Video
   const handleMuteParticipant = () => {
-    setMuted(!muted);
-    console.log("muted");
+    if (room) {
+      setMuted(prev => !prev); 
+      // @ts-ignore
+      const [localDataTrackPublication] = [...room.localParticipant.dataTracks.values()];
+      localDataTrackPublication.track.send(muted);
+    }
   }
 
   // Muting non-self Participants useEffect
   // Will need to account for 3rd party later on
   useEffect(() => {
-    
-    if (!isTrackEnabled) { 
-      setMuted(true);
-    } else {
+    console.log(audioTrack);
+    console.log(isTrackEnabled);
+    if (isTrackEnabled) { 
       setMuted(false);
+    } else {
+      setMuted(true);
     }
   }, [isTrackEnabled]);
 
@@ -84,14 +93,6 @@ export const VideoParticipant = ({
     }, 3000);
     return () => clearTimeout(timer);
   }, [muted, showMutedBanner]);
-
-  useEffect(() => {
-    setMuted(!hasAudio);
-  }, [hasAudio]);
-
-  useEffect(() => {
-    setShowVideo(hasVideo);
-  }, [hasVideo]);
 
   return (
     <div className="mx-auto relative w-max group">

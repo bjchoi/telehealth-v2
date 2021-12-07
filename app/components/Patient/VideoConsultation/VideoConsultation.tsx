@@ -74,7 +74,7 @@ export const VideoConsultation = ({}: VideoConsultationProps) => {
                     hasAudio={isAudioEnabled}
                     hasVideo={isVideoEnabled}
                     isOverlap
-                    isSelf
+                    isSelf={true}
                     participant={callState.patientParticipant}
                   /> }
                 </div>
