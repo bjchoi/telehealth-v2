@@ -1,5 +1,5 @@
 import React, { createContext, ReactNode, useCallback, useEffect, useState } from 'react';
-import { CreateLocalTrackOptions, ConnectOptions, LocalAudioTrack, LocalVideoTrack, Room } from 'twilio-video';
+import { CreateLocalTrackOptions, ConnectOptions, LocalAudioTrack, LocalVideoTrack, Room, LocalDataTrack } from 'twilio-video';
 import { ErrorCallback } from '../../../types';
 import { SelectedParticipantProvider } from './useSelectedParticipant/useSelectedParticipant';
 
@@ -21,7 +21,7 @@ import useScreenShareToggle from './useScreenShareToggle/useScreenShareToggle';
 
 export interface IVideoContext {
   room: Room | null;
-  localTracks: (LocalAudioTrack | LocalVideoTrack)[];
+  localTracks: (LocalAudioTrack | LocalVideoTrack | LocalDataTrack)[];
   isConnecting: boolean;
   connect: (token: string) => Promise<void>;
   onError: ErrorCallback;
