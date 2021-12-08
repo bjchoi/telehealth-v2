@@ -61,10 +61,23 @@ module.exports.handler = async (context, event, callback) => {
     try {
       // See if a room already exists
       room = await client.video.rooms(room_name).fetch();
+      
     } catch (e) {
       try {
         // If room doesn't exist, create it
         room = await client.video.rooms.create({ uniqueName: room_name, type: ROOM_TYPE });
+        await client.video.compositions.
+          create({
+            roomSid: room.sid,
+            audioSources: '*',
+            videoLayout: {
+              grid : {
+                video_sources: ['*']
+              }
+            },
+            statusCallback: context.RECORDING_CALLBACK,
+            format: 'mp4'
+          });
       } catch (e) {
         response.setStatusCode(500);
         response.setBody({

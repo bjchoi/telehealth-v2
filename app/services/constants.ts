@@ -1,6 +1,6 @@
 export const Uris = {
-  backendRoot : 'http://localhost:3000',
-  // backendRoot : '',
+  // backendRoot : 'http://localhost:3000',
+  backendRoot : '',
   token: {
     get: '/visit/token',
     validate: '/token/validate'
@@ -11,7 +11,8 @@ export const Uris = {
     token: '/visit/token',
     invite: '/visit/invite',
     patientRoomToken: '/visit/room',
-    providerRoomToken: '/visit/provider-room'
+    providerRoomToken: '/visit/provider-room',
+    recording: '/visit/recording'
   },
   sms: '/send-sms',
 
