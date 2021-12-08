@@ -6,6 +6,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 export default function useRoom(localTracks: LocalTrack[], onError: Callback, options?: ConnectOptions) {
   const [room, setRoom] = useState<Room | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
   const optionsRef = useRef(options);
 
   useEffect(() => {
@@ -41,6 +42,10 @@ export default function useRoom(localTracks: LocalTrack[], onError: Callback, op
             }
           });
 
+          setIsRecording(newRoom.isRecording);
+          newRoom.on('recordingStarted', () => setIsRecording(true));
+          newRoom.on('recordingStopped', () => setIsRecording(false));
+
           // @ts-ignore
           window.twilioRoom = newRoom;
 
@@ -64,11 +69,12 @@ export default function useRoom(localTracks: LocalTrack[], onError: Callback, op
         error => {
           onError(error);
           setIsConnecting(false);
+          setIsRecording(false);
         }
       );
     },
     [localTracks, onError]
   );
 
-  return { room, isConnecting, connect };
+  return { room, isConnecting, isRecording, connect };
 }
