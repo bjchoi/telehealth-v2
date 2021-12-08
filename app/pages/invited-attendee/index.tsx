@@ -18,7 +18,7 @@ const InvitedAttendeePage = () => {
   const [relationship, setRelationship] = useState('');
   const [terms, setTerms] = useState(false);
   useEffect(() => {
-    var token = router.query.token as string;
+    const token = router.query.token as string;
     if(token) {
       visitorAuth.authenticateVisitorOrPatient(token)
       .then(u => {
@@ -54,7 +54,7 @@ const InvitedAttendeePage = () => {
               information about yourself below for Dr. Josefina Santos:
             </p>
             <div className="">
-              <Input className="w-full my-2" placeholder="Full Name" name="name" value={name} onChange={evt => setName(evt.target.value)} />
+              <Input className="w-full my-2" autoFocus placeholder="Full Name" name="name"  value={name} onChange={evt => setName(evt.target.value)} />
               <Select
                 className="w-full my-2"
                 placeholder="Relationship with Patient"

@@ -52,7 +52,7 @@ export const VideoConsultation = ({}: VideoConsultationProps) => {
 
   return (
     <>
-      <div className="bg-secondary flex flex-col h-full items-center">
+      <div className="bg-secondary flex flex-col h-full w-full items-center overflow-x-hidden overflow-y-scroll">
         <div className="py-5">
           <PoweredByTwilio inverted />
         </div>        
@@ -123,6 +123,7 @@ export const VideoConsultation = ({}: VideoConsultationProps) => {
                 />
               )}
             </div>
+
             <VideoControls
               containerClass="mb-5 bg-[#FFFFFF4A] rounded-lg"
               addParticipant={toggleInviteModal}

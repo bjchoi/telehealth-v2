@@ -16,14 +16,18 @@ export const TechnicalCheck = ({ videoImage }: TechnicalCheckProps) => {
   const audioTrack = localTracks.find(track => track.kind ==='audio' ) as LocalAudioTrack;
   const videoTrack = localTracks.find(track => track.kind === 'video' ) as LocalVideoTrack;
 
+  const styles = {
+    width: '187px',
+    height: '250px'
+  }
   return (
     <div className="flex mt-4 mb-1">
       <SimpleVideoControls containerClass='flex flex-col justify-center px-1'/>
-      <div className="flex-grow px-1">
+      <div className="flex-grow px-1" style={styles}>
       {videoTrack ? (
-          <VideoTrack track={videoTrack} isLocal />
+          <VideoTrack track={videoTrack} isLocal/>
         ) : (
-            <img src={videoImage} alt="Video" width={187} height={250} />
+            <img src={videoImage} alt="Video"/>
         )}
       </div>
       {audioTrack && <AudioTrack track={audioTrack} />}

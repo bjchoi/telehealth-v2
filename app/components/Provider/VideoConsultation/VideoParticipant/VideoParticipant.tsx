@@ -17,6 +17,7 @@ export interface VideoParticipantProps {
   isSelf?: boolean;
   name: string;
   participant: LocalParticipant | RemoteParticipant;
+  fullScreen?:boolean;
 }
 
 export const VideoParticipant = ({
@@ -25,7 +26,8 @@ export const VideoParticipant = ({
   hasVideo,
   isProvider,
   isSelf,
-  participant
+  participant,
+  fullScreen
 }: VideoParticipantProps) => {
   const [showMutedBanner, setShowMutedBanner] = useState(null);
   const [showMenuRef, setShowMenuRef] = useState(null);
@@ -35,9 +37,13 @@ export const VideoParticipant = ({
   const { room } = useVideoContext();
 
   // TODO - move to tailwind config
-  const widthClass = isProvider ? 'w-[405px]' : 'w-[685px]';
-  const heightClass = isProvider ? 'h-[234px]' : 'max-h-100%';
-  
+  let widthClass = isProvider ? 'w-[405px]' : 'w-[685px]';
+  let heightClass = isProvider ? 'h-[234px]' : 'max-h-100%';
+  if (fullScreen) {
+    widthClass = 'w-full';
+    heightClass = 'h-full';
+  }
+
   const publications = usePublications(participant);
   const videoPublication = publications.find(p => !p.trackName.includes('screen') && p.kind === 'video');
 
@@ -45,7 +51,7 @@ export const VideoParticipant = ({
   const isVideoEnabled = Boolean(videoTrack);
 
   const audioPublication = publications.find(p => p.kind === 'audio');
-  
+
   const audioTrack = useTrack(audioPublication) as LocalAudioTrack | RemoteAudioTrack | undefined;
 
   const isTrackEnabled = useIsTrackEnabled(audioTrack as LocalAudioTrack | RemoteAudioTrack);
@@ -53,7 +59,7 @@ export const VideoParticipant = ({
   // this function only visible for Patient Video
   const handleMuteParticipant = () => {
     if (room) {
-      setMuted(prev => !prev); 
+      setMuted(prev => !prev);
       // @ts-ignore
       const [localDataTrackPublication] = [...room.localParticipant.dataTracks.values()];
       localDataTrackPublication.track.send(muted);
@@ -65,7 +71,7 @@ export const VideoParticipant = ({
   useEffect(() => {
     console.log(audioTrack);
     console.log(isTrackEnabled);
-    if (isTrackEnabled) { 
+    if (isTrackEnabled) {
       setMuted(false);
     } else {
       setMuted(true);
@@ -74,7 +80,7 @@ export const VideoParticipant = ({
 
   // Video disabling effect
   useEffect(() => {
-    if (!isVideoEnabled) { 
+    if (!isVideoEnabled) {
       setShowVideo(false);
     } else {
       setShowVideo(true);
@@ -95,7 +101,10 @@ export const VideoParticipant = ({
   }, [muted, showMutedBanner]);
 
   return (
-    <div className="mx-auto relative w-max group">
+    <div className={joinClasses(
+      'mx-auto relative group',
+      fullScreen ? '' : 'w-max'
+    )}>
       {!isSelf && (
         <div className="absolute top-0 h-[100px] text-right w-full flex justify-end group-hover:bg-gradient-to-b from-[#000000B0] via-[#00000000] to-[#00000000] z-10">
           <div>

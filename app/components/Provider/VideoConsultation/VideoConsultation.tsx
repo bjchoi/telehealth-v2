@@ -36,7 +36,7 @@ export const VideoConsultation = ({}: VideoConsultationProps) => {
     patientParticipant: null,
     providerParticipant: null
   });
-  
+
   useEffect(() => {
     if (room) {
       setCallState(prev => {
@@ -49,31 +49,39 @@ export const VideoConsultation = ({}: VideoConsultationProps) => {
     }
   }, [participants, room]);
 
+  const styles = {
+    width: '89%'
+  }
+  
   const toggleRecordingCb = useCallback(async () => 
     await roomService.toggleRecording(user, room.sid, isRecording ? 'stop' : 'start'),
     [user, room, isRecording]);
-
+  
   return (
     <div className="relative h-full">
-      <h1 className="absolute text-white text-2xl font-bold top-10 left-32">
+      {/*<h1 className="absolute text-white text-2xl font-bold top-10 left-32">
         Owl Health
-      </h1>
+      </h1>*/}
       <div
         className={joinClasses(
-          'bg-secondary flex flex-col h-full items-center',
+          'bg-secondary flex flex-col h-full w-full items-center',
           isRecording ? 'border-[10px] border-primary' : 'p-[10px]'
         )}
       >
+        <div className="h-full" style={styles}>
+          {callState.patientParticipant &&
+            <VideoParticipant
+              name="Sarah Coopers"
+              hasAudio
+              hasVideo
+              participant={callState.patientParticipant}
+              fullScreen
+            />
+          }
+        </div>
+
         <div className="flex-grow">
           <div className="flex flex-col justify-evenly h-full mt-20">
-            {callState.patientParticipant && 
-              <VideoParticipant 
-                name="Sarah Coopers" 
-                hasAudio
-                hasVideo 
-                participant={callState.patientParticipant}
-              />
-            }
             <div className="absolute top-20 right-10">
               {callState.providerParticipant && 
                 <VideoParticipant
@@ -100,7 +108,7 @@ export const VideoConsultation = ({}: VideoConsultationProps) => {
           }
           toggleVideo={toggleVideoEnabled}
         />
-        <div className="mt-1 mb-3">
+        <div className="mt-1 mb-3 absolute bottom-10">
           <PoweredByTwilio inverted />
         </div>
       </div>
