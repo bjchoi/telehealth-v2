@@ -34,6 +34,7 @@ export interface IVideoContext {
   getAudioAndVideoTracks: () => Promise<void>;
   isBackgroundSelectionOpen: boolean;
   setIsBackgroundSelectionOpen: (value: boolean) => void;
+  isRecording: boolean;
   // backgroundSettings: BackgroundSettings;
   // setBackgroundSettings: (settings: BackgroundSettings) => void;
 }
@@ -64,7 +65,7 @@ export default function VideoProvider({ options, children, onError = () => {} }:
     removeLocalVideoTrack,
     getAudioAndVideoTracks,
   } = useLocalTracks();
-  const { room, isConnecting, connect } = useRoom(localTracks, onErrorCallback, options);
+  const { room, isConnecting, isRecording, connect } = useRoom(localTracks, onErrorCallback, options);
 
   const [isSharingScreen, toggleScreenShare] = useScreenShareToggle(room, onError);
 
@@ -101,6 +102,7 @@ export default function VideoProvider({ options, children, onError = () => {} }:
         getAudioAndVideoTracks,
         isBackgroundSelectionOpen,
         setIsBackgroundSelectionOpen,
+        isRecording
         //backgroundSettings,
         //setBackgroundSettings,
       }}

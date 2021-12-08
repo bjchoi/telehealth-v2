@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { joinClasses } from '../../../utils';
 import useParticipants from '../../Base/VideoProvider/useParticipants/useParticipants';
 import useVideoContext from '../../Base/VideoProvider/useVideoContext/useVideoContext';
@@ -14,6 +14,7 @@ import useChatContext from '../../Base/ChatProvider/useChatContext/useChatContex
 import { useVisitContext } from '../../../state/VisitContext';
 import useLocalAudioToggle from '../../Base/VideoProvider/useLocalAudioToggle/useLocalAudioToggle';
 import useLocalVideoToggle from '../../Base/VideoProvider/useLocalVideoToggle/useLocalVideoToggle';
+import { roomService } from '../../../services/roomService';
 
 export interface VideoConsultationProps {}
 
@@ -22,14 +23,13 @@ const providerName = 'Dr. Josefina Santos';
 export const VideoConsultation = ({}: VideoConsultationProps) => {
   const [isAudioEnabled, toggleAudioEnabled] = useLocalAudioToggle();
   const [isVideoEnabled, toggleVideoEnabled] = useLocalVideoToggle();
-  const [isRecording, setIsRecording] = useState(false);
   const [inviteModalRef, setInviteModalRef] = useState(null);
   const [settingsModalRef, setSettingsModalRef] = useState(null);
   const [connectionIssueModalVisible, setConnectionIssueModalVisible] = useState(false);
   const participants = useParticipants();
   const { setIsChatWindowOpen, isChatWindowOpen } = useChatContext();
   const { user } = useVisitContext();
-  const { room } = useVideoContext();
+  const { room, isRecording } = useVideoContext();
   const [callState, setCallState] = useState<ProviderRoomState>({
     patientName: null,
     providerName: null,
@@ -48,6 +48,10 @@ export const VideoConsultation = ({}: VideoConsultationProps) => {
       })
     }
   }, [participants, room]);
+
+  const toggleRecordingCb = useCallback(async () => 
+    await roomService.toggleRecording(user, room.sid, isRecording ? 'stop' : 'start'),
+    [user, room, isRecording]);
 
   return (
     <div className="relative h-full">
@@ -125,7 +129,7 @@ export const VideoConsultation = ({}: VideoConsultationProps) => {
         close={() => setSettingsModalRef(null)}
         isRecording={isRecording}
         isVisible={!!settingsModalRef}
-        toggleRecording={() => setIsRecording(!isRecording)}
+        toggleRecording={toggleRecordingCb}
       />
     </div>
   );
