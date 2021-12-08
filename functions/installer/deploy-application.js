@@ -20,7 +20,6 @@
  * --------------------------------------------------------------------------------
  */
 const { getParam, getAllParams, isLocalhost, assertLocalhost } = require(Runtime.getFunctions()['helpers'].path);
-const { getAppInfo, getAssets, verifyAppDirectory } = require(Runtime.getFunctions()['installer/installer-helpers'].path);
 const { TwilioServerlessApiClient } = require('@twilio-labs/serverless-api');
 const { getListOfFunctionsAndAssets } = require('@twilio-labs/serverless-api/dist/utils/fs');
 const fs = require('fs');
@@ -81,6 +80,24 @@ exports.handler = async function(context, event, callback) {
  * returns: service SID, if successful
  * --------------------------------------------------------------------------------
  */
+async function getAssets() {
+  const { assets } = await getListOfFunctionsAndAssets(process.cwd(), {
+    functionsFolderNames: [],
+    assetsFolderNames: ["assets"],
+  });
+  //console.log('asset count:', assets.length);
+
+  const indexHTMLs = assets.filter(asset => asset.name.includes('index.html'));
+  // Set indext.html as a default document
+  const allAssets = assets.concat(indexHTMLs.map(ih => ({
+    ...ih,
+    path: ih.name.replace("index.html", ""),
+    name: ih.name.replace("index.html", ""),
+  })));
+  //console.log(allAssets);
+  return allAssets;
+}
+
 async function deployService(context, envrionmentVariables = {}) {
   const client = context.getTwilioClient();
 

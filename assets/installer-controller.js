@@ -168,6 +168,7 @@ function checkApplication() {
                    $('#service-deploy').show();
                    $('#service-deploying').hide();
                    $('#service-deployed').show();
+                   $('#application-open').attr('href', response.application_url);
                    $('#service-open').attr('href', `https://www.twilio.com/console/functions/api/start/${response.service_sid}`);
                } else {
                    throw new Error(response);
