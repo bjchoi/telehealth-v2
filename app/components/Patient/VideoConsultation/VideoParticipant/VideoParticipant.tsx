@@ -8,6 +8,10 @@ import useIsTrackEnabled from '../../../Base/VideoProvider/useIsTrackEnabled/use
 import { Icon } from '../../../Icon';
 import useDataTrackMessage from '../../../Base/DataTracks/useDataTrack';
 import useLocalAudioToggle from '../../../Base/VideoProvider/useLocalAudioToggle/useLocalAudioToggle';
+import useScreenShareParticipant from '../../../Base/VideoProvider/useScreenShareParticipant/useScreenShareParticipant';
+import useMainParticipant from '../../../Base/VideoProvider/useMainParticipany/useMainParticipant';
+import useVideoContext from '../../../Base/VideoProvider/useVideoContext/useVideoContext';
+import useSelectedParticipant from '../../../Base/VideoProvider/useSelectedParticipant/useSelectedParticipant';
 export interface VideoParticipantProps {
   hasAudio?: boolean;
   hasVideo?: boolean;
@@ -32,41 +36,48 @@ export const VideoParticipant = ({
   const [muted, setMuted] = useState(hasAudio);
   const [showVideo, setShowVideo] = useState(hasVideo);
   const [isAudioEnabled, toggleAudioEnabled] = useLocalAudioToggle();
-  
-  // TODO - move to tailwind config
-  const widthClass = isOverlap
-    ? 'w-[92px]'
-    : isProvider
-    ? 'w-[405px]'
-    : 'w-[274px]';
-  const heightClass = isOverlap
-    ? 'h-[122px]'
-    : isProvider
-    ? 'h-[234px]'
-    : 'h-[364px]';
+  const screenShareParticipant = useScreenShareParticipant();
+  const mainParticipant = useMainParticipant();
+  const [selectedParticipant] = useSelectedParticipant();
+  const { room } = useVideoContext();
+  const localParticipant = room!.localParticipant;
 
   const publications = usePublications(participant);
   const videoPublication = publications.find(p => !p.trackName.includes('screen') && p.kind === 'video');
-
-  const videoTrack = useTrack(videoPublication);
-  const isVideoEnabled = Boolean(videoTrack);
-
+  const screenSharePublication = publications.find(p => p.trackName.includes('screen'));
   const audioPublication = publications.find(p => p.kind === 'audio');
-  
-  const audioTrack = useTrack(audioPublication) as LocalAudioTrack | RemoteAudioTrack | undefined;
-
-  const isTrackEnabled = useIsTrackEnabled(audioTrack as LocalAudioTrack | RemoteAudioTrack);
-  
   const dataPublication = publications.find(p => p.kind === 'data');
+
+  const videoTrack = useTrack(videoPublication || screenSharePublication);
+  const audioTrack = useTrack(audioPublication) as LocalAudioTrack | RemoteAudioTrack | undefined;
   const dataTrack = useTrack(dataPublication) as DataTrack | undefined;
 
+  const isVideoEnabled = Boolean(videoTrack);
+  const isTrackEnabled = useIsTrackEnabled(audioTrack as LocalAudioTrack | RemoteAudioTrack);
   const amIMuted = useDataTrackMessage(dataTrack);
+
+  const videoPriority = (mainParticipant === selectedParticipant || mainParticipant === screenShareParticipant) &&
+    mainParticipant !== localParticipant
+    ? 'high'
+    : null; 
+
+   // TODO - move to tailwind config
+   const widthClass = isOverlap
+   ? 'w-[92px]'
+   : isProvider
+   ? 'w-[405px]'
+   : 'w-[274px]';
+ const heightClass = isOverlap
+   ? 'h-[122px]'
+   : isProvider
+   ? 'h-[234px]'
+   : 'h-[364px]';
 
   useEffect(() => {
     // toggleAudioEnabled() only works for local user
     // in this case the patient
     toggleAudioEnabled();
-  }, [amIMuted]);
+  }, [amIMuted, toggleAudioEnabled]);
 
   // Muting non-self Participants useEffect
   // Will need to account for 3rd party later on
@@ -135,9 +146,9 @@ export const VideoParticipant = ({
         {!showVideo && name}
         {showVideo && <ParticipantTracks
           participant={participant}
-          videoOnly={false}
-          enableScreenShare={false}
-          videoPriority={'high'}
+          videoOnly
+          enableScreenShare={mainParticipant !== localParticipant}
+          videoPriority={videoPriority}
           isLocalParticipant={isSelf}
         />}
       </div>
