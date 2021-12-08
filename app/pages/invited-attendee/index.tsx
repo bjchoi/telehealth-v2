@@ -1,14 +1,49 @@
-import React, { useState } from 'react';
+import { useRouter } from 'next/router';
+import React, { useEffect, useState } from 'react';
 import { Alert } from '../../components/Alert';
-import VideoContextLayout from '../../components/Base/VideoProvider';
 import { Button } from '../../components/Button';
 import { Input } from '../../components/Input';
 import { Layout } from '../../components/Patient';
 import { Select } from '../../components/Select';
-import { TwilioPage } from '../../types';
+import { STORAGE_USER_KEY, STORAGE_VISIT_KEY } from '../../constants';
+import clientStorage from '../../services/clientStorage';
+import visitorAuth from '../../services/authService';
+import visitService from '../../services/visitService';
+import { TelehealthUser } from '../../types';
 
-const InvitedAttendeePage : TwilioPage = () => {
-  return (
+const InvitedAttendeePage = () => {
+  const router = useRouter();
+  const [isInitialized, setIsInitialized] = useState(false);
+  const [name, setName] = useState('');
+  const [relationship, setRelationship] = useState('');
+  const [terms, setTerms] = useState(false);
+  useEffect(() => {
+    const token = router.query.token as string;
+    if(token) {
+      visitorAuth.authenticateVisitorOrPatient(token)
+      .then(u => {
+        clientStorage.saveToStorage(STORAGE_USER_KEY, u);
+        return visitService.getVisitForPatient(u);
+      }).then(v => {
+        if(v) {
+          clientStorage.saveToStorage(STORAGE_VISIT_KEY, v);
+          setIsInitialized(true);
+        }
+      });
+      // TODO: Implement CATCH
+    }
+  }, [router]);
+
+  const onSubmit = async () => {
+    if(name) {
+      let user = await clientStorage.getFromStorage(STORAGE_USER_KEY) as TelehealthUser;
+      user.name = name;
+      await clientStorage.saveToStorage(STORAGE_USER_KEY, user);
+      router.push("/invited-attendee/technical-check/");
+    }
+  };
+
+  return isInitialized && (
     <Layout>
       <Alert
         title="Welcome"
@@ -19,7 +54,7 @@ const InvitedAttendeePage : TwilioPage = () => {
               information about yourself below for Dr. Josefina Santos:
             </p>
             <div className="">
-              <Input className="w-full my-2" placeholder="Full Name" />
+              <Input className="w-full my-2" autoFocus placeholder="Full Name" name="name"  value={name} onChange={evt => setName(evt.target.value)} />
               <Select
                 className="w-full my-2"
                 placeholder="Relationship with Patient"
@@ -28,16 +63,19 @@ const InvitedAttendeePage : TwilioPage = () => {
                   { value: 'Family Member' },
                   { value: 'Other' },
                 ]}
+                name="relationship"
+                onChange={evt => setRelationship(evt.target.value)}
+                value={relationship}
               />
               <div className="text-left">
                 <label className="text-light">
-                  <input type="checkbox" /> I agree to the Terms & Conditions
+                  <input type="checkbox" name="terms" onChange={evt => setTerms(evt.target.checked)} checked={terms}/> I agree to the Terms & Conditions
                 </label>
               </div>
               <div>
                 <Button
-                  as="a"
-                  href="/invited-attendee/technical-check/"
+                  as="button"
+                  onClick={onSubmit}
                   className="inline-block w-full mt-3 mb-1"
                 >
                   Continue
@@ -52,5 +90,4 @@ const InvitedAttendeePage : TwilioPage = () => {
     </Layout>
   );
 };
-InvitedAttendeePage.Layout = VideoContextLayout;
 export default InvitedAttendeePage;

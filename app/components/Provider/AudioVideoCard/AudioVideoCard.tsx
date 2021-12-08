@@ -13,8 +13,10 @@ export const AudioVideoCard = ({}: AudioVideoCardProps) => {
 
   return (
     <>
-      {videoTrack ? 
-          <VideoTrack track={videoTrack} isLocal /> : 
+      {videoTrack ?
+        <div className='w-full mt-2.5'>
+          <VideoTrack track={videoTrack} isLocal />
+        </div> :
           <img src="/provider.jpg" alt="Provider" className="border border-light" /> 
       }
       <Card>

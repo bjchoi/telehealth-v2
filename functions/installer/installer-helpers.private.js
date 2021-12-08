@@ -23,6 +23,7 @@ async function getAssets() {
     functionsFolderNames: [],
     assetsFolderNames: ["assets"],
   });
+  //console.log('asset count:', assets.length);
 
   const indexHTMLs = assets.filter(asset => asset.name.includes('index.html'));
   // Set indext.html as a default document
@@ -31,7 +32,7 @@ async function getAssets() {
       path: ih.name.replace("index.html", ""),
       name: ih.name.replace("index.html", ""),
     })));
-  // console.log(allAssets);
+  //console.log(allAssets);
   return allAssets;
 }
 
@@ -163,7 +164,7 @@ async function deploy(twilioClient, installationInfo, appInfo) {
       API_PASSCODE: pin,
       API_PASSCODE_EXPIRY: expiryTime,
       // ROOM_TYPE: this.flags['room-type'],
-      CONVERSATIONS_SERVICE_SID: conversationServiceSid,
+      TWILIO_CONVERSATIONS_SID: conversationServiceSid,
       ...installationInfo
     },
     pkgJson: {

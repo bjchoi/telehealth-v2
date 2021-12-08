@@ -11,9 +11,6 @@ import useLocalTracks from './useLocalTracks/useLocalTracks';
 import useRestartAudioTrackOnDeviceChange from './useRestartAudioTrackOnDeviceChange/useRestartAudioTrackOnDeviceChange';
 import useRoom from './useRoom/useRoom';
 import useScreenShareToggle from './useScreenShareToggle/useScreenShareToggle';
-import useConnectionOptions from './useConnectionOptions/useConnectionOptions';
-import { useVisitContext, VisitStateProvider } from '../../../state/VisitContext';
-import useVideoContext from './useVideoContext/useVideoContext';
 
 /*
  *  The hooks used by the VideoProvider component are different than the hooks found in the 'hooks/' directory. The hooks
@@ -49,7 +46,7 @@ interface VideoProviderProps {
   children: ReactNode;
 }
 
-function VideoProvider({ options, children, onError = () => {} }: VideoProviderProps) {
+export default function VideoProvider({ options, children, onError = () => {} }: VideoProviderProps) {
   const onErrorCallback: ErrorCallback = useCallback(
     error => {
       console.log(`ERROR: ${error.message}`, error);
@@ -117,41 +114,3 @@ function VideoProvider({ options, children, onError = () => {} }: VideoProviderP
     </VideoContext.Provider>
   );
 }
-
-export function VideoProviderChildrenWrapper(props: React.PropsWithChildren<{}>) {
-  const { visit, user } = useVisitContext();
-  const { getAudioAndVideoTracks, localTracks } = useVideoContext();
-  const [mediaError, setMediaError] = useState<Error>();
-
-  useEffect(() => {
-    if (!mediaError) {
-      getAudioAndVideoTracks().catch(error => {
-        console.log('Error acquiring local media:');
-        console.dir(error);
-        setMediaError(error);
-      });
-    }
-  }, [getAudioAndVideoTracks, mediaError]);
-  return (
-    visit && user && (localTracks && localTracks.length > 0) &&
-    <>
-      { props.children }
-    </>
-  );
-}
-
-
-export function VideoContextLayout(props: React.PropsWithChildren<{}>) {
-  const connectionOptions = useConnectionOptions();
-  return (
-    <VisitStateProvider>
-      <VideoProvider options={connectionOptions} onError={(error) => console.log(error)}>
-        <VideoProviderChildrenWrapper>
-          { props.children }
-        </VideoProviderChildrenWrapper>
-      </VideoProvider>
-    </VisitStateProvider>
-  );
-}
-
-export default VideoContextLayout;

@@ -25,6 +25,8 @@
   </header>
 
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script type="application/javascript" src="/administration-controller.js"></script>
+  <!-- javascript function initialize() must be loaded before authentication-controller.js -->
   <script type="application/javascript" src="/authentication-controller.js"></script>
   <div class="authentication">
     <div id="password-form">
@@ -56,7 +58,6 @@
   </div>
   <main style="display: none">
 
-    <script type="application/javascript" src="/administration-controller.js"></script>
 
     <section id="telehealth-links">
       <h3>Telehealth Launching</h3>
@@ -71,15 +72,22 @@
         <br/>
 
         <table class="input">
-          <td class="input-label">
-            Patient Phone Number (<a href="https://www.twilio.com/docs/glossary/what-e164">E.164</a> format):
-          </td>
-          <td class="input-value">
-            <input id="phone-scheduled-patient" class="input" type="text" name="patient-phone">
-          </td>
-          <td class="input-action">
-            <a id="send-scheduled-patient-link" class="button" onclick="sendScheduledPatientLink(event);" enabled>Send SMS</a>
-          </td>
+          <tr>
+            <td class="input-label">
+              Patient Phone Number (<a href="https://www.twilio.com/docs/glossary/what-e164">E.164</a> format):
+            </td>
+            <td class="input-value">
+              <input id="phone-scheduled-patient" class="input" type="text" name="patient-phone">
+            </td>
+            <td class="input-action">
+              <a id="send-scheduled-patient-link" class="button" onclick="sendScheduledPatientLink(event);" enabled>Send SMS</a>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <p id="scheduled-patient-link"></p>
+            </td>
+          </tr>
         </table>
         <br/>
       </section>
@@ -94,15 +102,22 @@
         <br/>
 
         <table class="input">
-          <td class="input-label">
-            Patient Phone Number (<a href="https://www.twilio.com/docs/glossary/what-e164">E.164</a> format):
-          </td>
-          <td class="input-value">
-            <input id="phone-ondemand-patient" class="input" type="text" name="patient-phone">
-          </td>
-          <td class="input-action">
-            <a id="send-ondemand-patient-link" class="button" onclick="sendOnDemandPatientLink();" enabled>Send SMS</a>
-          </td>
+          <tr>
+            <td class="input-label">
+              Patient Phone Number (<a href="https://www.twilio.com/docs/glossary/what-e164">E.164</a> format):
+            </td>
+            <td class="input-value">
+              <input id="phone-ondemand-patient" class="input" type="text" name="patient-phone">
+            </td>
+            <td class="input-action">
+              <a id="send-ondemand-patient-link" class="button" onclick="sendOnDemandPatientLink();" enabled>Send SMS</a>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <p id="ondemad-patient-link"></p>
+            </td>
+          </tr>
         </table>
         <br/>
       </section>
@@ -118,15 +133,22 @@
         <br/>
 
         <table class="input">
-          <td class="input-label">
-            Provider Phone Number (<a href="https://www.twilio.com/docs/glossary/what-e164">E.164</a> format):
-          </td>
-          <td class="input-value">
-            <input id="phone-provider" class="input" type="text" name="patient-phone">
-          </td>
-          <td class="input-action">
-            <a id="send-provider-link" class="button" onclick="sendProviderLink();" enabled>Send SMS</a>
-          </td>
+          <tr>
+            <td class="input-label">
+              Provider Phone Number (<a href="https://www.twilio.com/docs/glossary/what-e164">E.164</a> format):
+            </td>
+            <td class="input-value">
+              <input id="phone-provider" class="input" type="text" name="patient-phone">
+            </td>
+            <td class="input-action">
+              <a id="send-provider-link" class="button" onclick="sendProviderLink();" enabled>Send SMS</a>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <p id="provider-link"></p>
+            </td>
+          </tr>
         </table>
         <br/>
       </section>
@@ -135,35 +157,12 @@
     <section id="patient-management">
       <h3>Telehealth Patients</h3>
 
-      <table>
-        <thead>
+      <table id="patients">
         <tr>
-          <th>On-Demand</th>
           <th>Patient ID</th>
           <th>Patient Name</th>
           <th>Patient Phone</th>
         </tr>
-        </thead>
-        <tbody>
-        <tr>
-          <td><input type="checkbox" checked></td>
-          <td>p1000000</td>
-          <td>Cooper, Sarah</td>
-          <td>+12220001111</td>
-        </tr>
-        <tr>
-          <td><input type="checkbox"></td>
-          <td>p2000000</td>
-          <td>Green, Jakob</td>
-          <td>+15550001111</td>
-        </tr>
-        <tr>
-          <td><input type="checkbox"></td>
-          <td>p3000000</td>
-          <td>Owusu-Koramoah, Jeremiah</td>
-          <td>+16660001111</td>
-        </tr>
-        </tbody>
       </table>
       <br/>
       <br/>
@@ -172,28 +171,17 @@
     <section id="content-management">
       <h3>Waiting Room Content</h3>
 
-      <table>
-        <tr>
+      <table id="contents">
+        <thead>
           <th></th>
-          <th>Content Set</th>
+          <th hidden>ID</th>
+          <th>Title</th>
           <th>Video URL</th>
           <th>Description</th>
-        </tr>
-        <tr>
-          <td><a class="button">Remove</a></td>
-          <td>Flu Vacinne</td>
-          <td><a class="button" href="https://www.youtube.com/embed/E1h2Aqr8cu8" target="_blank">Watch Video</a></td>
-          <td><small>Mayo Clinic Minute: What to know about this season's flu vaccine</small></td>
-        </tr>
-        <tr>
-          <td><a class="button">Remove</a></td>
-          <td>Covid Vaccine</td>
-          <td><a class="button" href="https://www.youtube.com/embed/6Wqk2CrMrh8" target="_blank">Watch Video</a></td>
-          <td><small>How CDC is Making COVID-19 Vaccine Recommendations</small></td>
-        </tr>
+        </thead>
       </table>
       <br/>
-      <a class="button">Add Content</a>
+      <a id="content-add" class="button" onclick="addContent('#contents', '#provider-contents', '#provider-selector');">Add Content</a>
       <br/>
       <br/>
     </section>
@@ -201,30 +189,12 @@
     <section id="provider-management">
       <h3>Telehealth Providers</h3>
 
-      <table>
+      <table id="providers">
         <tr>
           <th>On-Call</th>
           <th>Provider ID</th>
           <th>Provider Name</th>
           <th>Provider Phone</th>
-        </tr>
-        <tr>
-          <td><input type="checkbox" checked></td>
-          <td>d1000</td>
-          <td>Dr. Santos</td>
-          <td>+12223334444</td>
-        </tr>
-        <tr>
-          <td><input type="checkbox"></td>
-          <td>d2000</td>
-          <td>Dr. Garcia</td>
-          <td>+15553334444</td>
-        </tr>
-        <tr>
-          <td><input type="checkbox"></td>
-          <td>d3000</td>
-          <td>Dr. Jones</td>
-          <td>+16663334444</td>
         </tr>
       </table>
       <br/>
@@ -235,51 +205,29 @@
       <h3>Provider Configuration</h3>
 
       <label>Selected Provider:
-        <select name="provider">
-          <option value="d1000">Dr. Santos</option>
-          <option value="d2000">Dr. Garcia</option>
-          <option value="d3000">Dr. Jones</option>
+        <select id="provider-selector" name="provider-selector" onchange="selectProvider('#provider-selector');">
         </select>
       </label>
 
       <br/>
       <h4>Content</h4>
-      <table>
+      <table id="provider-contents">
         <tr>
           <th>Use</th>
           <th>Content Set</th>
           <th>Video URL</th>
-        </tr>
-        <tr>
-          <td><input type="checkbox" checked></td>
-          <td>Flu Vacinne</td>
-          <td><a class="button" href="https://www.youtube.com/embed/E1h2Aqr8cu8" target="_blank">Watch Video</a></td>
-        </tr>
-        <tr>
-          <td><input type="checkbox"></td>
-          <td>Covid Vaccine</td>
-          <td><a class="button" href="https://www.youtube.com/embed/6Wqk2CrMrh8" target="_blank">Watch Video</a></td>
         </tr>
       </table>
       <br/>
 
       <br/>
       <h4>Patient Queue</h4>
-      <table>
+      <table id="provider-patients">
         <tr>
           <th>Type</th>
+          <th>Patient ID</th>
           <th>Patient Name</th>
-          <th>Patient Wait Time</th>
-        </tr>
-        <tr>
-          <td>On-Demand</td>
-          <td>Cooper, Sarah</td>
-          <td>00:03:43</td>
-        </tr>
-        <tr>
-          <td>Scheduled at 4:00pm PT</td>
-          <td>Green, Jakob</td>
-          <td>00:15:00</td>
+          <th>Wait Time</th>
         </tr>
       </table>
       <br/>

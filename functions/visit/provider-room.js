@@ -7,32 +7,30 @@ const ChatGrant = AccessToken.ChatGrant;
 const MAX_ALLOWED_SESSION_DURATION = 14400;
 
 module.exports.handler = async (context, event, callback) => {
-  const { ACCOUNT_SID, TWILIO_API_KEY_SID, TWILIO_API_KEY_SECRET, ROOM_TYPE, CONVERSATIONS_SERVICE_SID } = context;
+  const { ACCOUNT_SID, TWILIO_API_KEY_SID, TWILIO_API_KEY_SECRET, ROOM_TYPE, TWILIO_CONVERSATIONS_SID } = context;
 
   // TODO: Add Patient Auth Handler
-  const authHandler = require(Runtime.getFunctions()['auth/jwt-auth-handler'].path);
-  const authResult = await authHandler(context, event, callback);
-  if(authResult.response) {
-      return callback(null, authResult.response);
+  const { validateAndDecodeAppToken } = require(Runtime.getFunctions()['authentication-helper'].path);
+  const tokenValidationResult = validateAndDecodeAppToken(context, event, ['provider']);
+
+  if(tokenValidationResult.response) {
+    return callback(null, tokenValidationResult.response);
   }
 
-  console.log("Auth result");
-  console.log(authResult);
-
   const { room_name } = event;
-  const { identity } = authResult.decoded.grants;
+  const { id } = tokenValidationResult.decoded;
   let response = new Twilio.Response();
   response.appendHeader('Content-Type', 'application/json');
   response.appendHeader('Access-Control-Allow-Origin', '*');
   response.appendHeader('Access-Control-Allow-Methods', 'OPTIONS, POST, GET');
   response.appendHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-  if (!identity) {
+  if (!id) {
     response.setStatusCode(400);
     response.setBody({
       error: {
-        message: 'missing user_identity',
-        explanation: 'The user_identity parameter is missing.',
+        message: 'missing id',
+        explanation: 'The id parameter is missing.',
       },
     });
     return callback(null, response);
@@ -82,9 +80,9 @@ module.exports.handler = async (context, event, callback) => {
     if (room) {
       responseBody.roomSid = room.sid;
       responseBody.roomAvailable = true;
-      const conversationsClient = client.conversations.services(CONVERSATIONS_SERVICE_SID);
+      const conversationsClient = client.conversations.services(TWILIO_CONVERSATIONS_SID);
       // TODO: Add Conversation service later
-      /*try {
+      try {
         // See if conversation already exists
         await conversationsClient.conversations(room.sid).fetch();
       } catch (e) {
@@ -108,7 +106,7 @@ module.exports.handler = async (context, event, callback) => {
 
       try {
         // Add participant to conversation
-        await conversationsClient.conversations(room.sid).participants.create({ identity: user_identity });
+        await conversationsClient.conversations(room.sid).participants.create({ identity: id });
       } catch (e) {
         // Ignore "Participant already exists" error (50433)
         if (e.code !== 50433) {
@@ -121,7 +119,7 @@ module.exports.handler = async (context, event, callback) => {
           });
           return callback(null, response);
         }
-      }*/
+      }
     }
   }
 
@@ -131,14 +129,14 @@ module.exports.handler = async (context, event, callback) => {
   });
 
   // Add participant's identity to token
-  token.identity = identity;
+  token.identity = id;
 
   // Add video grant to token
   const videoGrant = new VideoGrant({ room: room_name });
   token.addGrant(videoGrant);
 
   // Add chat grant to token
-  const chatGrant = new ChatGrant({ serviceSid: CONVERSATIONS_SERVICE_SID });
+  const chatGrant = new ChatGrant({ serviceSid: TWILIO_CONVERSATIONS_SID });
   token.addGrant(chatGrant);
 
   // Return token

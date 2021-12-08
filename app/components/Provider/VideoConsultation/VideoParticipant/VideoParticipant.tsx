@@ -12,6 +12,7 @@ export interface VideoParticipantProps {
   isSelf?: boolean;
   name: string;
   participant: LocalParticipant | RemoteParticipant;
+  fullScreen?:boolean;
 }
 
 export const VideoParticipant = ({
@@ -20,7 +21,8 @@ export const VideoParticipant = ({
   hasVideo,
   isProvider,
   isSelf,
-  participant
+  participant,
+  fullScreen
 }: VideoParticipantProps) => {
   const [showMutedBanner, setShowMutedBanner] = useState(null);
   const [showMenuRef, setShowMenuRef] = useState(null);
@@ -28,8 +30,12 @@ export const VideoParticipant = ({
   const [muted, setMuted] = useState(!hasAudio);
   const [showVideo, setShowVideo] = useState(hasVideo);
   // TODO - move to tailwind config
-  const widthClass = isProvider ? 'w-[405px]' : 'w-[685px]';
-  const heightClass = isProvider ? 'h-[234px]' : 'max-h-100%';
+  let widthClass = isProvider ? 'w-[405px]' : 'w-[685px]';
+  let heightClass = isProvider ? 'h-[234px]' : 'max-h-100%';
+  if (fullScreen) {
+    widthClass = 'w-full';
+    heightClass = 'h-full';
+  }
 
   useEffect(() => {
     if (showMutedBanner !== null) {
@@ -45,7 +51,7 @@ export const VideoParticipant = ({
   }, [muted, showMutedBanner]);
 
   useEffect(() => {
-    setMuted(hasAudio);
+    setMuted(!hasAudio);
   }, [hasAudio]);
 
   useEffect(() => {
@@ -53,7 +59,10 @@ export const VideoParticipant = ({
   }, [hasVideo]);
 
   return (
-    <div className="mx-auto relative w-max group">
+    <div className={joinClasses(
+      'mx-auto relative group',
+      fullScreen ? '' : 'w-max'
+    )}>
       {!isSelf && (
         <div className="absolute top-0 h-[100px] text-right w-full flex justify-end group-hover:bg-gradient-to-b from-[#000000B0] via-[#00000000] to-[#00000000] z-10">
           <div>
@@ -130,7 +139,7 @@ export const VideoParticipant = ({
         )}
         <ParticipantTracks
           participant={participant}
-          videoOnly
+          videoOnly={false}
           enableScreenShare={false}
           videoPriority={'high'}
           isLocalParticipant={isSelf}

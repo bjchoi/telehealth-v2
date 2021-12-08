@@ -1,10 +1,30 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Alert } from '../Alert';
 import { Button, ButtonVariant } from '../Button';
+import clientStorage from '../../services/clientStorage';
+import { STORAGE_USER_KEY } from '../../constants';
+import { TelehealthUser } from '../../types';
+import Link from 'next/link';
 
 export interface DisconnectedAlertProps {}
 
 export const DisconnectedAlert = () => {
+  
+  const [userRole, setUserRole] = useState<string>('');
+  
+  useEffect(() => {
+    clientStorage.getFromStorage<TelehealthUser>(STORAGE_USER_KEY)
+        .then(user => setUserRole(user.role))
+        .catch(error => {
+          console.log(error);
+          new Error("Error getting Telehealth User from Storage!");
+        });
+  }, []);
+
+  function handleclick() {
+    console.log(userRole);
+  }
+
   return (
     <Alert
       title={`You've lost connection\nto the visit`}
@@ -26,17 +46,21 @@ export const DisconnectedAlert = () => {
       }
       footer={
         <>
-          <Button
-            as="a"
-            href="/patient/video"
-            className="my-1 max-w-[272px] w-full mx-auto"
-          >
-            Rejoin Video Visit
-          </Button>
+          <Link href={`/${userRole}/video`}>
+            <Button
+              as="a"
+              href={`/${userRole}/video`}
+              className="my-1 max-w-[272px] w-full mx-auto"
+              onClick={handleclick}
+            >
+              Rejoin Video Visit
+            </Button>
+          </Link>
           <Button
             className="my-1 max-w-[272px] w-full mx-auto"
             variant={ButtonVariant.secondary}
             outline
+            onClick={handleclick}
           >
             Switch to Phone Consultation
           </Button>

@@ -4,11 +4,6 @@ import { Track } from 'twilio-video';
 import useMediaStreamTrack from './useMediaStreamTrack/useMediaStreamTrack';
 import useVideoTrackDimensions from './useVideoTrackDimensions/useVideoTrackDimensions';
 
-/*const Video = styled('video')({
-  width: '100%',
-  height: '100%',
-});*/
-
 interface VideoTrackProps {
   track: IVideoTrack;
   isLocal?: boolean;
@@ -47,7 +42,9 @@ export default function VideoTrack({ track, isLocal, priority }: VideoTrackProps
   const style = {
     transform: isLocal && isFrontFacing ? 'rotateY(180deg)' : '',
     objectFit: isPortrait || track.name.includes('screen') ? ('contain' as const) : ('cover' as const),
+    maxWidth: 'none',
+    height: 'inherit',
+    width: 'inherit',
   };
-
-  return <video ref={ref} style={style} />;
+  return <video ref={ref} style={style}/>;
 }

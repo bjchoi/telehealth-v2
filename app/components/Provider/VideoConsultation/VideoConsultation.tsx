@@ -10,13 +10,15 @@ import { InviteParticipantPopover } from './InviteParticipantPopover';
 import { SettingsPopover } from './SettingsPopover';
 import { VideoParticipant } from './VideoParticipant';
 import { ProviderRoomState } from '../../../constants';
+import { LocalAudioTrackPublication, LocalVideoTrackPublication } from 'twilio-video';
+import useChatContext from '../../Base/ChatProvider/useChatContext/useChatContext';
+import { useVisitContext } from '../../../state/VisitContext';
 
 export interface VideoConsultationProps {}
 
 const providerName = 'Dr. Josefina Santos';
 
 export const VideoConsultation = ({}: VideoConsultationProps) => {
-  const [showChat, setShowChat] = useState(false);
   const [hasAudio, setHasAudio] = useState(true);
   const [hasVideo, setHasVideo] = useState(true);
   const [isRecording, setIsRecording] = useState(false);
@@ -24,6 +26,10 @@ export const VideoConsultation = ({}: VideoConsultationProps) => {
   const [settingsModalRef, setSettingsModalRef] = useState(null);
   const [connectionIssueModalVisible, setConnectionIssueModalVisible] = useState(false);
   const participants = useParticipants();
+  console.log('participants', participants);
+  
+  const { setIsChatWindowOpen, isChatWindowOpen } = useChatContext();
+  const { user } = useVisitContext();
   const { room } = useVideoContext();
   const [callState, setCallState] = useState<ProviderRoomState>({
     patientName: null,
@@ -33,7 +39,6 @@ export const VideoConsultation = ({}: VideoConsultationProps) => {
   });
 
   useEffect(() => {
-    console.log(participants);
     if (room) {
       setCallState(prev => {
         return {
@@ -45,27 +50,52 @@ export const VideoConsultation = ({}: VideoConsultationProps) => {
     }
   }, [participants, room])
 
+  useEffect(() => {
+    if (callState.providerParticipant) {
+      const videoTracks = callState.providerParticipant.videoTracks;
+      videoTracks.forEach((item: LocalVideoTrackPublication) => {
+        hasVideo ? item.track.enable() : item.track.disable()
+      })
+    }
+  }, [hasVideo]);
+
+  useEffect(() => {
+    if (callState.providerParticipant) {
+      const audioTracks = callState.providerParticipant.audioTracks;
+      audioTracks.forEach((item: LocalAudioTrackPublication) => {
+        hasAudio ? item.track.enable() : item.track.disable()
+      })
+    }
+  }, [hasAudio]);
+
+  const styles = {
+    width: '89%'
+  }
   return (
     <div className="relative h-full">
-      <h1 className="absolute text-white text-2xl font-bold top-10 left-32">
+      {/*<h1 className="absolute text-white text-2xl font-bold top-10 left-32">
         Owl Health
-      </h1>
+      </h1>*/}
       <div
         className={joinClasses(
-          'bg-secondary flex flex-col h-full items-center',
+          'bg-secondary flex flex-col h-full w-full items-center',
           isRecording ? 'border-[10px] border-primary' : 'p-[10px]'
         )}
       >
+        <div className="h-full" style={styles}>
+          {callState.patientParticipant &&
+            <VideoParticipant
+              name="Sarah Coopers"
+              hasAudio
+              hasVideo
+              participant={callState.patientParticipant}
+              fullScreen
+            />
+          }
+        </div>
+
         <div className="flex-grow">
           <div className="flex flex-col justify-evenly h-full mt-20">
-            {callState.patientParticipant && 
-              <VideoParticipant 
-                name="Sarah Coopers" 
-                hasAudio 
-                hasVideo 
-                participant={callState.patientParticipant}
-              />
-            }
             <div className="absolute top-20 right-10">
               {callState.providerParticipant && 
                 <VideoParticipant
@@ -85,21 +115,23 @@ export const VideoConsultation = ({}: VideoConsultationProps) => {
             setInviteModalRef(inviteModalRef ? null : event?.target)
           }
           toggleAudio={() => setHasAudio(!hasAudio)}
-          toggleChat={() => setShowChat(!showChat)}
+          toggleChat={() => setIsChatWindowOpen(!isChatWindowOpen)}
           toggleScreenShare={() => {}}
           toggleSettings={(event) =>
             setSettingsModalRef(settingsModalRef ? null : event?.target)
           }
           toggleVideo={() => setHasVideo(!hasVideo)}
         />
-        <div className="mt-1 mb-3">
+        <div className="mt-1 mb-3 absolute bottom-10">
           <PoweredByTwilio inverted />
         </div>
       </div>
-      {showChat && (
+      {isChatWindowOpen && (
         <div className="absolute bottom-0 right-10 max-w-[405px] w-full max-h-[400px] h-full">
           <Chat
-            close={() => setShowChat(false)}
+            close={() => setIsChatWindowOpen(false)}
+            userName={user.name}
+            userRole={user.role}
             showHeader
             inputPlaceholder="Message Sarah Cooper"
           />
