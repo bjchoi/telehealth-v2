@@ -1,9 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { LocalParticipant, RemoteParticipant } from 'twilio-video';
+import { DataTrack, LocalAudioTrack, LocalParticipant, RemoteAudioTrack, RemoteDataTrack, RemoteParticipant } from 'twilio-video';
 import { joinClasses } from '../../../../utils';
 import ParticipantTracks from '../../../Base/ParticipantTracks/ParticipantTracks';
+import useTrack from '../../../Base/ParticipantTracks/Publication/useTrack/useTrack';
+import usePublications from '../../../Base/ParticipantTracks/usePublications/usePublications';
+import useIsTrackEnabled from '../../../Base/VideoProvider/useIsTrackEnabled/useIsTrackEnabled';
 import { Icon } from '../../../Icon';
-
+import useDataTrackMessage from '../../../Base/DataTracks/useDataTrack';
+import useLocalAudioToggle from '../../../Base/VideoProvider/useLocalAudioToggle/useLocalAudioToggle';
 export interface VideoParticipantProps {
   hasAudio?: boolean;
   hasVideo?: boolean;
@@ -25,7 +29,10 @@ export const VideoParticipant = ({
 }: VideoParticipantProps) => {
   const [showMutedBanner, setShowMutedBanner] = useState(null);
   const [isPinned, setIsPinned] = useState(false);
-
+  const [muted, setMuted] = useState(hasAudio);
+  const [showVideo, setShowVideo] = useState(hasVideo);
+  const [isAudioEnabled, toggleAudioEnabled] = useLocalAudioToggle();
+  
   // TODO - move to tailwind config
   const widthClass = isOverlap
     ? 'w-[92px]'
@@ -37,6 +44,48 @@ export const VideoParticipant = ({
     : isProvider
     ? 'h-[234px]'
     : 'h-[364px]';
+
+  const publications = usePublications(participant);
+  const videoPublication = publications.find(p => !p.trackName.includes('screen') && p.kind === 'video');
+
+  const videoTrack = useTrack(videoPublication);
+  const isVideoEnabled = Boolean(videoTrack);
+
+  const audioPublication = publications.find(p => p.kind === 'audio');
+  
+  const audioTrack = useTrack(audioPublication) as LocalAudioTrack | RemoteAudioTrack | undefined;
+
+  const isTrackEnabled = useIsTrackEnabled(audioTrack as LocalAudioTrack | RemoteAudioTrack);
+  
+  const dataPublication = publications.find(p => p.kind === 'data');
+  const dataTrack = useTrack(dataPublication) as DataTrack | undefined;
+
+  const amIMuted = useDataTrackMessage(dataTrack);
+
+  useEffect(() => {
+    // toggleAudioEnabled() only works for local user
+    // in this case the patient
+    toggleAudioEnabled();
+  }, [amIMuted]);
+
+  // Muting non-self Participants useEffect
+  // Will need to account for 3rd party later on
+  useEffect(() => {
+    if (isTrackEnabled) { 
+      setMuted(false);
+    } else {
+      setMuted(true);
+    }
+  }, [isTrackEnabled]);
+
+  // Video disabling effect
+  useEffect(() => {
+    if (!isVideoEnabled) { 
+      setShowVideo(false);
+    } else {
+      setShowVideo(true);
+    }
+  }, [isVideoEnabled]);
 
   useEffect(() => {
     if (showMutedBanner !== null) {
@@ -83,8 +132,8 @@ export const VideoParticipant = ({
       <div
         className={`flex items-center justify-center bg-dark text-white text-2xl overflow-hidden ${heightClass} ${widthClass}`}
       >
-        {!hasVideo && name}
-        {hasVideo && <ParticipantTracks
+        {!showVideo && name}
+        {showVideo && <ParticipantTracks
           participant={participant}
           videoOnly={false}
           enableScreenShare={false}
@@ -94,10 +143,10 @@ export const VideoParticipant = ({
       </div>
       <div className="absolute bottom-0 right-0 text-white bg-[#00000082] px-2 py-1 flex items-center">
         <Icon
-          className={joinClasses('text-md', !hasAudio && 'text-primary')}
+          className={joinClasses('text-md', muted && 'text-primary')}
           name="mic"
         />
-        {hasVideo ? (
+        {showVideo ? (
           !isOverlap && name
         ) : (
           <Icon className="text-md text-primary" name="videocam_off" />

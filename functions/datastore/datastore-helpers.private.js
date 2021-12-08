@@ -171,6 +171,16 @@ async function insertSyncMapItem(client, syncServiceSid, syncMapName, syncMapIte
     .then(mapItem => console.log(mapItem.key)));
 }
 
+async function updateSyncMapItem(client, syncServiceSid, syncMapName, syncMapItemKey, newData) {
+  await client.sync
+    .services(syncServiceSid)
+    .syncMaps(syncMapName)
+    .syncMapItems(syncMapItemKey)
+    .update({ data: newData })
+    .then(syncMapItem => console.log("Updated SyncMapItem: ",syncMapItem))
+    .catch(err => console.log(err));
+}
+
 
 /*
  * ----------------------------------------------------------------------------------------------------
@@ -272,5 +282,6 @@ module.exports = {
   deleteSyncDocument,
   fetchSyncMapItem,
   insertSyncMapItem,
+  updateSyncMapItem,
   fetchPublicJsonAsset,
 };

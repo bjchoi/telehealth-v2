@@ -94,16 +94,6 @@ async function getParam(context, key) {
         return isLocalhost(context);
       }
 
-      case 'TWILIO_ACCOUNT_SID': {
-        // TODO: to be removed for ACCOUNT_SID
-        return getParam(context, 'ACCOUNT_SID');
-      }
-
-      case 'TWILIO_AUTH_TOKEN': {
-        // TODO: to be removed for AUTH_TOKEN
-        return getParam(context, 'AUTH_TOKEN');
-      }
-
       case 'SERVICE_SID': {
         // will throw error when running on localhost, so lookup by name if localhost
         if (! isLocalhost(context)) return context.SERVICE_SID;
@@ -129,13 +119,32 @@ async function getParam(context, key) {
         return environments.length > 0 ? environments[0].sid : null;
       }
 
+      case 'ENVIRONMENT_DOMAIN': {
+        // will throw error when running on localhost, so lookup by name if localhost
+        const service_sid = await getParam(context, 'SERVICE_SID');
+        if (service_sid === null) {
+          return null; // service not yet deployed
+        }
+        const environment_sid = await getParam(context, 'ENVIRONMENT_SID');
+
+        const environment = await client.serverless
+          .services(service_sid)
+          .environments(environment_sid)
+          .fetch();
+
+        return environment.domainName;
+      }
+
       case 'TWILIO_API_KEY_SID': {
         // value set in .env takes precedence
         if (context.TWILIO_API_KEY_SID) return context.TWILIO_API_KEY_SID
 
         const apikeys = await client.keys.list();
         let apikey = apikeys.find(k => k.friendlyName === context.APPLICATION_NAME);
-        if (apikey) return apikey.sid;
+        if (apikey) {
+          await setParam(context, key, apikey.sid);
+          return apikey.sid;
+        }
 
         console.log('API Key not found so creating a new API Key...');
         await client.newKeys
@@ -169,7 +178,10 @@ async function getParam(context, key) {
 
         const services = await client.conversations.services.list();
         const service = services.find(s => s.friendlyName === context.APPLICATION_NAME);
-        if (service) return service.sid;
+        if (service) {
+          await setParam(context, key, service.sid);
+          return service.sid;
+        }
 
         console.log('Conversation service not found so creating a new conversation service...');
         let sid = null;
@@ -197,7 +209,10 @@ async function getParam(context, key) {
 
         const services = await client.sync.services.list();
         const service = services.find(s => s.friendlyName === context.APPLICATION_NAME);
-        if (service) return service.sid;
+        if (service) {
+          await setParam(context, key, service.sid);
+          return service.sid;
+        }
 
         console.log('Sync service not found so creating a new sync service...');
         let sid = null;
@@ -220,7 +235,10 @@ async function getParam(context, key) {
 
         const services = await client.verify.services.list();
         const service = services.find(s => s.friendlyName === context.APPLICATION_NAME);
-        if (service) return service.sid;
+        if (service) {
+          await setParam(context, key, service.sid);
+          return service.sid;
+        }
 
         console.log('Verify service not found so creating a new verify service...');
         let sid = null;

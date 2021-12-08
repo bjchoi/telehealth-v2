@@ -59,101 +59,6 @@
   <main style="display: none">
 
 
-    <section id="telehealth-links">
-      <h3>Telehealth Launching</h3>
-
-      <section>
-        <h4>Patient - scheduled visit/appointment</h4>
-
-        Send SMS with link to enter Waiting Room (/w generated patient token)
-        <br/>
-        <i>EHR integration: SMS appointment reminder to be sent x min prior.</i>
-        <br/>
-        <br/>
-
-        <table class="input">
-          <tr>
-            <td class="input-label">
-              Patient Phone Number (<a href="https://www.twilio.com/docs/glossary/what-e164">E.164</a> format):
-            </td>
-            <td class="input-value">
-              <input id="phone-scheduled-patient" class="input" type="text" name="patient-phone">
-            </td>
-            <td class="input-action">
-              <a id="send-scheduled-patient-link" class="button" onclick="sendScheduledPatientLink(event);" enabled>Send SMS</a>
-            </td>
-          </tr>
-          <tr>
-            <td>
-              <p id="scheduled-patient-link"></p>
-            </td>
-          </tr>
-        </table>
-        <br/>
-      </section>
-
-      <section>
-        <h4>Patient - on-demand visit</h4>
-
-        Send SMS with link to enter intake flow
-        <br/>
-        <i>EHR integration: link embedded into customer's public website.</i>
-        <br/>
-        <br/>
-
-        <table class="input">
-          <tr>
-            <td class="input-label">
-              Patient Phone Number (<a href="https://www.twilio.com/docs/glossary/what-e164">E.164</a> format):
-            </td>
-            <td class="input-value">
-              <input id="phone-ondemand-patient" class="input" type="text" name="patient-phone">
-            </td>
-            <td class="input-action">
-              <a id="send-ondemand-patient-link" class="button" onclick="sendOnDemandPatientLink();" enabled>Send SMS</a>
-            </td>
-          </tr>
-          <tr>
-            <td>
-              <p id="ondemad-patient-link"></p>
-            </td>
-          </tr>
-        </table>
-        <br/>
-      </section>
-
-      <section>
-        <h4>Provider</h4>
-
-        Send SMS with link to enter provider dashboard
-        <br/>
-        <i>EHR integration: (1) link embedded in appointment in customer's provider portal or EHR
-        or; (2) SMS appointment reminder sent x min prior.</i>
-        <br/>
-        <br/>
-
-        <table class="input">
-          <tr>
-            <td class="input-label">
-              Provider Phone Number (<a href="https://www.twilio.com/docs/glossary/what-e164">E.164</a> format):
-            </td>
-            <td class="input-value">
-              <input id="phone-provider" class="input" type="text" name="patient-phone">
-            </td>
-            <td class="input-action">
-              <a id="send-provider-link" class="button" onclick="sendProviderLink();" enabled>Send SMS</a>
-            </td>
-          </tr>
-          <tr>
-            <td>
-              <p id="provider-link"></p>
-            </td>
-          </tr>
-        </table>
-        <br/>
-      </section>
-    </section>
-
     <section id="patient-management">
       <h3>Telehealth Patients</h3>
 
@@ -232,6 +137,70 @@
       </table>
       <br/>
       <br/>
+    </section>
+
+    <section id="telehealth-links">
+      <h4>Telehealth Launching</h4>
+
+      <table class="input">
+        <tr>
+          <th colspan="3">Patient - scheduled appointment</th>
+        </tr>
+        <tr>
+          <td class="input-label">Enter Patient Phone Number</td>
+          <td class="input-value">
+            <input id="scheduled-patient-phone" class="input" type="text" name="patient-phone">
+          </td>
+          <td class="input-action">
+            <a id="scheduled-patient-link-send" class="button" onclick="sendScheduledPatientLink(event);" enabled>Send SMS</a>
+          </td>
+        </tr>
+        <tr>
+          <td colspan="3">
+            <small><a id="scheduled-patient-link" href="" target="_blank"></a></small>
+          </td>
+        </tr>
+      </table>
+      <br/>
+      <table class="input">
+        <tr>
+          <th colspan="3">Patient - on-demand appointment</th>
+        </tr>
+        <tr>
+          <td class="input-label">Enter Patient Phone Number</td>
+          <td class="input-value">
+            <input id="ondemand-patient-phone" class="input" type="text" name="patient-phone">
+          </td>
+          <td class="input-action">
+            <a id="ondemand-patient-link-send" class="button" onclick="sendOnDemandPatientLink(event);" enabled>Send SMS</a>
+          </td>
+        </tr>
+        <tr>
+          <td colspan="3">
+            <small><a id="ondemand-patient-link" href="" target="_blank"></a></small>
+          </td>
+        </tr>
+      </table>
+      <br/>
+      <table class="input">
+        <tr>
+          <th colspan="3">Provider</th>
+        </tr>
+        <tr>
+          <td class="input-label"> Enter Provider Phone Number</td>
+          <td class="input-value">
+            <input id="provider-phone" class="input" type="text" name="patient-phone">
+          </td>
+          <td class="input-action">
+            <a id="provider-link-send" class="button" onclick="sendProviderLink(event);" enabled>Send SMS</a>
+          </td>
+        </tr>
+        <tr>
+          <td colspan="3">
+            <small><a id="provider-link" href="" target="_blank"></a></small>
+          </td>
+        </tr>
+      </table>
     </section>
 
   </main>
