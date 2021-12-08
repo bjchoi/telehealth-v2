@@ -1,53 +1,75 @@
-/*
+/* --------------------------------------------------------------------------------------------------------------
  * main controller javascript used by administration.html
  *
  * references html css id in the administration.html
+ * --------------------------------------------------------------------------------------------------------------
  */
+
+// ---------- UI element css id list used by functions
+
 const UI = {
   patients: '#patients',
   contents: '#contents',
   content_add: '#content-add',
+  new_content_title: '#new-content-title',
+  new_content_video_url: '#new-content-video-url',
+  new_content_description: '#new-content-description',
   providers: '#providers',
   provider_selector: '#provider-selector',
   provider_contents: '#provider-contents',
-  provider_patients: '#provider-patients'
+  provider_patients: '#provider-patients',
+  provider_link: '#provider-link',
+  provider_phone: '#provider-phone',
+  scheduled_patient_link: '#scheduled-patient-link',
+  scheduled_patient_phone: '#scheduled-patient-phone',
+  ondemand_patient_link: '#ondemand-patient-link',
+  ondemand_patient_phone: '#ondemand-patient-phone',
 }
 
 
-// --------------------------------------------------------------------------------------------------------------
+/* --------------------------------------------------------------------------------------------------------------
+ * send scheduled patient link
+ *
+ * input:
+ * . UI.scheduled_patient_phone
+ * . UI.scheduled_patient_link
+ *
+ * output:
+ * --------------------------------------------------------------------------------------------------------------
+ */
 async function sendScheduledPatientLink(e) {
   const THIS = sendScheduledPatientLink.name;
   try {
     e.preventDefault();
-    let s = 1;
-    console.log(THIS, `${s++}. get patient/visit detail from server`);
-    // ---------- TODO: fetch from server
-    const patient_id = 'p1000000';
-    const patient_name_text = 'BJ Choi';
-    const patient_name_first = 'BJ';
-    const appointment_id = 'v-doe-jonson-1121';
-    // ----------
+    const patient_phone = $(UI.scheduled_patient_phone).val();
+    const digits = patient_phone.match(/\d+/g) ? patient_phone.match(/\d+/g).join('').length : 0;
+    if (!patient_phone || digits < 10) {
+      alert('Please enter a valid US phone number including area code!');
+      return;
+    }
 
-    console.log(THIS, `${s++}. get patient token from server`);
-    const response0 = await fetch('/visit/patient-token', {
+    console.log(THIS, `get appointment details from server`);
+    appointment_details = await fetchNextProviderAppointment();
+
+    console.log(THIS, `get patient token from server`);
+    const response0 = await fetch('/visit/token', {
       method: 'POST',
       headers: {
         Accept: 'application/json',
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        patient_identity: patient_id,
-        visit_id: appointment_id,
-        patient_name: patient_name_first,
-      })
+        action: 'PATIENT',
+        id: appointment_details.patient.patient_id,
+        visitId: 'v-doe-jonson-1121', // appointment_id, TODO: remove hard-coding once integrated
+      }),
     });
     const payload = await response0.json();
-    const patient_token = payload.token;
 
-    console.log(THIS, `${s++}. send link to patient waiting room via SMS`);
-    const link = `${location.origin}/patient/index.html?token=${patient_token}`
-    $('#scheduled-patient-link').text(link);
-    console.log(THIS, link);
+    console.log(THIS, `send link to patient via SMS`);
+    const url = `${location.origin}/patient/index.html?token=${payload.passcode}`
+    $(UI.scheduled_patient_link).text(url);
+    $(UI.scheduled_patient_link).attr('href', url);
 
     const response1 = await fetch('/send-sms', {
       method: 'POST',
@@ -56,8 +78,8 @@ async function sendScheduledPatientLink(e) {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        to_phone: $('#phone-scheduled-patient').val(),
-        body: `Dear ${patient_name_first}, please join your telehealth visit via ${link}`,
+        to_phone: patient_phone,
+        body: `Dear ${appointment_details.patient.patient_given_name}, please join your telehealth appointment via ${url}`,
       })
     });
 
@@ -66,21 +88,109 @@ async function sendScheduledPatientLink(e) {
   }
 }
 
-// --------------------------------------------------------------------------------------------------------------
-function sendOnDemandPatientLink(e) {
+
+/* --------------------------------------------------------------------------------------------------------------
+ * send on-demand patient link
+ *
+ * input:
+ * . UI.ondemand_patient_phone
+ * . UI.ondemand_patient_link
+ *
+ * output:
+ * --------------------------------------------------------------------------------------------------------------
+ */
+async function sendOnDemandPatientLink(e) {
   const THIS = sendOnDemandPatientLink.name;
-  let i = 1;
-  console.log(THIS, `${i++}. generate unique visitID`);
-  console.log(THIS, `${i++}. send link to patient in-take via SMS`);
+  try {
+    e.preventDefault();
+    const patient_phone = $(UI.ondemand_patient_phone).val();
+    const digits = patient_phone.match(/\d+/g) ? patient_phone.match(/\d+/g).join('').length : 0;
+    if (!patient_phone || digits < 10) {
+      alert('Please enter a valid US phone number including area code!');
+      return;
+    }
+
+    console.log(THIS, `send link to patient via SMS`);
+    const url = `${location.origin}/patient/ondemand/index.html`
+    $(UI.ondemand_patient_link).text(url);
+    $(UI.ondemand_patient_link).attr('href', url);
+
+    const response1 = await fetch('/send-sms', {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        to_phone: patient_phone,
+        body: `Please start your on-demand telehealth appointment via ${url}`,
+      })
+    });
+
+  } catch (err) {
+    console.log(THIS, err);
+  }
 }
 
-// --------------------------------------------------------------------------------------------------------------
-function sendProviderLink(e) {
+
+/* --------------------------------------------------------------------------------------------------------------
+ * send provider link
+ *
+ * input:
+ * . UI.provider_phone
+ * . UI.provider_link
+ *
+ * output:
+ * --------------------------------------------------------------------------------------------------------------
+ */
+async function sendProviderLink(e) {
   const THIS = sendProviderLink.name;
-  let i = 1;
-  console.log(THIS, `${i++}. get provider detail from server`);
-  console.log(THIS, `${i++}. get provider token from server`);
-  console.log(THIS, `${i++}. send link to provider dashboard via SMS`);
+  try {
+    e.preventDefault();
+    const provider_phone = $(UI.provider_phone).val();
+    const digits = provider_phone.match(/\d+/g) ? provider_phone.match(/\d+/g).join('').length : 0;
+    if (!provider_phone || digits < 10) {
+      alert('Please enter a valid US phone number including area code!');
+      return;
+    }
+
+    console.log(THIS, `get provider details from server`);
+    provider = await fetchSelectedProvider();
+
+    console.log(THIS, `get provider token from server`);
+    const response0 = await fetch('/visit/token', {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        action: 'PROVIDER',
+        id: provider.provider_id,
+      }),
+    });
+    const payload = await response0.json();
+
+    console.log(THIS, `send link to provder via SMS`);
+    const url = `${location.origin}/provider/index.html?token=${payload.passcode}`
+    $(UI.provider_link).text(url);
+    $(UI.provider_link).attr('href', url);
+
+    const response1 = await fetch('/send-sms', {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        to_phone: provider_phone,
+        body: `Dear ${provider.provider_name}, please join your telehealth dashboard via ${url}`,
+      })
+    });
+
+  } catch (err) {
+    console.log(THIS, err);
+  }
 }
 
 /* --------------------------------------------------------------------------------------------------------------
@@ -148,9 +258,10 @@ async function populateContents() {
     console.log(THIS, `loaded ${contents.length} contents`);
 
     content.forEach(row => {
+      const content_css_id = `#content-${row.content_id}`;
       $(UI.contents).append(`<tr>
         <td><a class="button" onclick="removeContent('${row.content_id}');">Remove</a></td>
-        <td id="#content-${row.content_id}" hidden>${row.content_id}</td>
+        <td id="${content_css_id}" hidden>${row.content_id}</td>
         <td>${row.content_title}</td>
         <td><a class="button" href="${row.content_video_url}" target="_blank">Watch Video</a></td>
         <td><small>${row.content_description}</small></td>
@@ -188,13 +299,14 @@ async function saveContent(content_id) {
   const THIS = saveContent.name;
 
   console.log(THIS, 'content_id: ', content_id);
-  const content_title = $('#new-content-title').val();
-  const content_video_url = $('#new-content-video-url').val();
-  const description = $('#new-content-description').val();
+  const title = $(UI.new_content_title).val();
+  const video_url = $(UI.new_content_video_url).val();
+  const description = $(UI.new_content_description).val();
   const content = JSON.stringify({
     content_id: content_id,
-    content_title: content_title,
-    content_video_url: content_video_url,
+    content_title: title,
+    content_video_url: video_url,
+    content_description: description,
   });
   console.log(THIS, content);
 
@@ -358,8 +470,9 @@ async function populateProviderContents() {
     contents.forEach(row => {
       const is_assigned = row.providers.find(e => e === provider_id) ? 'checked' : '';
       const id = row.content_id + '-assigned';
+      const css_id = `#selected-${id}`;
       $(UI.provider_contents).append(`<tr>
-      <td><input type="radio" name="content-assignment "${is_assigned} id="${id}" onclick="assignContent2Provider('#${id}', '${row.content_id}');"></td>
+      <td><input type="radio" name="content-assignment "${is_assigned} id="${id}" onclick="assignContent2Provider('${css_id}', '${row.content_id}');"></td>
       <td>${row.content_title}</td>
       <td><a class="button" href="${row.content_video_url}" target="_blank">Watch Video</a></td>
       </tr>`);
@@ -404,6 +517,160 @@ async function assignContent2Provider(css_id, content_id) {
     console.log(THIS, `assigned ${content_id} to ${provider_id}`);
   } else {
     console.log(THIS, `unassigned ${content_id} to ${provider_id}`);
+  }
+}
+
+
+/* --------------------------------------------------------------------------------------------------------------\
+ * fetch next appointment details for selected provider
+ *
+ * input:
+ * . UI.provider_selector
+ *
+ * output:
+ * . appointment object
+ * . patient object
+ * . provider object
+ * --------------------------------------------------------------------------------------------------------------
+ */
+async function fetchNextProviderAppointment() {
+  const THIS =  fetchNextProviderAppointment.name;
+
+  try {
+
+    const output = {
+      appointment: null,
+      patient: null,
+      provider: null,
+    };
+
+    const provider_id = $(UI.provider_selector).val();
+    {
+      const parameters = new URLSearchParams({
+        action: 'GET',
+        provider_id: provider_id,
+      });
+      const response = await fetch(
+        '/datastore/appointments?' + parameters,
+        {
+          method: 'GET',
+          headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json'
+          },
+        });
+      const appointments = await response.json();
+
+      if (appointments.length > 0) {
+        output.appointment = appointments[0];
+      } else {
+        console.log(THIS, `No appointment found for provider: ${provider_id}. returning...`);
+        return output;
+      }
+    }
+
+    {
+      const parameters = new URLSearchParams({
+        action: 'GET',
+        patient_id: output.appointment.patient_id,
+      });
+      const response = await fetch(
+        '/datastore/patients?' + parameters,
+        {
+          method: 'GET',
+          headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json'
+          },
+        });
+      const patients = await response.json();
+
+      if (patients.length > 0) {
+        output.patient = patients[0];
+      } else {
+        console.log(THIS, `No appointment patient: ${output.appointment.patient_id}. returning...`);
+        return output;
+      }
+    }
+
+    {
+      const parameters = new URLSearchParams({
+        action: 'GET',
+        provider_id: output.appointment.provider_id,
+      });
+      const response = await fetch(
+        '/datastore/providers?' + parameters,
+        {
+          method: 'GET',
+          headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json'
+          },
+        });
+      const providers = await response.json();
+
+      if (providers.length > 0) {
+        output.provider = providers[0];
+      } else {
+        console.log(THIS, `No appointment provider: ${output.appointment.provider_id}. returning...`);
+        return output;
+      }
+    }
+
+    console.log(THIS, `'found valid appointment: ${output.appointment.appointment_id}`);
+    return output;
+
+  } catch (err) {
+    console.log(THIS, err);
+  }
+}
+
+/* --------------------------------------------------------------------------------------------------------------\
+ * fetch provider details for selected provider
+ *
+ * input:
+ * . UI.provider_selector
+ *
+ * output:
+ * . provider object
+ * --------------------------------------------------------------------------------------------------------------
+ */
+async function fetchSelectedProvider() {
+  const THIS =  fetchSelectedProvider.name;
+
+  try {
+
+    const provider_id = $(UI.provider_selector).val();
+    let output = null;
+    {
+      const parameters = new URLSearchParams({
+        action: 'GET',
+        provider_id: provider_id,
+      });
+      const response = await fetch(
+        '/datastore/providers?' + parameters,
+        {
+          method: 'GET',
+          headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json'
+          },
+        });
+      const providers = await response.json();
+
+      if (providers.length > 0) {
+        output = providers[0];
+      } else {
+        console.log(THIS, `No provider: ${provider_id}. returning...`);
+        return output;
+      }
+    }
+
+    console.log(THIS, `'found provider: ${provider_id}`);
+    return output;
+
+  } catch (err) {
+    console.log(THIS, err);
   }
 }
 

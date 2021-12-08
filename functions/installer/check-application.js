@@ -27,15 +27,21 @@ exports.handler = async function (context, event, callback) {
   assertLocalhost(context);
   try {
 
-    const application_name = await getParam(context, 'APPLICATION_NAME');
-    const service_sid = await getParam(context, 'SERVICE_SID');
+    const application_name   = await getParam(context, 'APPLICATION_NAME');
+    const service_sid        = await getParam(context, 'SERVICE_SID');
+    const environment_domain = service_sid ? await getParam(context, 'ENVIRONMENT_DOMAIN') : null;
+    const application_url    = service_sid
+      ? `https:/${environment_domain}/administration.html`
+      : `administration.html`; // relative url when on localhost and serice is not yet deployed
 
-    console.log(THIS, `SERVICE_SID for APPLICATION_NAME (${application_name}): ${service_sid}`);
+    console.log(THIS, `SERVICE_SID for APPLICATION_NAME (${application_name}): ${service_sid}) at ${application_url}`);
 
-    return callback(null, {
-      deploy_state: service_sid ? 'DEPLOYED' : 'NOT-DEPLOYED',
-      service_sid : service_sid ? service_sid : '',
-    });
+    const response = {
+      deploy_state   : service_sid ? 'DEPLOYED' : 'NOT-DEPLOYED',
+      service_sid    : service_sid ? service_sid : '',
+      application_url: service_sid ? application_url : '',
+    }
+    return callback(null, response);
 
   } catch (err) {
     console.log(THIS, err);

@@ -119,6 +119,22 @@ async function getParam(context, key) {
         return environments.length > 0 ? environments[0].sid : null;
       }
 
+      case 'ENVIRONMENT_DOMAIN': {
+        // will throw error when running on localhost, so lookup by name if localhost
+        const service_sid = await getParam(context, 'SERVICE_SID');
+        if (service_sid === null) {
+          return null; // service not yet deployed
+        }
+        const environment_sid = await getParam(context, 'ENVIRONMENT_SID');
+
+        const environment = await client.serverless
+          .services(service_sid)
+          .environments(environment_sid)
+          .fetch();
+
+        return environment.domainName;
+      }
+
       case 'TWILIO_API_KEY_SID': {
         // value set in .env takes precedence
         if (context.TWILIO_API_KEY_SID) return context.TWILIO_API_KEY_SID
