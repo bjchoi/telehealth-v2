@@ -14,6 +14,7 @@ const FHIR_APPOINTMENT = 'Appointments';
 const assert = require("assert");
 const { getParam } = require(Runtime.getFunctions()['helpers'].path);
 const { read_fhir, save_fhir, fetchPublicJsonAsset } = require(Runtime.getFunctions()['datastore/datastore-helpers'].path);
+const patientAccessor = require("./patients");
 
 // --------------------------------------------------------------------------------
 function transform_fhir_to_appointment(fhir_appointment) {
@@ -83,10 +84,36 @@ function transform_appointment_to_fhir(appointment) {
 
 
 // --------------------------------------------------------------------------------
+async function getAll(context) {
+  const TWILIO_SYNC_SID = await getParam(context, 'TWILIO_SYNC_SID');
+
+  let resources = await read_fhir(context, TWILIO_SYNC_SID, FHIR_APPOINTMENT);
+
+  const appointments = resources
+    .map(r => transform_fhir_to_appointment(r))
+    .sort((a, b) => {
+      return a.appointment_start_datetime_utc.localeCompare(b.appointment_start_datetime_utc);
+    });
+
+  // rebase time where first (earliest) appointment is 5min past current time
+  const first_appointment_ts = new Date(appointments[0].appointment_start_datetime_utc);
+  const diff = new Date().getTime() - first_appointment_ts.getTime() - 5*60*1000;
+  appointments.forEach(appt => {
+    const start_ts = new Date(appt.appointment_start_datetime_utc);
+    const end_ts = new Date(appt.appointment_end_datetime_utc);
+    appt.appointment_start_datetime_utc = new Date(start_ts.getTime() + diff).toISOString();
+    appt.appointment_end_datetime_utc = new Date(end_ts.getTime() + diff).toISOString();
+  });
+
+  return appointments;
+}
+exports.getAll = getAll;
+
+
+// --------------------------------------------------------------------------------
 exports.handler = async function(context, event, callback) {
   const THIS = 'appointments:';
   console.time(THIS);
-
   const { isValidAppToken } = require(Runtime.getFunctions()["authentication-helper"].path);
 
   /* Following code checks that a valid token was sent with the API call */
@@ -98,6 +125,7 @@ exports.handler = async function(context, event, callback) {
     return callback(null, response);
   }
   try {
+
     const action = event.action ? event.action : 'USAGE'; // default action
 
     switch (action) {
@@ -131,6 +159,14 @@ exports.handler = async function(context, event, callback) {
               provider_id: 'optional, filters for specified provider',
             }
           },
+          GETTUPLE: {
+            description: 'returns array of appointment/patient/provider tuple',
+            parameters: {
+              appointment_id: 'optional, filters for specified appointment. will return zero or one',
+              patient_id: 'optional, filters for specified patient',
+              provider_id: 'optional, filters for specified provider',
+            }
+          },
           ADD: {
             description: 'add a new appointment',
             parameters: {
@@ -141,59 +177,73 @@ exports.handler = async function(context, event, callback) {
 
         return callback(null, usage);
       }
-      break;
 
       case 'SCHEMA': {
         const schema = await fetchPublicJsonAsset(context, SCHEMA);
         return callback(null, schema);
       }
-        break;
 
       case 'PROTOTYPE': {
         const prototype = await fetchPublicJsonAsset(context, PROTOTYPE);
         return callback(null, prototype);
       }
-        break;
 
       case 'GET': {
-        const TWILIO_SYNC_SID = await getParam(context, 'TWILIO_SYNC_SID');
+        const all = await getAll(context);
 
-        let resources = await read_fhir(context, TWILIO_SYNC_SID, FHIR_APPOINTMENT);
+        let appointments = all;
+        appointments = event.appointment_id ? appointments.filter(a => a.appointment_id === event.appointment_id) : appointments;
+        appointments = event.patient_id ? appointments.filter(a => a.patient_id === event.patient_id) : appointments;
+        appointments = event.provider_id ? appointments.filter(a => a.provider_id === event.provider_id) : appointments;
 
-        resources = event.appointment_id
-          ? resources.filter(r => r.id === event.appointment_id)
-          : resources;
+        console.log(THIS, `retrieved ${appointments.length} appointments`);
+        const response = new Twilio.Response();
+        response.setStatusCode(200);
+        response.appendHeader('Content-Type', 'application/json');
+        response.setBody(appointments);
+        if (context.DOMAIN_NAME.startsWith('localhost:')) {
+          response.appendHeader('Access-Control-Allow-Origin', '*');
+          response.appendHeader('Access-Control-Allow-Methods', 'OPTIONS, POST, GET');
+          response.appendHeader('Access-Control-Allow-Headers', 'Content-Type');
+        }
+        return callback(null, response);
+      }
 
-        resources = event.patient_id
-          ? resources.filter(r => r.participant.find(e => e.actor.reference === ('Patient/' + event.patient_id)))
-          : resources;
+      case 'GETTUPLE': {
+        const patientAccessor = require('./patients');
+        const providerAccessor = require('./providers');
 
-        resources = event.provider_id
-          ? resources.filter(r => r.participant.find(e => e.actor.reference === ('Practitioner/' + event.provider_id)))
-          : resources;
+        const all = await getAll(context);
 
-        const appointments = resources.map(r => transform_fhir_to_appointment(r));
+        let appointments = all;
+        appointments = event.appointment_id ? appointments.filter(a => a.appointment_id === event.appointment_id) : appointments;
+        appointments = event.patient_id ? appointments.filter(a => a.patient_id === event.patient_id) : appointments;
+        appointments = event.provider_id ? appointments.filter(a => a.provider_id === event.provider_id) : appointments;
 
-        console.log(THIS, `retrieved ${appointments.length} appointments for ${event.provider_id ? event.provider_id : " all providers"}`);
+        const all_patients = await patientAccessor.getAll(context);
+        const all_providers = await providerAccessor.getAll(context);
 
-        // rebase time
-        const base_ts = new Date(await getParam(context, 'SERVER_START_TIMESTAMP'));
-        console.log(THIS, 'base datetime_utc:', base_ts);
-
-        const first_appointment_ts = new Date(appointments[0].appointment_start_datetime_utc);
-        console.log(THIS, 'first appointment datetime_utc:', first_appointment_ts);
-
-        const diff = base_ts.getTime() - first_appointment_ts.getTime();
-        appointments.forEach(a => {
-          const start_ts = new Date(a.appointment_start_datetime_utc);
-          const end_ts   = new Date(a.appointment_end_datetime_utc);
-          a.appointment_start_datetime_utc = new Date(start_ts.getTime() + diff).toISOString();
-          a.appointment_end_datetime_utc   = new Date(end_ts.getTime() + diff).toISOString();
+        const tuple = [];
+        appointments.forEach(appt => {
+          tuple.push({
+            appointment: appt,
+            patient: all_patients.find(p => p.patient_id === appt.patient_id),
+            provider: all_providers.find(p => p.provider_id === appt.provider_id),
+          })
         });
 
-        return callback(null, appointments);
+        console.log(THIS, `retrieved ${tuple.length} appointments`);
+        const response = new Twilio.Response();
+        response.setStatusCode(200);
+        response.appendHeader('Content-Type', 'application/json');
+        response.setBody(tuple);
+        if (context.DOMAIN_NAME.startsWith('localhost:')) {
+          response.appendHeader('Access-Control-Allow-Origin', '*');
+          response.appendHeader('Access-Control-Allow-Methods', 'OPTIONS, POST, GET');
+          response.appendHeader('Access-Control-Allow-Headers', 'Content-Type');
+        }
+        return callback(null, response);
       }
-        break;
 
       case 'ADD': {
         assert(event.appointment, 'Mssing event.appointment!!!');
@@ -220,7 +270,6 @@ exports.handler = async function(context, event, callback) {
         console.log(THIS, `added appointment ${appointment.appointment_id}`);
         return callback(null, { appointment_id : appointment.appointment_id });
       }
-        break;
 
       case 'REMOVE': {
         assert(event.appointment_id, 'Mssing event.appointment_id!!!');
@@ -233,7 +282,6 @@ exports.handler = async function(context, event, callback) {
         console.log(THIS, `removed appointment ${event.appointment_id}`);
         return callback(null, { appointment_id : event.appointment_id });
       }
-        break;
 
       default: // unknown action
         throw Error(`Unknown action: ${action}!!!`);

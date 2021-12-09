@@ -119,6 +119,21 @@ function transform_patient_to_fhir(patient) {
 
 
 // --------------------------------------------------------------------------------
+async function getAll(context) {
+  const TWILIO_SYNC_SID = await getParam(context, 'TWILIO_SYNC_SID');
+
+  let resources = await read_fhir(context, TWILIO_SYNC_SID, FHIR_PATIENT);
+  const medication_statements = await read_fhir(context, TWILIO_SYNC_SID, FHIR_MEDICATION_STATEMENT);
+  const conditions = await read_fhir(context, TWILIO_SYNC_SID, FHIR_CONDITION);
+
+  const patients = resources.map(r => transform_fhir_to_patient(r, medication_statements, conditions));
+
+  return patients;
+}
+exports.getAll = getAll;
+
+
+// --------------------------------------------------------------------------------
 exports.handler = async function(context, event, callback) {
   const THIS = 'patients:';
   console.time(THIS);
@@ -177,37 +192,34 @@ exports.handler = async function(context, event, callback) {
         };
         return callback(null, usage);
       }
-        break;
 
       case 'SCHEMA': {
         const schema = await fetchPublicJsonAsset(context, SCHEMA);
         return callback(null, schema);
       }
-        break;
 
       case 'PROTOTYPE': {
         const prototype = await fetchPublicJsonAsset(context, PROTOTYPE);
         return callback(null, prototype);
       }
-        break;
 
       case 'GET': {
-        const TWILIO_SYNC_SID = await getParam(context, 'TWILIO_SYNC_SID');
+        const all = await getAll(context);
 
-        let resources = await read_fhir(context, TWILIO_SYNC_SID, FHIR_PATIENT);
-        const medication_statements = await read_fhir(context, TWILIO_SYNC_SID, FHIR_MEDICATION_STATEMENT);
-        const conditions = await read_fhir(context, TWILIO_SYNC_SID, FHIR_CONDITION);
-
-        resources = event.patient_id
-          ? resources.filter(r => r.id === event.patient_id)
-          : resources;
-
-        const patients = resources.map(r => transform_fhir_to_patient(r, medication_statements, conditions));
+        const patients = event.patient_id ? all.filter(p => p.patient_id === event.patient_id) : all;
 
         console.log(THIS, `retrieved ${patients.length} patients`);
-        return callback(null, patients);
+        const response = new Twilio.Response();
+        response.setStatusCode(200);
+        response.appendHeader('Content-Type', 'application/json');
+        response.setBody(patients);
+        if (context.DOMAIN_NAME.startsWith('localhost:')) {
+          response.appendHeader('Access-Control-Allow-Origin', '*');
+          response.appendHeader('Access-Control-Allow-Methods', 'OPTIONS, POST, GET');
+          response.appendHeader('Access-Control-Allow-Headers', 'Content-Type');
+        }
+        return callback(null, response);
       }
-        break;
 
       case 'ADD': {
         assert(event.patient, 'Mssing event.patient!!!');
@@ -240,7 +252,6 @@ exports.handler = async function(context, event, callback) {
         console.log(THIS, `added content ${patient.patient_id}`);
         return callback(null, { patient_id : patient.patient_id });
       }
-        break;
 
       case 'REMOVE': {
         assert(event.patient_id, 'Missing event.patient_id!!!');
@@ -264,7 +275,6 @@ exports.handler = async function(context, event, callback) {
         console.log(THIS, `removed patient ${event.patient_id}`);
         return callback(null, { patient_id : event.patient_id });
       }
-        break;
 
       default: // unknown action
         throw Error(`Unknown action: ${action}!!!`);
