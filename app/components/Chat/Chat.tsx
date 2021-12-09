@@ -20,14 +20,13 @@ export const Chat = ({ inputPlaceholder, showHeader, userName, userRole }: ChatP
 
   const messageListRef = useRef(null);
   const { messages, isChatWindowOpen, setIsChatWindowOpen, conversation } = useChatContext();
-  //const [prevAuthor, setPrevAuthor] = useState<string>('');
 
   // Scrolls to the bottom of the dummy div in chat
   useEffect(() => {
     if (isChatWindowOpen) {
       messageListRef.current.scrollIntoView({behavior: 'smooth'});
     }
-  }, [messages])
+  }, [isChatWindowOpen, messages]);
 
   return (
     <>

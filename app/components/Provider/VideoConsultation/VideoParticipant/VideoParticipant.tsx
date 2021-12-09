@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { LocalAudioTrack, LocalParticipant, RemoteAudioTrack, RemoteParticipant } from 'twilio-video';
-import Video from 'twilio-video';
 import { joinClasses } from '../../../../utils';
 import ParticipantTracks from '../../../Base/ParticipantTracks/ParticipantTracks';
 import useTrack from '../../../Base/ParticipantTracks/Publication/useTrack/useTrack';
@@ -9,7 +8,9 @@ import useIsTrackEnabled from '../../../Base/VideoProvider/useIsTrackEnabled/use
 import { Icon } from '../../../Icon';
 import { Popover } from '../Popover';
 import useVideoContext from '../../../Base/VideoProvider/useVideoContext/useVideoContext';
-
+import useMainParticipant from '../../../Base/VideoProvider/useMainParticipany/useMainParticipant';
+import useSelectedParticipant from '../../../Base/VideoProvider/useSelectedParticipant/useSelectedParticipant';
+import useScreenShareParticipant from '../../../Base/VideoProvider/useScreenShareParticipant/useScreenShareParticipant';
 export interface VideoParticipantProps {
   hasAudio?: boolean;
   hasVideo?: boolean;
@@ -35,6 +36,26 @@ export const VideoParticipant = ({
   const [muted, setMuted] = useState(hasAudio);
   const [showVideo, setShowVideo] = useState(hasVideo);
   const { room } = useVideoContext();
+  const mainParticipant = useMainParticipant();
+  const localParticipant = room!.localParticipant;
+  const [selectedParticipant] = useSelectedParticipant();
+  const screenShareParticipant = useScreenShareParticipant();
+
+  const publications = usePublications(participant);
+  const videoPublication = publications.find(p => !p.trackName.includes('screen') && p.kind === 'video');
+  const screenSharePublication = publications.find(p => p.trackName.includes('screen'));
+  const audioPublication = publications.find(p => p.kind === 'audio');
+
+  const audioTrack = useTrack(audioPublication) as LocalAudioTrack | RemoteAudioTrack | undefined;
+  const videoTrack = useTrack(videoPublication || screenSharePublication);
+  
+  const isVideoEnabled = Boolean(videoTrack);
+  const isTrackEnabled = useIsTrackEnabled(audioTrack as LocalAudioTrack | RemoteAudioTrack);
+
+  const videoPriority = (mainParticipant === selectedParticipant || mainParticipant === screenShareParticipant) &&
+    mainParticipant !== localParticipant
+    ? 'high'
+    : null; 
 
   // TODO - move to tailwind config
   let widthClass = isProvider ? 'w-[405px]' : 'w-[685px]';
@@ -43,18 +64,6 @@ export const VideoParticipant = ({
     widthClass = 'w-full';
     heightClass = 'h-full';
   }
-
-  const publications = usePublications(participant);
-  const videoPublication = publications.find(p => !p.trackName.includes('screen') && p.kind === 'video');
-
-  const videoTrack = useTrack(videoPublication);
-  const isVideoEnabled = Boolean(videoTrack);
-
-  const audioPublication = publications.find(p => p.kind === 'audio');
-
-  const audioTrack = useTrack(audioPublication) as LocalAudioTrack | RemoteAudioTrack | undefined;
-
-  const isTrackEnabled = useIsTrackEnabled(audioTrack as LocalAudioTrack | RemoteAudioTrack);
 
   // this function only visible for Patient Video
   const handleMuteParticipant = () => {
@@ -69,14 +78,12 @@ export const VideoParticipant = ({
   // Muting non-self Participants useEffect
   // Will need to account for 3rd party later on
   useEffect(() => {
-    console.log(audioTrack);
-    console.log(isTrackEnabled);
     if (isTrackEnabled) {
       setMuted(false);
     } else {
       setMuted(true);
     }
-  }, [isTrackEnabled]);
+  }, [audioTrack, isTrackEnabled]);
 
   // Video disabling effect
   useEffect(() => {
@@ -180,11 +187,11 @@ export const VideoParticipant = ({
           </div>
         )}
         <ParticipantTracks
-          participant={participant}
-          videoOnly={false}
-          enableScreenShare={false}
-          videoPriority={'high'}
-          isLocalParticipant={isSelf}
+          participant={isSelf ? mainParticipant : participant}
+          videoOnly
+          enableScreenShare={true}
+          videoPriority={videoPriority}
+          isLocalParticipant={mainParticipant === localParticipant}
         />
       </div>
       <div className="absolute top-0 left-0 w-max z-50 text-white bg-[#00000082] px-2 py-1 flex items-center">
