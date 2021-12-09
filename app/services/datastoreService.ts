@@ -57,7 +57,7 @@ function instantiateContent(data: any) : EHRContent {
  * result is ordered in ascending order of appointment start time
  * --------------------------------------------------------------------------------------------------------------
  */
-async function fetchTelehealthVisits(provider: ProviderUser): Promise<Array<TelehealthVisit> | { error : string }> {
+async function fetchAllTelehealthVisits(provider: ProviderUser): Promise<Array<TelehealthVisit> | { error : string }> {
   if(provider.role !== 'provider') {
     Promise.reject({ error: "Only provider can get patient queue" });
   }
@@ -67,7 +67,7 @@ async function fetchTelehealthVisits(provider: ProviderUser): Promise<Array<Tele
     headers: {
       'Accept': 'application/json',
       'Content-Type': 'application/json',
-//      'Authorization': `Bearer ${provider.token}`
+      'Authorization': `Bearer ${provider.token}`
     }
   }).then(r => r.json());
 
@@ -79,9 +79,9 @@ async function fetchTelehealthVisits(provider: ProviderUser): Promise<Array<Tele
     const tv = {
       id: appointment.id,
       roomName: appointment.id,
-      appointment: appointment,
-      patient: patient,
-      provider: provider,
+      ehrAppointment: appointment,
+      ehrPatient: patient,
+      ehrProvider: provider,
     } as TelehealthVisit;
     result.push(tv);
     console.log(tv);
@@ -91,17 +91,17 @@ async function fetchTelehealthVisits(provider: ProviderUser): Promise<Array<Tele
 }
 
 /* --------------------------------------------------------------------------------------------------------------
- * fetch TelehealthVist for the specified appointment id from server datastore
+ * fetch TelehealthVisit for the specified appointment id from server datastore
  * --------------------------------------------------------------------------------------------------------------
  */
-async function fetchTelehealthVisit(appointment_id: string): Promise<TelehealthVisit | { error : string }> {
+async function fetchTelehealthVisitForPatient(user: TelehealthUser, appointment_id: string): Promise<TelehealthVisit | { error : string }> {
   const tuple = await fetch(Uris.backendRoot + '/datastore/appointments', {
     method: 'POST',
     body: JSON.stringify({ action: 'GETTUPLE', appointment_id: appointment_id }),
     headers: {
       'Accept': 'application/json',
       'Content-Type': 'application/json',
-//      'Authorization': `Bearer ${provider.token}`
+      'Authorization': `Bearer ${user.token}`
     }
   }).then(r => r.json());
 
@@ -115,12 +115,12 @@ async function fetchTelehealthVisit(appointment_id: string): Promise<TelehealthV
   const result = {
     id: _appointment.id,
     roomName: _appointment.id,
-    appointment: _appointment,
-    patient: _patient,
-    provider: _provider,
+    ehrAppointment: _appointment,
+    ehrPatient: _patient,
+    ehrProvider: _provider,
   } as TelehealthVisit;
 
-  console.log(result);
+  //console.log(result);
   return Promise.resolve(result);
 }
 
@@ -136,7 +136,7 @@ async function fetchContentForProvider(provider: ProviderUser): Promise<Provider
     headers: {
       'Accept': 'application/json',
       'Content-Type': 'application/json',
-//      'Authorization': `Bearer ${provider.token}`
+      'Authorization': `Bearer ${provider.token}`
     }
   }).then(r => r.json());
 
@@ -160,7 +160,7 @@ async function fetchContentForProvider(provider: ProviderUser): Promise<Provider
 
 
 export default {
-  fetchTelehealthVisits,
-  fetchTelehealthVisit,
+  fetchAllTelehealthVisits,
+  fetchTelehealthVisitForPatient,
   fetchContentForProvider,
 };

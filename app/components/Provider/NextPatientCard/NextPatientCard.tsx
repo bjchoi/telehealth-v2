@@ -1,31 +1,18 @@
 import { joinClasses } from '../../../utils';
+import { useEffect } from 'react';
 import { Button } from '../../Button';
 import { Card } from '../../Card';
 import { CardHeading } from '../CardHeading';
 import { Icon } from '../../Icon';
 import { useRouter } from 'next/router';
 import clientStorage from '../../../services/clientStorage';
-import { CURRENT_VISIT_ID } from '../../../constants';
+import {CURRENT_VISIT_ID, STORAGE_VISIT_KEY} from '../../../constants';
+import {TelehealthVisit} from "../../../types";
 
 export interface NextPatientCardProps {
   className?: string;
 }
 
-// This Patient will come from backend call
-const patient = {
-  name: 'Sarah Cooper',
-  waitTime: '00:23:14',
-  gender: 'Female',
-  language: 'English',
-  reasonForVisit:
-    "I think I twisted my ankle earlier this week when I jumped down some stairs but I can't tell, I attached a photo",
-  preexistingConditions:
-    "I've had exercise-induced asthma since childhood, but nothing else.",
-  currentMedications: 'Albuterol, singulair, ibuprofen',
-  translator: false,
-  files: [{ name: 'twisted_ankle_photo.jpg' }],
-  roomName: 'v-doe-jonson-1121'
-};
 
 export const NextPatientCard = ({ className }: NextPatientCardProps) => {
   const router = useRouter();
@@ -45,39 +32,63 @@ export const NextPatientCard = ({ className }: NextPatientCardProps) => {
   );
 
   function startVisit() {
-    // TODO: Possibly use Visit object instead but we only need the roomName
+    // TODO: Change to TelehealthVisit.id
     // to reduce abstraction.
-    clientStorage.saveToStorage(CURRENT_VISIT_ID, patient.roomName);
+    clientStorage.saveToStorage(CURRENT_VISIT_ID, ehrAppointment.id);
     router.push("/provider/video/");
-  }
+  };
+
+// TODO: turn into properties to be loaded from server
+    const ehrPatient = {
+    id: 'p1000000',
+    name: 'Sarah Cooper',
+    start_datetime_ltz: '00:23:14',
+    gender: 'Female',
+    language: 'English',
+    conditions: [
+        "I've had exercise-induced asthma since childhood, but nothing else.",
+    ],
+    medications: [ 'Albuterol', 'singulair', 'ibuprofen'],
+    };
+
+    const ehrAppointment = {
+    id: 'a1000000',
+    reason: "I think I twisted my ankle earlier this week when I jumped down some stairs but I can't tell, I attached a photo",
+    references: ['twisted_ankle_photo.jpg'],
+    };
+
+  useEffect(() => {
+      const tv =  clientStorage.getFromStorage<TelehealthVisit>(STORAGE_VISIT_KEY);
+      
+  }, []);
 
   return (
     <Card className={className}>
       <div className="font-bold text-xs">Next Patient:</div>
-      <CardHeading>{patient.name}</CardHeading>
+      <CardHeading>{ehrPatient.name}</CardHeading>
       <div className="font-bold text-light text-xs">
-        Wait Time: {patient.waitTime}
+        Wait Time: {ehrPatient.start_datetime_ltz}
       </div>
       <ul className="pl-5">
-        <Field label="Reason for Visit" value={patient.reasonForVisit} />
-        <Field label="Gender" value={patient.gender} />
-        <Field label="Language" value={patient.language} />
-        <Field label="Translator" value={patient.translator ? 'Yes' : 'No'} />
+        <Field label="Reason for Visit" value={ehrAppointment.reason} />
+        <Field label="Gender" value={ehrPatient.gender} />
+        <Field label="Language" value={ehrPatient.language} />
+        <Field label="Translator" value={ehrPatient.language === 'English' ? 'No' : 'Yes'} />
         <Field
           label="Preexisting Conditions"
-          value={patient.preexistingConditions}
+          value={ehrPatient.conditions.join(', ')}
         />
-        <Field label="Current Medications" value={patient.currentMedications} />
-        {patient.files.length > 0 ? (
+        <Field label="Current Medications" value={ehrPatient.medications.join(', ')} />
+        {ehrAppointment.references.length > 0 ? (
           <li>
             <label className="text-bold">Attached Files:</label>
-            {patient.files.map((file, i) => (
+            {ehrAppointment.references.map((file, i) => (
               <a
                 key={i}
                 className="flex rounded-lg my-3 border border-link py-3 px-4 text-link text-xs items-center cursor-pointer"
                 download
               >
-                <span className="flex-grow underline">{file.name}</span>
+                <span className="flex-grow underline">{file}</span>
                 <Icon name="file_download" outline />
               </a>
             ))}

@@ -1,4 +1,5 @@
 import { joinClasses } from '../../../utils';
+import { useEffect } from 'react';
 import { Card } from '../../Card';
 import { CardHeading } from '../CardHeading';
 
@@ -59,6 +60,11 @@ const patients = [
 ];
 
 export const PatientQueueCard = ({ className }: PatientQueueCardProps) => {
+
+  useEffect(() => {
+
+  }, []);
+
   return (
     <Card className={className}>
       <CardHeading>Patient Queue</CardHeading>

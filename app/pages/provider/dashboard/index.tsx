@@ -10,11 +10,15 @@ import {
 import { NextPatientCard } from '../../../components/Provider/NextPatientCard';
 import { TwilioPage } from '../../../types';
 import ProviderVideoContextLayout from '../../../components/Provider/ProviderLayout';
+import datastoreService from '../../../services/datastoreService';
+import clientStorage from '../../../services/clientStorage';
+import {STORAGE_VISIT_KEY} from "../../../constants";
 
 const DashboardPage: TwilioPage = () => {
   
   const { getAudioAndVideoTracks } = useVideoContext();
   const [mediaError, setMediaError] = useState<Error>();
+  let patientQueue = null;
 
   useEffect(() => {
     if (!mediaError) {
@@ -24,6 +28,20 @@ const DashboardPage: TwilioPage = () => {
       });
     }
   }, [getAudioAndVideoTracks, mediaError]);
+
+  useEffect( () => {
+    async function _fetchFromServer() {
+      const u = null; // TODO get ProviderUser = null;
+
+      patientQueue = await datastoreService.fetchAllTelehealthVisits(u);
+
+      if (patientQueue.length > 0) {
+        clientStorage.saveToStorage(STORAGE_VISIT_KEY, patientQueue[0]);
+      }
+    }
+    const tvList = _fetchFromServer();
+
+  }, []);
 
   return (
     <Layout>
