@@ -22,7 +22,8 @@
     "react-hook-form": "^7.19.5",
     "react-popper": "^2.2.5",
     "twilio-sync": "3.0.6",
-    "twilio-video": "^2.18.1"
+    "twilio-video": "^2.18.1",
+    "@twilio/video-processors": "^1.0.2"
   },
   "devDependencies": {
     "@babel/core": "^7.15.0",
