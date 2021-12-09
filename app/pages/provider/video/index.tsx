@@ -11,7 +11,7 @@ import ProviderVideoContextLayout from '../../../components/Provider/ProviderLay
 import useChatContext from '../../../components/Base/ChatProvider/useChatContext/useChatContext';
 
 const VideoPage: TwilioPage = () => {
-  const { user, visit } = useVisitContext();
+  const { user } = useVisitContext();
   const { connect: videoConnect, room } = useVideoContext();
   const { connect: chatConnect } = useChatContext();
   const router = useRouter();
@@ -25,8 +25,8 @@ const VideoPage: TwilioPage = () => {
             if(!roomTokenResp.roomAvailable) {
               router.push('/provider/dashboard');
             }
-            await videoConnect(roomTokenResp.token); 
             chatConnect(roomTokenResp.token);
+            videoConnect(roomTokenResp.token); 
           });
         });
     }
