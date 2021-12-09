@@ -3,13 +3,17 @@ import { LocalVideoTrack } from 'twilio-video';
 import useVideoContext from '../../Base/VideoProvider/useVideoContext/useVideoContext';
 import { Card } from '../../Card';
 import VideoTrack from '../../Base/ParticipantTracks/Publication/VideoTrack/VideoTrack';
+import { useEffect, useState } from 'react';
 
 export interface AudioVideoCardProps {}
 
 export const AudioVideoCard = ({}: AudioVideoCardProps) => {
   const { localTracks } = useVideoContext();
+  const [ videoTrack, setVideoTrack ] = useState<LocalVideoTrack>();
 
-  const videoTrack = localTracks.find(track => track.name.includes('camera')) as LocalVideoTrack; 
+  useEffect(() => {
+    setVideoTrack(localTracks.find(track => track.name.includes('camera')) as LocalVideoTrack); 
+  }, localTracks);
 
   return (
     <>

@@ -134,3 +134,11 @@ export interface SettingsAction {
   name: SettingsKeys;
   value: string;
 }
+
+export type Thumbnail = 'none' | 'blur' | 'image';
+
+export interface BackgroundSettings {
+  type: Thumbnail;
+  name: string;
+  index?: number;
+}
