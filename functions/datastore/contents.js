@@ -85,7 +85,13 @@ exports.handler = async function(context, event, callback) {
   }
   try {
     const action = event.action ? event.action : 'USAGE'; // default action
-
+    const response = new Twilio.Response();
+    response.appendHeader('Content-Type', 'application/json');
+    if (context.DOMAIN_NAME.startsWith('localhost:')) {
+      response.appendHeader('Access-Control-Allow-Origin', '*');
+      response.appendHeader('Access-Control-Allow-Methods', 'OPTIONS, POST, GET');
+      response.appendHeader('Access-Control-Allow-Headers', 'Content-Type');
+    }
     switch (action) {
 
       case 'USAGE': {
@@ -155,15 +161,8 @@ exports.handler = async function(context, event, callback) {
         contents = event.provider_id ? contents.filter(c => c.providers.find(p => p === event.provider_id)) : contents;
 
         console.log(THIS, `retrieved ${contents.length} contents`);
-        const response = new Twilio.Response();
         response.setStatusCode(200);
-        response.appendHeader('Content-Type', 'application/json');
         response.setBody(contents);
-        if (context.DOMAIN_NAME.startsWith('localhost:')) {
-          response.appendHeader('Access-Control-Allow-Origin', '*');
-          response.appendHeader('Access-Control-Allow-Methods', 'OPTIONS, POST, GET');
-          response.appendHeader('Access-Control-Allow-Headers', 'Content-Type');
-        }
         return callback(null, response);
       }
 
@@ -228,18 +227,11 @@ exports.handler = async function(context, event, callback) {
         await save_fhir(context, TWILIO_SYNC_SID, FHIR_DOCUMENT_REFERENCE, resources);
 
         console.log(THIS, `assigned content ${event.content_id} provider ${event.provider_id}`);
-        const response = new Twilio.Response();
         response.setStatusCode(200);
-        response.appendHeader('Content-Type', 'application/json');
         response.setBody({
           content_id : event.content_id,
           provider_id: event.provider_id,
         });
-        if (context.DOMAIN_NAME.startsWith('localhost:')) {
-          response.appendHeader('Access-Control-Allow-Origin', '*');
-          response.appendHeader('Access-Control-Allow-Methods', 'OPTIONS, POST, GET');
-          response.appendHeader('Access-Control-Allow-Headers', 'Content-Type');
-        }
         return callback(null, response);
       }
 

@@ -11,13 +11,8 @@ const PractitionerLanding = () => {
     var token = router.query.token as string;
     if(token) {
       practitionerAuth.authenticatePractitioner(token)
-      .then((u) => {
-
-        async function _fetchFromServer() {
-          const providerUser = await datastoreService.fetchContentForProvider(u);
-          clientStorage.saveToStorage(STORAGE_USER_KEY, providerUser);
-        }
-
+      .then((providerUser) => {
+        clientStorage.saveToStorage(STORAGE_USER_KEY, providerUser);
         router.push('/provider/dashboard');
       // }).catch(err => {
       //   console.log(err);

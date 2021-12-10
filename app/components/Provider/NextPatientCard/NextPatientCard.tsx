@@ -26,7 +26,7 @@ export const NextPatientCard = ({ className, visitNext }: NextPatientCardProps) 
       <div
         className={joinClasses(
           'text-dark',
-          value.match(/\s/) ? '' : 'inline-block ml-1'
+          value && value.match(/\s/) ? '' : 'inline-block ml-1'
         )}
       >
         {value}
@@ -48,7 +48,7 @@ export const NextPatientCard = ({ className, visitNext }: NextPatientCardProps) 
       setVisitWaitTime(hhmmdd);
 
       setVisitNeedTranslator(visitNext.ehrPatient.language === 'English' ? 'No' : 'Yes');
-  }, []);
+  }, [visitNext]);
 
   return (
     <Card className={className}>

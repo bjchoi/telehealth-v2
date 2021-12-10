@@ -46,7 +46,7 @@ function instantiateContent(data: any) : EHRContent {
     title: data.content_title,
     ...(data.content_description && { description: data.content_description }),
     video_url: data.content_video_url,
-    provider_ids: data.content.providers.map(e => { return e; }),
+    provider_ids: data.providers.map(e => { return e; }),
   } as EHRContent;
 }
 
