@@ -1,6 +1,6 @@
 import { Button, ButtonVariant } from '../Button';
 import React, { useCallback, useEffect, useState } from 'react';
-import { LocalAudioTrack, LocalVideoTrack } from 'twilio-video';
+import { LocalAudioTrack, LocalDataTrack, LocalVideoTrack } from 'twilio-video';
 import useVideoContext from '../Base/VideoProvider/useVideoContext/useVideoContext';
 import useMediaStreamTrack
   from '../Base/ParticipantTracks/Publication/VideoTrack/useMediaStreamTrack/useMediaStreamTrack';
@@ -9,7 +9,7 @@ import useDevices from '../Base/VideoProvider/useDevices/useDevices';
 
 export const SimpleVideoControls = ({ containerClass }: { containerClass: string }) => {
 
-  const { localTracks }: { localTracks: (LocalAudioTrack | LocalVideoTrack)[]} = useVideoContext();
+  const { localTracks }: { localTracks: (LocalAudioTrack | LocalVideoTrack | LocalDataTrack)[]} = useVideoContext();
   const audioTrack = localTracks.find(track => track.kind ==='audio' ) as LocalAudioTrack;
   const videoTrack = localTracks.find(track => track.kind === 'video' ) as LocalVideoTrack;
   const mediaStreamTrack = useMediaStreamTrack(videoTrack);

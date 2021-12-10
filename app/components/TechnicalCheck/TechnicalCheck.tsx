@@ -1,5 +1,5 @@
 import React from 'react';
-import {LocalAudioTrack, LocalVideoTrack } from 'twilio-video';
+import {LocalAudioTrack, LocalDataTrack, LocalVideoTrack } from 'twilio-video';
 import VideoTrack from '../Base/ParticipantTracks/Publication/VideoTrack/VideoTrack';
 import useVideoContext from '../Base/VideoProvider/useVideoContext/useVideoContext';
 import AudioTrack from '../Base/ParticipantTracks/Publication/AudioTrack/AudioTrack';
@@ -12,7 +12,7 @@ export interface TechnicalCheckProps {
 
 export const TechnicalCheck = ({ videoImage }: TechnicalCheckProps) => {
 
-  const { localTracks }: { localTracks: (LocalAudioTrack | LocalVideoTrack)[]} = useVideoContext();
+  const { localTracks }: { localTracks: (LocalAudioTrack | LocalVideoTrack | LocalDataTrack)[]} = useVideoContext();
   const audioTrack = localTracks.find(track => track.kind ==='audio' ) as LocalAudioTrack;
   const videoTrack = localTracks.find(track => track.kind === 'video' ) as LocalVideoTrack;
 
