@@ -41,11 +41,12 @@ export const NextPatientCard = ({ className, visitNext }: NextPatientCardProps) 
 
   useEffect(() => {
       const now : Date = new Date();
-      const diffSeconds = Math.trunc(now.getTime() - visitNext.ehrAppointment.start_datetime_ltz.getTime());
+      const diffSeconds = Math.trunc((now.getTime() - visitNext.ehrAppointment.start_datetime_ltz.getTime())/1000);
+      console.log(diffSeconds, Math.trunc(diffSeconds/60/60), Math.trunc(diffSeconds/60), Math.trunc(diffSeconds % 60));
       const hhmmdd = Math.trunc(diffSeconds/60/60).toString().padStart(2,'0')
-          + Math.trunc(diffSeconds/60).toString().padStart(2,'0')
-          + Math.trunc(diffSeconds % 60).toString().padStart(2,'0');
-      setVisitWaitTime(hhmmdd);
+          + ':' + Math.trunc(diffSeconds/60).toString().padStart(2,'0')
+          + ':' + Math.trunc(diffSeconds % 60).toString().padStart(2,'0');
+      setVisitWaitTime((diffSeconds > 0 ? 'Wait Time ': 'Start Time ') + hhmmdd);
 
       setVisitNeedTranslator(visitNext.ehrPatient.language === 'English' ? 'No' : 'Yes');
   }, [visitNext]);
@@ -54,7 +55,7 @@ export const NextPatientCard = ({ className, visitNext }: NextPatientCardProps) 
     <Card className={className}>
       <div className="font-bold text-xs">Next Patient:</div>
       <CardHeading>{visitNext.ehrPatient.name}</CardHeading>
-      <div className="font-bold text-light text-xs">Wait Time: {visitWaitTime}</div>
+      <div className="font-bold text-light text-xs">{visitWaitTime}</div>
       <ul className="pl-5">
         <Field label="Reason for Visit" value={visitNext.ehrAppointment.reason} />
         <Field label="Gender" value={visitNext.ehrPatient.gender} />
@@ -65,23 +66,24 @@ export const NextPatientCard = ({ className, visitNext }: NextPatientCardProps) 
           value={visitNext.ehrPatient.conditions.join(', ')}
         />
         <Field label="Current Medications" value={visitNext.ehrPatient.medications.join(', ')} />
-        {/*{visitNext.ehrAppointment.references.length > 0 ? (*/}
-        {/*  <li>*/}
-        {/*    <label className="text-bold">Attached Files:</label>*/}
-        {/*    {visitNext.ehrAppointment.references.map((file, i) => (*/}
-        {/*      <a*/}
-        {/*        key={i}*/}
-        {/*        className="flex rounded-lg my-3 border border-link py-3 px-4 text-link text-xs items-center cursor-pointer"*/}
-        {/*        download*/}
-        {/*      >*/}
-        {/*        <span className="flex-grow underline">{file}</span>*/}
-        {/*        <Icon name="file_download" outline />*/}
-        {/*      </a>*/}
-        {/*    ))}*/}
-        {/*  </li>*/}
-        {/*) : (*/}
-        {/*  <Field label="Attached Files" value="None" />*/}
-        {/*)}*/}
+        {visitNext.ehrAppointment.references.length > 0 ? (
+          <li>
+            <label className="text-bold">Attached Files:</label>
+            {visitNext.ehrAppointment.references.map((e, i) => (
+              <a
+                key={i}
+                className="flex rounded-lg my-3 border border-link py-3 px-4 text-link text-xs items-center cursor-pointer"
+                href={"http://localhost:3000/" + e}
+                target="_blank"
+              >
+                <span className="flex-grow underline">{e.replace(/^.*[\\\/]/, '')}</span>
+                <Icon name="file_download" outline />
+              </a>
+            ))}
+          </li>
+        ) : (
+          <Field label="Attached Files" value="None" />
+        )}
       </ul>
       <div className="mt-5 text-center">
         <Button as="button" onClick={startVisit}>
