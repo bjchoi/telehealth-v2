@@ -61,10 +61,20 @@ const patients = [
   },
 ];
 
+function calculateWaitTime(visitStartTimeLTZ) {
+  const now : Date = new Date();
+  const diffSeconds = Math.trunc((now.getTime() - visitStartTimeLTZ.getTime())/1000);
+  const hhmmdd = Math.trunc(diffSeconds/60/60).toString().padStart(2,'0')
+      + ':' + Math.trunc(diffSeconds/60).toString().padStart(2,'0')
+      + ':' + Math.trunc(diffSeconds % 60).toString().padStart(2,'0');
+
+  return (diffSeconds > 0 ? 'Waiting ': 'Starting ') + hhmmdd;
+}
+
 export const PatientQueueCard = ({ className, visitQueue }: PatientQueueCardProps) => {
 
   useEffect(() => {
-
+    console.log('PatientQueueCard visitQueue=', visitQueue);
   }, []);
 
   return (
@@ -74,7 +84,7 @@ export const PatientQueueCard = ({ className, visitQueue }: PatientQueueCardProp
         <div>Patient</div>
         <div>Reason For Visit:</div>
       </div>
-      {patients.map((patient, i) => (
+      {visitQueue.map((visit, i) => (
         <div
           key={i}
           className={joinClasses(
@@ -83,13 +93,13 @@ export const PatientQueueCard = ({ className, visitQueue }: PatientQueueCardProp
           )}
         >
           <div>
-            <a className="text-link underline">{patient.name}</a>
+            <a className="text-link underline">{visit.ehrPatient.name}</a>
             <div className="font-bold text-light">
-              Waiting {patient.waitingTime}
+              { calculateWaitTime(visit.ehrAppointment.start_datetime_ltz) }
             </div>
           </div>
           <div className="line-clamp-2 overflow-ellipsis overflow-hidden text-dark">
-            {patient.reasonForVisit}
+            {visit.ehrAppointment.reason}
           </div>
         </div>
       ))}

@@ -84,7 +84,7 @@ async function fetchAllTelehealthVisits(provider: ProviderUser): Promise<Array<T
       ehrProvider: provider,
     } as TelehealthVisit;
     result.push(tv);
-    console.log(tv);
+    //console.log(tv);
   });
 
   return Promise.resolve(result);

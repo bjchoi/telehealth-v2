@@ -74,10 +74,6 @@ export const AudioVideoSettings = ({
   return (
     <div className={joinClasses(className)}>
       <div className="my-3">
-        <Label>Virtual Background</Label>
-        <VirtualBackgroundOptions isDark={isDark} />
-      </div>
-      <div className="my-3">
         <Label>Camera</Label>
         <Select
           isDark={isDark}
@@ -136,6 +132,10 @@ export const AudioVideoSettings = ({
           <MicTest className="w-full" isMicOn={isMicOn}/>
         </div>
       )}
+        <div className="my-3">
+            <Label>Virtual Background</Label>
+            <VirtualBackgroundOptions isDark={isDark} />
+        </div>
 
       <div className="my-5 font-bold text-center text-xs">
         Saved to your Twilio account
