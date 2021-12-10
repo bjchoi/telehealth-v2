@@ -29,7 +29,7 @@ export const VideoConsultation = ({}: VideoConsultationProps) => {
   const participants = useParticipants();
   const { setIsChatWindowOpen, isChatWindowOpen } = useChatContext();
   const { user } = useVisitContext();
-  const { room, isRecording } = useVideoContext();
+  const { room, isRecording, toggleScreenShare } = useVideoContext();
   const [callState, setCallState] = useState<ProviderRoomState>({
     patientName: null,
     providerName: null,
@@ -103,7 +103,7 @@ export const VideoConsultation = ({}: VideoConsultationProps) => {
           }
           toggleAudio={toggleAudioEnabled}
           toggleChat={() => setIsChatWindowOpen(!isChatWindowOpen)}
-          toggleScreenShare={() => {}}
+          toggleScreenShare={toggleScreenShare}
           toggleSettings={(event) =>
             setSettingsModalRef(settingsModalRef ? null : event?.target)
           }
