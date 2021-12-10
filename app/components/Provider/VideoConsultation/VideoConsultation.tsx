@@ -33,8 +33,10 @@ export const VideoConsultation = ({}: VideoConsultationProps) => {
   const [callState, setCallState] = useState<ProviderRoomState>({
     patientName: null,
     providerName: null,
+    visitorName: null,
     patientParticipant: null,
-    providerParticipant: null
+    providerParticipant: null,
+    visitorParticipant: null,
   });
 
   useEffect(() => {
@@ -44,22 +46,18 @@ export const VideoConsultation = ({}: VideoConsultationProps) => {
           ...prev,
           providerParticipant: room!.localParticipant,
           patientParticipant: participants.find(p => p.identity != room!.localParticipant.identity),
+          visitorParticipant: participants[1]
         }
       })
     }
   }, [participants, room]);
 
-  const styles = {
-    width: '100%',
-    height: 'inherit',
-  }
-  
   const toggleRecordingCb = useCallback(async () => 
     await roomService.toggleRecording(user, room.sid, isRecording ? 'stop' : 'start'),
     [user, room, isRecording]);
 
   const titleStyles = {left: '45%'};
-  console.log(callState);
+  const styles = {paddingBottom: '10px'}
   return (
     <div className="relative h-full">
       <h1 className="absolute text-white text-2xl font-bold top-4 z-10" style={titleStyles}>
@@ -72,7 +70,7 @@ export const VideoConsultation = ({}: VideoConsultationProps) => {
         )}
       >
 
-        <div className="absolute right-6 w-48">
+        <div className="absolute right-6 w-48 flex flex-col">
           {callState.providerParticipant &&
             <VideoParticipant
               name={providerName}
@@ -81,6 +79,15 @@ export const VideoConsultation = ({}: VideoConsultationProps) => {
               isProvider
               isSelf
               participant={callState.providerParticipant}
+              fullScreen
+            />}
+          {callState.visitorParticipant &&
+            <VideoParticipant
+              name='Invited Visitor'
+              hasAudio={isAudioEnabled}
+              hasVideo={isVideoEnabled}
+              isSelf
+              participant={callState.visitorParticipant}
               fullScreen
             />}
         </div>
