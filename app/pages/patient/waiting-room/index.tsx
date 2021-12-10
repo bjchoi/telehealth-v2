@@ -46,8 +46,8 @@ const WaitingRoomPage: TwilioPage = () => {
         <>
           <Heading>Your Appointment</Heading>
           <div className='mb-2 text-secondary flex flex-col items-center'>
-            <p>{visit.providerName}</p>
-            <DateTime date={visit.visitDateTime.toString()} />
+            <p>{visit.ehrProvider.name}</p>
+            <DateTime date={visit.ehrAppointment.start_datetime_ltz.toString()} />
           </div>
           <div className='my-4 px-10 md:px-2 lg:px-2 xl:px-2 flex flex-col items-center justify-center'>
             <TechnicalCheck videoImage='/patient.jpg' />

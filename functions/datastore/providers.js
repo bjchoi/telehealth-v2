@@ -30,6 +30,21 @@ function transform_fhir_to_provider(fhir_practitioner, fhir_practitioner_roles) 
   return provider;
 }
 
+
+// --------------------------------------------------------------------------------
+async function getAll(context) {
+  const TWILIO_SYNC_SID = await getParam(context, 'TWILIO_SYNC_SID');
+
+  let resources = await read_fhir(context, TWILIO_SYNC_SID, FHIR_PRACTITIONER);
+  const practitioner_roles = await read_fhir(context, TWILIO_SYNC_SID, FHIR_PRACTITIONER_ROLE);
+
+  const providers = resources.map(r => transform_fhir_to_provider(r, practitioner_roles));
+
+  return providers;
+}
+exports.getAll = getAll;
+
+
 // --------------------------------------------------------------------------------
 exports.handler = async function(context, event, callback) {
   const THIS = 'providers:';
@@ -75,36 +90,34 @@ exports.handler = async function(context, event, callback) {
         };
         return callback(null, usage);
       }
-        break;
 
       case 'SCHEMA': {
         const schema = await fetchPublicJsonAsset(context, SCHEMA);
         return callback(null, schema);
       }
-        break;
 
       case 'PROTOTYPE': {
         const prototype = await fetchPublicJsonAsset(context, PROTOTYPE);
         return callback(null, prototype);
       }
-        break;
 
       case 'GET': {
-        const TWILIO_SYNC_SID = await getParam(context, 'TWILIO_SYNC_SID');
+        const all = await getAll(context);
 
-        let resources = await read_fhir(context, TWILIO_SYNC_SID, FHIR_PRACTITIONER);
-        const practitioner_roles = await read_fhir(context, TWILIO_SYNC_SID, FHIR_PRACTITIONER_ROLE);
-
-        resources = event.provider_id
-          ? resources.filter(r => r.id === event.provider_id)
-          : resources;
-
-        const providers = resources.map(r => transform_fhir_to_provider(r, practitioner_roles));
+        const providers = event.provider_id ? all.filter(p => p.provider_id === event.provider_id) : all;
 
         console.log(THIS, `retrieved ${providers.length} providers`);
-        return callback(null, providers);
+        const response = new Twilio.Response();
+        response.setStatusCode(200);
+        response.appendHeader('Content-Type', 'application/json');
+        response.setBody(providers);
+        if (context.DOMAIN_NAME.startsWith('localhost:')) {
+          response.appendHeader('Access-Control-Allow-Origin', '*');
+          response.appendHeader('Access-Control-Allow-Methods', 'OPTIONS, POST, GET');
+          response.appendHeader('Access-Control-Allow-Headers', 'Content-Type');
+        }
+        return callback(null, response);
       }
-        break;
 
       default: // unknown action
         throw Error(`Unknown action: ${action}!!!`);

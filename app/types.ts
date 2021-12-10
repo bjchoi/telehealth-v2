@@ -4,10 +4,54 @@ import React from 'react';
 
 export type TwilioPage = NextPage & { Layout?: React.FC }
 
-export type TelehealthRole = 'guest' | 'patient' | 'visitor' | 'practitioner';
+export interface EHRPatient {
+  id: string,
+  name: string,
+  family_name?: string,
+  given_name: string,
+  phone: string,
+  email?: string,
+  gender: string,
+  language?: string,
+  medications?: string[],
+  conditions?: string[],
+}
+
+
+// see assets/datastore/appointment-prototype.json
+export interface EHRProvider {
+  id: string,
+  name: string,
+  phone: string,
+  on_call: Boolean,
+}
+
+
+export interface EHRAppointment {
+  id: string,
+  type: string,
+  start_datetime_ltz: Date,
+  end_datetime_ltz: Date,
+  reason: string,
+  references: string[],
+  patient_id: string,
+  provider_id: string,
+}
+
+export interface EHRContent {
+  id: string,
+  title: string,
+  description: string,
+  video_url: string,
+  provider_ids: string[],
+}
+
+
+export type TelehealthRole = 'guest' | 'patient' | 'visitor' | 'provider';
 
 export interface TelehealthUser {
-  name: string
+  id?: string,
+  name?: string
   isAuthenticated: Boolean
   role: TelehealthRole,
   token: string
@@ -17,19 +61,27 @@ export interface PatientUser extends TelehealthUser {
   visitId: string
 }
 
+export interface ProviderUser extends TelehealthUser {
+}
+
 export const GuestUser = {
+  id: 'guest',
   name: "Guest",
   isAuthenticated: false,
   role: "guest",
   token: null
 } as TelehealthUser;
 
+
 export interface TelehealthVisit {
   id: string,
-  visitDateTime: Date,
-  providerName: string,
+  visitDateTime?: Date,
+  providerName?: string,
   roomName: string,
-  patientName: string
+  patientName?: string
+  ehrAppointment?: EHRAppointment, // see assets/datastore/appointment-prototype.json
+  ehrPatient?: EHRPatient, // see assets/datastore/patient-prototype.json
+  ehrProvider?: EHRProvider, // see assets/datastore/provider-prototype.json
 }
 
 declare module 'twilio-video' {

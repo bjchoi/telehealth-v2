@@ -6,6 +6,7 @@
  */
 
 const assert = require("assert");
+const path = require("path");
 const { getParam, assertLocalhost } = require(Runtime.getFunctions()['helpers'].path);
 const { upsertSyncDocument } = require(Runtime.getFunctions()['datastore/datastore-helpers'].path);
 
@@ -17,7 +18,7 @@ async function seedResource(context, syncServiceSid, seedAssetPath) {
     const asset = Runtime.getAssets()[seedAssetPath];
     const bundle = JSON.parse(asset.open());
     assert(bundle.total === bundle.entry.length, 'bundle checksum error!!!');
-    const syncDocumentName = asset.path
+    const syncDocumentName = path.basename(asset.path)
       .replace(/.+FHIR\//, '')
       .replace('.private.json', '')
       .replace('.json', '');

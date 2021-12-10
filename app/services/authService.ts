@@ -1,4 +1,4 @@
-import { PatientUser, TelehealthUser } from "../types";
+import { PatientUser, ProviderUser } from "../types";
 import jwtDecode from "jwt-decode";
 import { Uris } from "./constants";
 
@@ -28,7 +28,7 @@ function authenticateVisitorOrPatient(passcode: string): Promise<PatientUser> {
     });
 }
 
-function authenticatePractitioner(passcode: string): Promise<TelehealthUser> {
+function authenticatePractitioner(passcode: string): Promise<ProviderUser> {
     return fetch(Uris.get(Uris.visits.token), {
         method: 'POST',
         body: JSON.stringify({ action: "TOKEN", passcode }),
@@ -44,7 +44,7 @@ function authenticatePractitioner(passcode: string): Promise<TelehealthUser> {
             isAuthenticated: true,
             token: tokenResp.token,
             name: tokenInfo.id
-        } as TelehealthUser;
+        } as ProviderUser;
     });
 }
 

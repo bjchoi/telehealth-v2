@@ -111,7 +111,7 @@ async function sendOnDemandPatientLink(e) {
     }
 
     console.log(THIS, `send link to patient via SMS`);
-    const url = `${location.origin}/patient/ondemand/index.html`
+    const url = `${location.origin}/patient/on-demand/info/index.html`
     $(UI.ondemand_patient_link).text(url);
     $(UI.ondemand_patient_link).attr('href', url);
 

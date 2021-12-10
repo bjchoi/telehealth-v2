@@ -17,7 +17,7 @@ const { getParam } = require(Runtime.getFunctions()['helpers'].path);
 const { read_fhir, save_fhir, fetchPublicJsonAsset } = require(Runtime.getFunctions()['datastore/datastore-helpers'].path);
 
 // --------------------------------------------------------------------------------
-function transform_fhir_to_content(fhir_document_reference, provider_id) {
+function transform_fhir_to_content(fhir_document_reference) {
   const r = fhir_document_reference;
   const content = {
     content_id: r.id,
@@ -55,6 +55,19 @@ function transform_content_to_fhir(content) {
   return fhir_document_reference;
 }
 
+
+// --------------------------------------------------------------------------------
+async function getAll(context) {
+  const TWILIO_SYNC_SID = await getParam(context, 'TWILIO_SYNC_SID');
+  let resources = await read_fhir(context, TWILIO_SYNC_SID, FHIR_DOCUMENT_REFERENCE);
+
+  const contents = resources.map(r => transform_fhir_to_content(r));
+
+  return contents;
+}
+exports.getAll = getAll;
+
+
 // --------------------------------------------------------------------------------
 exports.handler = async function(context, event, callback) {
   const THIS = 'contents:';
@@ -72,7 +85,13 @@ exports.handler = async function(context, event, callback) {
   }
   try {
     const action = event.action ? event.action : 'USAGE'; // default action
-
+    const response = new Twilio.Response();
+    response.appendHeader('Content-Type', 'application/json');
+    if (context.DOMAIN_NAME.startsWith('localhost:')) {
+      response.appendHeader('Access-Control-Allow-Origin', '*');
+      response.appendHeader('Access-Control-Allow-Methods', 'OPTIONS, POST, GET');
+      response.appendHeader('Access-Control-Allow-Headers', 'Content-Type');
+    }
     switch (action) {
 
       case 'USAGE': {
@@ -122,39 +141,30 @@ exports.handler = async function(context, event, callback) {
           },
         };
         return callback(null, usage);
-        break;
       }
 
       case 'SCHEMA': {
         const schema = await fetchPublicJsonAsset(context, SCHEMA);
         return callback(null, schema);
       }
-        break;
 
       case 'PROTOTYPE': {
         const prototype = await fetchPublicJsonAsset(context, PROTOTYPE);
         return callback(null, prototype);
       }
-      break;
 
       case 'GET': {
-        const TWILIO_SYNC_SID = await getParam(context, 'TWILIO_SYNC_SID');
-        let resources = await read_fhir(context, TWILIO_SYNC_SID, FHIR_DOCUMENT_REFERENCE);
+        const all = await getAll(context);
 
-        resources = event.content_id
-          ? resources.filter(r => r.id === event.content_id)
-          : resources;
+        let contents = all;
+        contents = event.content_id ? contents.filter(c => c.content_id === event.content_id) : contents;
+        contents = event.provider_id ? contents.filter(c => c.providers.find(p => p === event.provider_id)) : contents;
 
-        resources = event.provider_id
-          ? resources.filter(r => r.context.related.find(e => e.reference === ('Practitioner/' + event.provider_id)))
-          : resources;
-
-        const contents = resources.map(r => transform_fhir_to_content(r, event.provider_id));
-
-        console.log(THIS, `retrieved ${contents.length} contents for ${event.provider_id ? event.provider_id : " all providers"}`);
-        return callback(null, contents);
+        console.log(THIS, `retrieved ${contents.length} contents`);
+        response.setStatusCode(200);
+        response.setBody(contents);
+        return callback(null, response);
       }
-      break;
 
       case 'ADD': {
         assert(event.content, 'Mssing event.content!!!');
@@ -174,7 +184,6 @@ exports.handler = async function(context, event, callback) {
         console.log(THIS, `added content ${content.content_id}`);
         return callback(null, { content_id : content.content_id });
       }
-      break;
 
       case 'REMOVE': {
         assert(event.content_id, 'Missing event.content_id!!!');
@@ -187,7 +196,6 @@ exports.handler = async function(context, event, callback) {
         console.log(THIS, `removed content ${event.content_id}`);
         return callback(null, { content_id : event.content_id });
       }
-      break;
 
       case 'ASSIGN': {
         assert(event.content_id, 'Mssing event.content_id!!!');
@@ -219,13 +227,13 @@ exports.handler = async function(context, event, callback) {
         await save_fhir(context, TWILIO_SYNC_SID, FHIR_DOCUMENT_REFERENCE, resources);
 
         console.log(THIS, `assigned content ${event.content_id} provider ${event.provider_id}`);
-
-        return callback(null, {
+        response.setStatusCode(200);
+        response.setBody({
           content_id : event.content_id,
           provider_id: event.provider_id,
         });
+        return callback(null, response);
       }
-      break;
 
       default: // unknown action
         throw Error(`Unknown action: ${action}!!!`);
