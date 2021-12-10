@@ -62,8 +62,6 @@ export interface PatientUser extends TelehealthUser {
 }
 
 export interface ProviderUser extends TelehealthUser {
-  ehrContentAssigned?: EHRContent,
-  ehrContentsAvailable?: EHRContent[],
 }
 
 export const GuestUser = {

@@ -1,13 +1,18 @@
 import { Card } from '../../Card';
 import { CardHeading } from '../CardHeading';
 import { Select } from '../../Select';
+import {EHRContent} from "../../../types";
 
 export interface ContentManagementCardProps {
   className?: string;
+  contentAssigned: EHRContent;
+  contentAvailable: EHRContent[];
 }
 
 export const ContentManagementCard = ({
-  className,
+    className,
+    contentAssigned,
+    contentAvailable,
 }: ContentManagementCardProps) => {
   return (
     <Card className={className}>

@@ -2,9 +2,11 @@ import { joinClasses } from '../../../utils';
 import { useEffect } from 'react';
 import { Card } from '../../Card';
 import { CardHeading } from '../CardHeading';
+import {TelehealthVisit} from "../../../types";
 
 export interface PatientQueueCardProps {
   className?: string;
+  visitQueue: TelehealthVisit[];
 }
 
 const patients = [
@@ -59,7 +61,7 @@ const patients = [
   },
 ];
 
-export const PatientQueueCard = ({ className }: PatientQueueCardProps) => {
+export const PatientQueueCard = ({ className, visitQueue }: PatientQueueCardProps) => {
 
   useEffect(() => {
 

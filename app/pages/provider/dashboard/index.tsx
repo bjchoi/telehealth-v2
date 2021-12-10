@@ -8,17 +8,21 @@ import {
   PatientQueueCard,
 } from '../../../components/Provider';
 import { NextPatientCard } from '../../../components/Provider/NextPatientCard';
-import { TwilioPage } from '../../../types';
+import {TelehealthVisit, TwilioPage} from '../../../types';
 import ProviderVideoContextLayout from '../../../components/Provider/ProviderLayout';
-import datastoreService from '../../../services/datastoreService';
 import clientStorage from '../../../services/clientStorage';
-import {STORAGE_VISIT_KEY} from "../../../constants";
+import {STORAGE_USER_KEY, STORAGE_VISIT_KEY} from "../../../constants";
+import datastoreService from '../../../services/datastoreService';
+import { ProviderUser, EHRContent } from '../../../types';
 
 const DashboardPage: TwilioPage = () => {
   
   const { getAudioAndVideoTracks } = useVideoContext();
-  const [mediaError, setMediaError] = useState<Error>();
-  let patientQueue = null;
+  const [ mediaError, setMediaError] = useState<Error>();
+  const [ visitNext, setVisitNext ] = useState<TelehealthVisit>();
+  const [ visitQueue, setVisitQueue ] = useState<TelehealthVisit[]>([]);
+  const [ contentAssigned, setContentAssigned ] = useState<EHRContent>();
+  const [ contentAvailable, setContentAvailable ] = useState<EHRContent[]>([]);
 
   useEffect(() => {
     if (!mediaError) {
@@ -31,13 +35,18 @@ const DashboardPage: TwilioPage = () => {
 
   useEffect( () => {
     async function _fetchFromServer() {
-      const u = null; // TODO get ProviderUser = null;
+      const u =  await clientStorage.getFromStorage<ProviderUser>(STORAGE_USER_KEY);
 
-      patientQueue = await datastoreService.fetchAllTelehealthVisits(u);
+      const tv: TelehealthVisit[] = await datastoreService.fetchAllTelehealthVisits(u);
+      setVisitQueue(tv);
+      setVisitNext(tv[0]);
+      console.log('NEXT VISIT IS', visitNext);
 
-      if (patientQueue.length > 0) {
-        clientStorage.saveToStorage(STORAGE_VISIT_KEY, patientQueue[0]);
-      }
+      const cArray: EHRContent[] = await datastoreService.fetchAllContent(u);
+      setContentAvailable(cArray);
+      setContentAssigned(cArray.find((c) => {
+        c.provider_ids.some(e => e === u.id);
+      }));
     }
     const tvList = _fetchFromServer();
 
@@ -47,12 +56,12 @@ const DashboardPage: TwilioPage = () => {
     <Layout>
       <div className="grid gap-4 lg:grid-cols-3 md:grid-cols-2 sm:grid-cols-1" >
         <div>
-          <NextPatientCard className="my-2" />
+          <NextPatientCard className="my-2" visitNext={visitNext} />
           <InviteCard />
         </div>
         <div>
-          <PatientQueueCard className="my-2" />
-          <ContentManagementCard className="my-2" />
+          <PatientQueueCard className="my-2" visitQueue={visitQueue} />
+          <ContentManagementCard className="my-2" contentAssigned={contentAssigned} contentAvailable={contentAvailable}/>
         </div>
         <div className="order-first lg:order-last">
           <AudioVideoCard />

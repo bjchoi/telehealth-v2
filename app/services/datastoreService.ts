@@ -57,7 +57,7 @@ function instantiateContent(data: any) : EHRContent {
  * result is ordered in ascending order of appointment start time
  * --------------------------------------------------------------------------------------------------------------
  */
-async function fetchAllTelehealthVisits(provider: ProviderUser): Promise<Array<TelehealthVisit> | { error : string }> {
+async function fetchAllTelehealthVisits(provider: ProviderUser): Promise<Array<TelehealthVisit>> {
   if(provider.role !== 'provider') {
     Promise.reject({ error: "Only provider can get patient queue" });
   }
@@ -129,10 +129,34 @@ async function fetchTelehealthVisitForPatient(user: TelehealthUser, appointment_
  * fetch the waiting room content for the specified provider from server datastore
  * --------------------------------------------------------------------------------------------------------------
  */
-async function fetchContentForProvider(provider: ProviderUser): Promise<ProviderUser | { error : string }> {
+async function fetchAllContent(provider: ProviderUser): Promise<Array<EHRContent>> {
   const tuple = await fetch(Uris.backendRoot + '/datastore/contents', {
     method: 'POST',
-    body: JSON.stringify({ action: 'GETTUPLE', provider_id: provider.id }),
+    body: JSON.stringify({ action: 'GET' }),
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${provider.token}`
+    }
+  }).then(r => r.json());
+
+  const result : EHRContent[] = [];
+  tuple.forEach(t => {
+    const _content = instantiateContent(tuple[0]);
+    result.push(_content);
+  });
+
+  return Promise.resolve(result);
+}
+
+/* --------------------------------------------------------------------------------------------------------------
+ * fetch the waiting room content for the specified provider from server datastore
+ * --------------------------------------------------------------------------------------------------------------
+ */
+async function fetchContentForProvider(provider: ProviderUser): Promise<EHRContent> {
+  const tuple = await fetch(Uris.backendRoot + '/datastore/contents', {
+    method: 'POST',
+    body: JSON.stringify({ action: 'GET', provider_id: provider.id }),
     headers: {
       'Accept': 'application/json',
       'Content-Type': 'application/json',
@@ -144,23 +168,14 @@ async function fetchContentForProvider(provider: ProviderUser): Promise<Provider
     Promise.reject({ error: 'not found any content' });
   }
 
-  provider.ehrContentAssigned = null;
-  provider.ehrContentsAvailable = [];
-  tuple.forEach(t => {
-    const _content = instantiateContent(tuple[0]);
-    if (_content.provider_ids.some(e => e === provider.id))
-      provider.ehrContentAssigned = _content;
-    else
-      provider.ehrContentsAvailable.push(_content);
-  });
+  const _content = instantiateContent(tuple[0]);
 
-  console.log(provider);
-  return Promise.resolve(provider);
+  return Promise.resolve(_content);
 }
-
 
 export default {
   fetchAllTelehealthVisits,
   fetchTelehealthVisitForPatient,
+  fetchAllContent,
   fetchContentForProvider,
 };
