@@ -11,7 +11,14 @@ import useVideoContext from '../../../components/Base/VideoProvider/useVideoCont
 import { roomService } from '../../../services/roomService';
 import { useRouter } from 'next/router';
 import PatientVideoContextLayout from '../../../components/Patient/PatientLayout';
+import ReactPlayer from 'react-player';
 
+/**
+ * Waiting Room for patient
+ * TODO:
+ * - Get youtube video from content/visit 
+ * - validate Youtube videos to ensure they exist before displaying.
+ */
 const WaitingRoomPage: TwilioPage = () => {
   const [showLeaveConfirmation, setShowLeaveConfirmation] = useState(false);
   const { visit, user } = useVisitContext();
@@ -54,9 +61,15 @@ const WaitingRoomPage: TwilioPage = () => {
             <div className='text-tertiary'>
               Your visit will start when the provider joins
             </div>
-            <div className='flex items-center justify-center bg-secondary text-white text-2xl h-[150px] w-full m-2'>
+            {/* <div className='flex items-center justify-center bg-secondary text-white text-2xl h-[150px] w-full m-2'>
               Content Area
-            </div>
+            </div> */}
+            <ReactPlayer 
+              url="https://www.youtube.com/watch?v=E1h2Aqr8cu8"
+              width={320}
+              height={180}
+              controls={true}
+              />
             <Button
               className='mt-2 px-8'
               variant={ButtonVariant.secondary}
