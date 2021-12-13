@@ -14,7 +14,6 @@ const FHIR_APPOINTMENT = 'Appointments';
 const assert = require("assert");
 const { getParam } = require(Runtime.getFunctions()['helpers'].path);
 const { read_fhir, save_fhir, fetchPublicJsonAsset } = require(Runtime.getFunctions()['datastore/datastore-helpers'].path);
-const patientAccessor = require("./patients");
 
 // --------------------------------------------------------------------------------
 function transform_fhir_to_appointment(fhir_appointment) {
@@ -196,7 +195,10 @@ exports.handler = async function(context, event, callback) {
         appointments = event.patient_id ? appointments.filter(a => a.patient_id === event.patient_id) : appointments;
         appointments = event.provider_id ? appointments.filter(a => a.provider_id === event.provider_id) : appointments;
 
-        console.log(THIS, `retrieved ${appointments.length} appointments`);
+        console.log(THIS, `GET retrieved ${appointments.length} appointments
+        for ${event.appointment_id ? 'appointment_id=' + event.appointment_id : ' all appointments'},
+        for ${event.patient_id ? 'patient_id=' + event.patient_id : ' all patients'},
+        for ${event.provider_id ? 'provider_id=' + event.provider_id : ' all providers'}`);
         const response = new Twilio.Response();
         response.setStatusCode(200);
         response.appendHeader('Content-Type', 'application/json');
@@ -210,8 +212,8 @@ exports.handler = async function(context, event, callback) {
       }
 
       case 'GETTUPLE': {
-        const patientAccessor = require('./patients');
-        const providerAccessor = require('./providers');
+        const patientAccessor = require(Runtime.getFunctions()['datastore/patients'].path);
+        const providerAccessor = require(Runtime.getFunctions()['datastore/providers'].path);
 
         const all = await getAll(context);
 
@@ -219,6 +221,11 @@ exports.handler = async function(context, event, callback) {
         appointments = event.appointment_id ? appointments.filter(a => a.appointment_id === event.appointment_id) : appointments;
         appointments = event.patient_id ? appointments.filter(a => a.patient_id === event.patient_id) : appointments;
         appointments = event.provider_id ? appointments.filter(a => a.provider_id === event.provider_id) : appointments;
+
+        console.log(THIS, `GETTUPLE retrieved ${appointments.length} appointments
+        for ${event.appointment_id ? 'appointment_id=' + event.appointment_id : ' all appointments'},
+        for ${event.patient_id ? 'patient_id=' + event.patient_id : ' all patients'},
+        for ${event.provider_id ? 'provider_id=' + event.provider_id : ' all providers'}`);
 
         const all_patients = await patientAccessor.getAll(context);
         const all_providers = await providerAccessor.getAll(context);
@@ -232,7 +239,6 @@ exports.handler = async function(context, event, callback) {
           })
         });
 
-        console.log(THIS, `retrieved ${tuple.length} appointments`);
         const response = new Twilio.Response();
         response.setStatusCode(200);
         response.appendHeader('Content-Type', 'application/json');

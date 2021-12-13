@@ -54,7 +54,7 @@ exports.handler = async function(context, event, callback) {
     //console.log(THIS, params);
 
     console.log(THIS, 'Seed application data');
-    const summary = seedData(context);
+    const summary = await seedData(context);
     console.log(THIS, summary);
 
     console.log(THIS, `Completed deployment of ${application_name}`);

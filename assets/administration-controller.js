@@ -18,12 +18,91 @@ const UI = {
   provider_selector: '#provider-selector',
   provider_contents: '#provider-contents',
   provider_patients: '#provider-patients',
+  provider_link_generate_button: '#provider-link-generate-button',
   provider_link: '#provider-link',
   provider_phone: '#provider-phone',
+  provider_link_send_button: '#provider-link-send-button',
+  scheduled_patient_link_generate_button: '#scheduled-patient-link-generate-button',
   scheduled_patient_link: '#scheduled-patient-link',
   scheduled_patient_phone: '#scheduled-patient-phone',
+  scheduled_patient_link_send_button: '#scheduled-patient-link-send-button',
   ondemand_patient_link: '#ondemand-patient-link',
   ondemand_patient_phone: '#ondemand-patient-phone',
+}
+
+
+// -----------------------------------------------------------------------------
+/*
+ * this function will be called from authentication-controller.js upon successful authentication
+ */
+async function initialize() {
+  console.log('initialize function in administration-controller.js');
+
+  populatePatients();
+  populateContents();
+  populateProviders();
+
+  // provider selector needs to be populated first
+  await populateProviderSelector();
+
+  populateProviderContents();
+  populateProviderPatients();
+
+  const url = `${location.origin}/patient/on-demand/info/index.html`
+  $(UI.ondemand_patient_link).text(url);
+  $(UI.ondemand_patient_link).attr('href', url);
+}
+
+
+/* --------------------------------------------------------------------------------------------------------------
+ * create scheduled patient link
+ *
+ * input:
+ * . UI.provider_selector
+ *
+ * output:
+ * . UI.scheduled_patient_link
+ * . UI.scheduled_patient_given_name
+ * --------------------------------------------------------------------------------------------------------------
+ */
+async function generateScheduledPatientLink(e) {
+  const THIS = generateScheduledPatientLink.name;
+  try {
+    e.preventDefault();
+    const provider_id = $(UI.provider_selector).val();
+
+    console.log(THIS, `fetch appointment details from server`);
+    appointment_details = await fetchNextScheduledAppointment(provider_id);
+    if (! appointment_details) {
+      alert('no appointment found!!!');
+      return;
+    }
+    console.log(THIS, `... found appointment: ${appointment_details.appointment.appointment_id}`);
+
+    console.log(THIS, `get patient token from server`);
+    const response = await fetch('/visit/token', {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        action: 'PATIENT',
+        id: appointment_details.patient.patient_id,
+        visitId: appointment_details.appointment.appointment_id
+      }),
+    }).then((response) => response.json());
+
+    console.log(THIS, `successfully retrieved patient token`);
+    const url = `${location.origin}/patient/index.html?token=${response.passcode}`
+
+    $(UI.scheduled_patient_link).text(url);
+    $(UI.scheduled_patient_link).attr('href', url);
+    $(UI.scheduled_patient_link_send_button).removeAttr('disabled');
+
+  } catch (err) {
+    console.log(THIS, err);
+  }
 }
 
 
@@ -41,36 +120,21 @@ async function sendScheduledPatientLink(e) {
   const THIS = sendScheduledPatientLink.name;
   try {
     e.preventDefault();
-    const patient_phone = $(UI.scheduled_patient_phone).val();
-    const digits = patient_phone.match(/\d+/g) ? patient_phone.match(/\d+/g).join('').length : 0;
-    if (!patient_phone || digits < 10) {
+
+    const phone = $(UI.scheduled_patient_phone).val();
+    const url = $(UI.scheduled_patient_link).attr('href');
+
+    if (! phone) {
+      alert('Please enter phone number to received url link!');
+      return;
+    }
+    const digitCount = phone.match(/\d+/g) ? phone.match(/\d+/g).join('').length : 0;
+    if (digitCount < 10) {
       alert('Please enter a valid US phone number including area code!');
       return;
     }
 
-    console.log(THIS, `get appointment details from server`);
-    appointment_details = await fetchNextProviderAppointment();
-
-    console.log(THIS, `get patient token from server`);
-    const response0 = await fetch('/visit/token', {
-      method: 'POST',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        action: 'PATIENT',
-        id: appointment_details.patient.patient_id,
-        visitId: 'v-doe-jonson-1121', // appointment_id, TODO: remove hard-coding once integrated
-      }),
-    });
-    const payload = await response0.json();
-
     console.log(THIS, `send link to patient via SMS`);
-    const url = `${location.origin}/patient/index.html?token=${payload.passcode}`
-    $(UI.scheduled_patient_link).text(url);
-    $(UI.scheduled_patient_link).attr('href', url);
-
     const response1 = await fetch('/send-sms', {
       method: 'POST',
       headers: {
@@ -78,8 +142,8 @@ async function sendScheduledPatientLink(e) {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        to_phone: patient_phone,
-        body: `Dear ${appointment_details.patient.patient_given_name}, please join your telehealth appointment via ${url}`,
+        to_phone: phone,
+        body: `Please join your telehealth appointment via ${url}`,
       })
     });
 
@@ -103,29 +167,84 @@ async function sendOnDemandPatientLink(e) {
   const THIS = sendOnDemandPatientLink.name;
   try {
     e.preventDefault();
-    const patient_phone = $(UI.ondemand_patient_phone).val();
-    const digits = patient_phone.match(/\d+/g) ? patient_phone.match(/\d+/g).join('').length : 0;
-    if (!patient_phone || digits < 10) {
+    const phone = $(UI.ondemand_patient_phone).val();
+    const url = $(UI.ondemand_patient_link).attr('href');
+
+    if (! phone) {
+      alert('Please enter phone number to received url link!');
+      return;
+    }
+    const digitCount = phone.match(/\d+/g) ? phone.match(/\d+/g).join('').length : 0;
+    if (digitCount < 10) {
       alert('Please enter a valid US phone number including area code!');
       return;
     }
 
     console.log(THIS, `send link to patient via SMS`);
-    const url = `${location.origin}/patient/on-demand/info/index.html`
-    $(UI.ondemand_patient_link).text(url);
-    $(UI.ondemand_patient_link).attr('href', url);
-
-    const response1 = await fetch('/send-sms', {
+    const response = await fetch('/send-sms', {
       method: 'POST',
       headers: {
         Accept: 'application/json',
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        to_phone: patient_phone,
+        to_phone: phone,
         body: `Please start your on-demand telehealth appointment via ${url}`,
       })
     });
+
+  } catch (err) {
+    console.log(THIS, err);
+  }
+}
+
+
+/* --------------------------------------------------------------------------------------------------------------
+ * generate provider link
+ *
+ * input:
+ * . UI.provider_selector
+ *
+ * output:
+ * . UI.provider_link
+ * --------------------------------------------------------------------------------------------------------------
+ */
+async function generateProviderLink(e) {
+  const THIS = generateProviderLink.name;
+  try {
+    e.preventDefault();
+    const provider_id = $(UI.provider_selector).val();
+
+    console.log(THIS, `fetch appointment details from server`);
+    appointment_details = await fetchNextScheduledAppointment(provider_id);
+    if (! appointment_details) {
+      alert('no appointment found!!!');
+      return;
+    }
+    console.log(THIS, `... found appointment: ${appointment_details.appointment.appointment_id}`);
+
+    console.log(THIS, `fetch provider details from server`);
+    provider = await fetchProvider(provider_id);
+
+    console.log(THIS, `get provider token from server`);
+    const response = await fetch('/visit/token', {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        action: 'PROVIDER',
+        id: provider.provider_id,
+      }),
+    }).then(response => response.json());
+
+    console.log(THIS, `successfully retrieved patient token`);
+    const url = `${location.origin}/provider/index.html?token=${response.passcode}`
+
+    $(UI.provider_link).text(url);
+    $(UI.provider_link).attr('href', url);
+    $(UI.provider_link_send_button).removeAttr('disabled');
 
   } catch (err) {
     console.log(THIS, err);
@@ -147,35 +266,36 @@ async function sendProviderLink(e) {
   const THIS = sendProviderLink.name;
   try {
     e.preventDefault();
-    const provider_phone = $(UI.provider_phone).val();
-    const digits = provider_phone.match(/\d+/g) ? provider_phone.match(/\d+/g).join('').length : 0;
-    if (!provider_phone || digits < 10) {
+    const phone = $(UI.provider_phone).val();
+    const url = $(UI.provider_link).attr('href');
+
+    if (! phone) {
+      alert('Please enter phone number to received url link!');
+      return;
+    }
+    const digitCount = phone.match(/\d+/g) ? phone.match(/\d+/g).join('').length : 0;
+    if (digitCount < 10) {
       alert('Please enter a valid US phone number including area code!');
       return;
     }
 
-    console.log(THIS, `get provider details from server`);
-    provider = await fetchSelectedProvider();
-
-    console.log(THIS, `get provider token from server`);
-    const response0 = await fetch('/visit/token', {
+    console.log(THIS, `send link to provder via SMS`);
+    await fetch('/send-sms', {
       method: 'POST',
       headers: {
         Accept: 'application/json',
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        action: 'PROVIDER',
-        id: provider.provider_id,
-      }),
+        to_phone: phone,
+        body: `Please open your telehealth dashboard via ${url}`,
+      })
     });
-    const payload = await response0.json();
 
-    console.log(THIS, `send link to provder via SMS`);
-    const url = `${location.origin}/provider/index.html?token=${payload.passcode}`
-    $(UI.provider_link).text(url);
-    $(UI.provider_link).attr('href', url);
 
+
+
+    console.log(THIS, `send link to patient via SMS`);
     const response1 = await fetch('/send-sms', {
       method: 'POST',
       headers: {
@@ -183,15 +303,18 @@ async function sendProviderLink(e) {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        to_phone: provider_phone,
-        body: `Dear ${provider.provider_name}, please join your telehealth dashboard via ${url}`,
+        to_phone: patient_phone,
+        body: `Please join your telehealth appointment via ${url}`,
       })
     });
+
+
 
   } catch (err) {
     console.log(THIS, err);
   }
 }
+
 
 /* --------------------------------------------------------------------------------------------------------------
  * patients
@@ -273,6 +396,7 @@ async function populateContents() {
   }
 }
 
+
 // --------------------------------------------------------------------------------------------------------------
 async function addContent() {
   const THIS = addContent.name;
@@ -293,6 +417,7 @@ async function addContent() {
     console.log(THIS, err);
   }
 }
+
 
 // --------------------------------------------------------------------------------------------------------------
 async function saveContent(content_id) {
@@ -333,6 +458,7 @@ async function saveContent(content_id) {
     });
 }
 
+
 // --------------------------------------------------------------------------------------------------------------
 async function removeContent(content_id) {
   const THIS = removeContent.name;
@@ -361,6 +487,7 @@ async function removeContent(content_id) {
       throw Error(err);
     });
 }
+
 
 /* --------------------------------------------------------------------------------------------------------------
  * --------------------------------------------------------------------------------------------------------------
@@ -398,6 +525,7 @@ async function populateProviders() {
   }
 }
 
+
 /* --------------------------------------------------------------------------------------------------------------
  * --------------------------------------------------------------------------------------------------------------
  */
@@ -428,6 +556,7 @@ async function populateProviderSelector() {
     console.log(THIS, err);
   }
 }
+
 
 // --------------------------------------------------------------------------------------------------------------
 async function selectProvider() {
@@ -522,10 +651,10 @@ async function assignContent2Provider(css_id, content_id) {
 
 
 /* --------------------------------------------------------------------------------------------------------------\
- * fetch next appointment details for selected provider
+ * fetch next scheduled (appointment_type !== WALKIN) appointment details for selected provider
  *
  * input:
- * . UI.provider_selector
+ * . provider_id
  *
  * output:
  * . appointment object
@@ -533,8 +662,8 @@ async function assignContent2Provider(css_id, content_id) {
  * . provider object
  * --------------------------------------------------------------------------------------------------------------
  */
-async function fetchNextProviderAppointment() {
-  const THIS =  fetchNextProviderAppointment.name;
+async function fetchNextScheduledAppointment(provider_id) {
+  const THIS =  fetchNextScheduledAppointment.name;
 
   try {
 
@@ -544,80 +673,37 @@ async function fetchNextProviderAppointment() {
       provider: null,
     };
 
-    const provider_id = $(UI.provider_selector).val();
-    {
-      const parameters = new URLSearchParams({
-        action: 'GET',
-        provider_id: provider_id,
+    const parameters = new URLSearchParams({
+      action: 'GETTUPLE',
+      provider_id: provider_id,
+    });
+    const response = await fetch(
+      '/datastore/appointments?' + parameters,
+      {
+        method: 'GET',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json'
+        },
       });
-      const response = await fetch(
-        '/datastore/appointments?' + parameters,
-        {
-          method: 'GET',
-          headers: {
-            Accept: 'application/json',
-            'Content-Type': 'application/json'
-          },
-        });
-      const appointments = await response.json();
+    const tuple = await response.json();
 
-      if (appointments.length > 0) {
-        output.appointment = appointments[0];
-      } else {
-        console.log(THIS, `No appointment found for provider: ${provider_id}. returning...`);
-        return output;
-      }
+    if (tuple.length === 0) {
+      console.log(THIS, `No appointments found for provider: ${provider_id}. returning...`);
+      return output;
     }
 
-    {
-      const parameters = new URLSearchParams({
-        action: 'GET',
-        patient_id: output.appointment.patient_id,
-      });
-      const response = await fetch(
-        '/datastore/patients?' + parameters,
-        {
-          method: 'GET',
-          headers: {
-            Accept: 'application/json',
-            'Content-Type': 'application/json'
-          },
-        });
-      const patients = await response.json();
-
-      if (patients.length > 0) {
-        output.patient = patients[0];
-      } else {
-        console.log(THIS, `No appointment patient: ${output.appointment.patient_id}. returning...`);
-        return output;
-      }
+    next_appt = tuple.find(e => e.appointment.appointment_type !== 'WALKIN');
+    if (!next_appt) {
+      console.log(THIS, `No next scheduled appointment found for provider: ${provider_id}. returning...`);
+      return output;
     }
 
-    {
-      const parameters = new URLSearchParams({
-        action: 'GET',
-        provider_id: output.appointment.provider_id,
-      });
-      const response = await fetch(
-        '/datastore/providers?' + parameters,
-        {
-          method: 'GET',
-          headers: {
-            Accept: 'application/json',
-            'Content-Type': 'application/json'
-          },
-        });
-      const providers = await response.json();
+    output.appointment = next_appt.appointment;
+    output.patient = next_appt.patient;
+    output.provider = next_appt.provider;
 
-      if (providers.length > 0) {
-        output.provider = providers[0];
-      } else {
-        console.log(THIS, `No appointment provider: ${output.appointment.provider_id}. returning...`);
-        return output;
-      }
-    }
-
-    console.log(THIS, `'found valid appointment: ${output.appointment.appointment_id}`);
+    console.log(THIS, `'found next scheduled appointment: ${output.appointment.appointment_id}`);
     return output;
 
   } catch (err) {
@@ -625,49 +711,43 @@ async function fetchNextProviderAppointment() {
   }
 }
 
+
 /* --------------------------------------------------------------------------------------------------------------\
  * fetch provider details for selected provider
  *
  * input:
- * . UI.provider_selector
+ * . provider_id
  *
  * output:
  * . provider object
  * --------------------------------------------------------------------------------------------------------------
  */
-async function fetchSelectedProvider() {
-  const THIS =  fetchSelectedProvider.name;
+async function fetchProvider(provider_id) {
+  const THIS =  fetchProvider.name;
 
   try {
 
-    const provider_id = $(UI.provider_selector).val();
-    let output = null;
-    {
-      const parameters = new URLSearchParams({
-        action: 'GET',
-        provider_id: provider_id,
-      });
-      const response = await fetch(
-        '/datastore/providers?' + parameters,
-        {
-          method: 'GET',
-          headers: {
-            Accept: 'application/json',
-            'Content-Type': 'application/json'
-          },
-        });
-      const providers = await response.json();
+    const parameters = new URLSearchParams({
+      action: 'GET',
+      provider_id: provider_id,
+    });
+    const providers = await fetch(
+      '/datastore/providers?' + parameters,
+      {
+        method: 'GET',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json'
+        },
+      }).then(r => r.json());
 
-      if (providers.length > 0) {
-        output = providers[0];
-      } else {
-        console.log(THIS, `No provider: ${provider_id}. returning...`);
-        return output;
-      }
+    if (providers.length === 0) {
+      alert(`No provider: ${provider_id}. returning...`);
+      return null;
     }
-
     console.log(THIS, `'found provider: ${provider_id}`);
-    return output;
+
+    return providers[0];
 
   } catch (err) {
     console.log(THIS, err);
@@ -738,19 +818,3 @@ async function populateProviderPatients() {
   }
 }
 
-/*
- * this function will be called from authentication-controller.js upon successful authentication
- */
-async function initialize() {
-  console.log('initialize function in administration-controller.js');
-
-  populatePatients();
-  populateContents();
-  populateProviders();
-
-  // provider selector needs to be populated first
-  await populateProviderSelector();
-
-  populateProviderContents();
-  populateProviderPatients();
-}
