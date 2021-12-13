@@ -60,13 +60,13 @@ After installation make sure to start Docker desktop.
     ```shell
     docker build --tag hls-installer https://github.com/bochoi-twlo/telehealth-v2.git#main
     ```
-2. Run the built docker image by executing below supplying your Twilio credentials from above
-   (replace `ACxxxxxxxx` and `yyyyyyyy` for `ACCOUNT_SID` and `AUTH_TOKEN`, respectively).
+   This will build the docker image inclding building of the React components. 
+2. Run the built docker image by executing below substituing your Twilio credentials from above
+   (replace in the below shell command, `$(ACCOUNT_SID)` and `$(AUTH_TOKEN)` with your `ACCOUNT_SID` and `AUTH_TOKEN`, respectively).
     ```shell
     docker run --name hls-installer --rm -p 3000:3000 \
-   -e ACCOUNT_SID=ACxxxxxxxx -e AUTH_TOKEN=yyyyyyyy -it hls-installer
+   -e ACCOUNT_SID=$(ACCOUNT_SID) -e AUTH_TOKEN=$(AUTH_TOKEN) -it hls-installer
     ```
-
 3. Open http://localhost:3000/installer.html using a broswer.
 
 
