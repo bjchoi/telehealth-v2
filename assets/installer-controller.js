@@ -1,10 +1,9 @@
-let accountName = null;
-let configParams = null;
 
 // array of user input variable values are stored here
 // { key, required, css_class, value, is_valid }
 const variableInput = [];
 
+// -----------------------------------------------------------------------------
 $(document).ready(async function () {
     $("button.get-twilio-phone").click(function () {
         window.open("https://console.twilio.com/");
@@ -161,10 +160,10 @@ function checkApplication() {
                $('#service-deploy .button').removeClass('loading');
                $('.service-loader').hide();
                if (response.deploy_state === 'NOT-DEPLOYED') {
-                   $('#service-deploy-button-text').text('Deploy Telehealth Application');
+                   $('#service-deploy-button').text('Deploy Telehealth Application');
                    $('#service-deploy').show();
                } else if (response.deploy_state === 'DEPLOYED') {
-                   $('#service-deploy-button-text').text('Re-deploy Telehealth Application');
+                   $('#service-deploy-button').text('Re-deploy Telehealth Application');
                    $('#service-deploy').show();
                    $('#service-deploying').hide();
                    $('#service-deployed').show();
@@ -234,8 +233,10 @@ function deployApplication(e) {
         configuration[i.key] = i.value;
     }
 
-    $('#service-deploy .button').addClass('loading');
-    $('.service-loader.button-loader').show();
+//    $('#service-deploy .button').addClass('loading');
+//    $('.service-loader.button-loader').show();
+    $('#service-deploy-button').prop('disabled', true);
+    $('#service-deploying').show();
 
     fetch('/installer/deploy-application', {
         method: 'POST',
@@ -247,13 +248,16 @@ function deployApplication(e) {
     })
       .then(() => {
           $('#service-deploying').hide();
-          console.log(THIS, 'successfully started deployment');
+          $('#service-deploy-button').prop('disabled', false);
+          console.log(THIS, 'successfully deployed');
 //          checkApplication();
       })
       .catch ((err) => {
           console.log(THIS, err);
-          $('#service-deploy .button').removeClass('loading');
-          $('.service-loader.button-loader').hide();
+          $('#service-deploying').hide();
+          $('#service-deploy-button').prop('disabled', false);
+//          $('#service-deploy .button').removeClass('loading');
+//          $('.service-loader.button-loader').hide();
       });
 }
 

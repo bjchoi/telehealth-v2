@@ -18,7 +18,7 @@ const PatientLanding = () => {
         clientStorage.saveToStorage(STORAGE_USER_KEY, u);
 
         async function _fetchFromServer() {
-          const v = await datastoreService.fetchTelehealthVisitForPatient(u, u.id);
+          const v = await datastoreService.fetchTelehealthVisitForPatient(u, u.visitId);
           return v;
         }
         return _fetchFromServer();

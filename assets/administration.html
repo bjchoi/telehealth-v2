@@ -147,17 +147,20 @@
           <th colspan="3">Patient - scheduled appointment</th>
         </tr>
         <tr>
+          <td colspan="2">
+            <small><a id="scheduled-patient-link" href="" target="_blank"></a></small>
+          </td>
+          <td class="input-action">
+            <a id="scheduled-patient-link-generate-button" class="button" onclick="generateScheduledPatientLink(event);" enabled>Generate Link</a>
+          </td>
+        </tr>
+        <tr>
           <td class="input-label">Enter Patient Phone Number</td>
           <td class="input-value">
             <input id="scheduled-patient-phone" class="input" type="text" name="patient-phone">
           </td>
           <td class="input-action">
-            <a id="scheduled-patient-link-send" class="button" onclick="sendScheduledPatientLink(event);" enabled>Send SMS</a>
-          </td>
-        </tr>
-        <tr>
-          <td colspan="3">
-            <small><a id="scheduled-patient-link" href="" target="_blank"></a></small>
+            <a id="scheduled-patient-link-send-button" class="button" onclick="sendScheduledPatientLink(event);" disabled>Send SMS</a>
           </td>
         </tr>
       </table>
@@ -165,6 +168,11 @@
       <table class="input">
         <tr>
           <th colspan="3">Patient - on-demand appointment</th>
+        </tr>
+        <tr>
+          <td colspan="3">
+            <small><a id="ondemand-patient-link" href="" target="_blank"></a></small>
+          </td>
         </tr>
         <tr>
           <td class="input-label">Enter Patient Phone Number</td>
@@ -175,11 +183,6 @@
             <a id="ondemand-patient-link-send" class="button" onclick="sendOnDemandPatientLink(event);" enabled>Send SMS</a>
           </td>
         </tr>
-        <tr>
-          <td colspan="3">
-            <small><a id="ondemand-patient-link" href="" target="_blank"></a></small>
-          </td>
-        </tr>
       </table>
       <br/>
       <table class="input">
@@ -187,17 +190,20 @@
           <th colspan="3">Provider</th>
         </tr>
         <tr>
+          <td colspan="2">
+            <small><a id="provider-link" href="" target="_blank"></a></small>
+          </td>
+          <td class="input-action">
+            <a id="provider-link-generate-button" class="button" onclick="generateProviderLink(event);" enabled>Generate Link</a>
+          </td>
+        </tr>
+        <tr>
           <td class="input-label"> Enter Provider Phone Number</td>
           <td class="input-value">
             <input id="provider-phone" class="input" type="text" name="patient-phone">
           </td>
           <td class="input-action">
-            <a id="provider-link-send" class="button" onclick="sendProviderLink(event);" enabled>Send SMS</a>
-          </td>
-        </tr>
-        <tr>
-          <td colspan="3">
-            <small><a id="provider-link" href="" target="_blank"></a></small>
+            <a id="provider-link-send-button" class="button" onclick="sendProviderLink(event);" disabled>Send SMS</a>
           </td>
         </tr>
       </table>

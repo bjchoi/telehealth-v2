@@ -15,6 +15,7 @@ table {
 td {
     padding: 0;
     margin: 0;
+    padding-top: 8px;
     padding-left: 2px;
     padding-right: 2px;
     vertical-align: middle;
@@ -26,14 +27,12 @@ td {
 table.input {
     width: 100%;
     border: none;
-    padding: 0;
     margin: 0;
 }
 
 td.input-label {
     width: 40%;
     border: none;
-    padding: 0;
     margin: 0;
     vertical-align: middle;
 }
@@ -41,7 +40,6 @@ td.input-label {
 td.input-value {
     width: 30%;
     border: none;
-    padding: 0;
     margin: 0;
     vertical-align: middle;
 }
@@ -49,7 +47,6 @@ td.input-value {
 td.input-action {
     width: 30%;
     border: none;
-    padding: 0;
     margin: 0;
     vertical-align: middle;
     text-align: right;
